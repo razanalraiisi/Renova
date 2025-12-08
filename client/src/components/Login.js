@@ -123,7 +123,7 @@ const Login = () => {
 
               <FormGroup>
                 <Input type='checkbox' />
-                <Label> Remember Me</Label>
+                <Label> REMEBER ME</Label>
                 <div className='float-end'>
                   <Link to='/ForgetPassword'>Forget password?</Link>
                 </div>
