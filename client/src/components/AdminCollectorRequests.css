@@ -1,0 +1,61 @@
+.admin-container {
+  padding: 30px;
+}
+
+.admin-title {
+  text-align: center;
+  margin-bottom: 25px;
+  color: #d9534f;
+}
+
+.request-card {
+  background: white;
+  padding: 18px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  box-shadow: 0 3px 5px rgba(0,0,0,0.1);
+}
+
+.collector-name {
+  font-weight: 600;
+}
+
+.info-btn {
+  background: none;
+  border: none;
+  color: #007bff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-row {
+  display: flex;
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.accept-btn {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 6px;
+}
+
+.reject-btn {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 6px;
+}
+
+.accepted-tag {
+  color: #28a745;
+  font-weight: bold;
+}
+
+.rejected-tag {
+  color: #dc3545;
+  font-weight: bold;
+}
