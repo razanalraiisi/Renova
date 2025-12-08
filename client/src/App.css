@@ -1,0 +1,170 @@
+.App {
+  text-align: center;
+}
+.appBG{
+  background-color: #F5F5F5;
+}
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #0080AA;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+.div-row{
+  
+  align-items: center;
+  justify-content: center;
+  display: flex;
+  padding: 50px;
+}
+
+.div-col{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: auto;
+  background-color: white;
+  border-radius: 4px;
+}
+
+.div-form{
+  background-color: white;
+  border-radius: 5px;
+  border-color: gray;
+  border-width: thin;
+  border-style: solid;
+  padding: 10px;
+  margin: 10px;
+  width: 100%;
+  height: 100%;
+  border-radius: 4px;
+}
+
+.navigation{
+  background-color: burlywood;
+  height: 75px;
+}
+
+.navs{
+  padding: 10px;
+}
+
+.footer{
+  background-color: #0080AA;
+  text-align: center;
+  justify-content: center;
+  padding: 10px;
+  flex-shrink: 0;
+  position: relative;
+  bottom: 0;
+}
+
+.profilepic{
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+}
+
+
+.darkbutton{
+  color: white;
+  background: #006D90;
+  justify-content: center;
+  align-items: center;
+}
+
+.accordion-body{
+  margin: 0 auto;
+  width:70%;
+  text-align: left;
+  padding-bottom: 100px;
+}
+
+.info-card {
+  text-align: center;
+  padding: 20px;
+  margin: 10px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.field-label {
+  margin-bottom: 4px;
+}
+
+.input-wrapper {
+  position: relative;
+}
+
+.input-error {
+  border: 2px solid #d93025 !important;
+  background-color: #ffecec;
+}
+
+.error-border .form-control,
+.error-border select,
+.error-border .category-box {
+  border: 2px solid #d93025 !important;
+  background-color: #ffecec;
+}
+
+.error-icon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #d93025;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.error-text {
+  color: #d93025;
+  font-size: 0.9rem;
+  margin-top: 4px;
+  margin-bottom: 4px;
+}
+
+.password-rules-box {
+  background-color: #d93025;
+  color: #ffffff;
+  padding: 10px 12px;
+  border-radius: 8px;
+  margin-top: 6px;
+  font-size: 0.9rem;
+}
+
+.password-rules-box ul {
+  margin: 4px 0 0 18px;
+  padding: 0;
+}
