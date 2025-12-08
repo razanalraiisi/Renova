@@ -16,6 +16,8 @@ const Register = () => {
   const [pic, setPic] = useState('');
   const [phone, setPhone] = useState('');
 
+  const [centerMessage, setCenterMessage] = useState(null);
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -31,16 +33,61 @@ const Register = () => {
 
   useEffect(() => {
     if (isSuccess) {
-      alert("Registration successful!");
-      navigate('/login');
+      setCenterMessage({
+        type: "success",
+        text: "🎉 Registration Successful! Redirecting..."
+      });
+
+      setTimeout(() => {
+        setCenterMessage(null);
+        navigate('/login');
+      }, 3000);
     }
+
     if (isError) {
-      alert(message || 'Registration failed');
+      setCenterMessage({
+        type: "error",
+        text: message || "Registration Failed"
+      });
+
+      setTimeout(() => setCenterMessage(null), 3000); 
     }
   }, [isSuccess, isError, message, navigate]);
 
   return (
     <>
+      {centerMessage && (
+        <div style={{
+          position: "fixed",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          background: "white",
+          padding: "15px 25px",
+          borderRadius: "12px",
+          boxShadow: "0 4px 15px rgba(0,0,0,0.15)",
+          zIndex: 9999,
+          textAlign: "center",
+          fontWeight: "500",
+          fontSize: "0.95rem",
+          color: centerMessage.type === "success" ? "#0d8f44" : "#b40000",
+          animation: "fadeIn 0.3s ease",
+          maxWidth: "300px",
+          wordWrap: "break-word"
+        }}>
+          {centerMessage.text}
+        </div>
+      )}
+
+      <style>
+        {`
+          @keyframes fadeIn {
+            from { opacity: 0; transform: translate(-50%, -48%); }
+            to { opacity: 1; transform: translate(-50%, -50%); }
+          }
+        `}
+      </style>
+
       <Navbar className="my-2" style={{ backgroundColor: "#0080AA" }}>
         <NavbarBrand href="/" style={{ color: "white" }}>
           <img alt="logo" src={logo} style={{ height: 40, width: 40, marginRight: 10 }} />
@@ -91,11 +138,7 @@ const Register = () => {
                 />
               </ValidationInput>
 
-              <ValidationInput
-                label="Password"
-                error={errors.password?.message}
-                showPasswordRules={true}   // rules box only here & in collector
-              >
+              <ValidationInput label="Password" error={errors.password?.message} showPasswordRules={true}>
                 <input
                   {...hookRegister('password')}
                   value={password}
