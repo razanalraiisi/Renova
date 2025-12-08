@@ -14,6 +14,7 @@ import ResetPassword from './components/ResetPass.js';
 import AdminDash from './components/AdminDash';
 import UserDash from './components/UserDash';
 import CollectorDash from './components/CollectorDash';
+import AdminCollectorRequests from './components/AdminCollectorRequests.js';
 
 function App() {
   const email = useSelector((state) => state.users.user.email);
@@ -32,6 +33,7 @@ function App() {
             <Route path="/CollectorDash" element={<CollectorDash />} />
             <Route path="/ForgetPassword" element={<ForgetPassword />} />
             <Route path="/ResetPassword" element={<ResetPassword />} />
+            <Route path="/AdminCollectorRequests" element={<AdminCollectorRequests />} />
           </Routes>
         </Row>
         <Row>

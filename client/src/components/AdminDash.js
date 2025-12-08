@@ -1,3 +1,4 @@
+import AdminCollectorRequests from "./AdminCollectorRequests";
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaSignOutAlt } from 'react-icons/fa';
@@ -32,6 +33,7 @@ const AdminDash = () => {
       >
         <FaSignOutAlt /> Logout
       </button>
+<AdminCollectorRequests/>
     </div>
   );
 };
