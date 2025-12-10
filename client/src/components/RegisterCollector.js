@@ -84,9 +84,10 @@ const RegisterCollector = () => {
   useEffect(() => {
     if (isSuccess) {
       dispatch({ type: "users/resetUser" });
-      alert("Registration successful!");
+      alert("Collector registration submitted. Please wait for admin approval.");
       navigate('/login');
     }
+
     if (isError) {
       alert(message || "Registration failed");
     }

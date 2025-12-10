@@ -42,7 +42,8 @@ export const registerUser = async (req, res) => {
       pic,
       role: "user",
       userId: ids.userId,
-      userIdNumber: ids.userIdNumber
+      userIdNumber: ids.userIdNumber,
+      isApproved: true  // users are always approved
     });
 
     await newUser.save();
@@ -92,11 +93,12 @@ export const registerCollector = async (req, res) => {
       openHr,
       role: "collector",
       collectorId: ids.collectorId,
-      collectorIdNumber: ids.collectorIdNumber
+      collectorIdNumber: ids.collectorIdNumber,
+      isApproved: false  // ⭐ collector must wait for approval
     });
 
     await newCollector.save();
-    res.status(201).json({ message: "Collector registered successfully." });
+    res.status(201).json({ message: "Collector registration submitted for approval." });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error." });
@@ -116,7 +118,7 @@ export const registerAdmin = async (req, res) => {
     if (existing) return res.status(400).json({ message: "Email already exists." });
 
     const hashed = await bcrypt.hash(password, 10);
-    const admin = new User({ email, password: hashed, role: "admin" });
+    const admin = new User({ email, password: hashed, role: "admin", isApproved: true });
     await admin.save();
     res.status(201).json({ message: "Admin created." });
   } catch (err) {
@@ -139,11 +141,56 @@ export const login = async (req, res) => {
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) return res.status(400).json({ message: "Invalid password." });
 
+    // ⭐ BLOCK UNAPPROVED COLLECTORS
+    if (user.role === "collector" && user.isApproved === false) {
+      return res.status(403).json({
+        message: "Your collector account is pending admin approval."
+      });
+    }
+
     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "1d" });
 
     res.status(200).json({ user, token });
   } catch (err) {
     console.error(err);
+    res.status(500).json({ message: "Server error." });
+  }
+};
+
+// --------------------
+// ADMIN ACTIONS
+// --------------------
+
+// Get all pending collectors
+export const getPendingCollectors = async (req, res) => {
+  try {
+    const collectors = await User
+      .find({ role: "collector", isApproved: false })
+      .sort({ createdAt: -1 });  // ⭐ newest first
+
+    res.json(collectors);
+  } catch (err) {
+    res.status(500).json({ message: "Server error." });
+  }
+};
+
+
+// Approve collector
+export const approveCollector = async (req, res) => {
+  try {
+    await User.findByIdAndUpdate(req.params.id, { isApproved: true });
+    res.json({ message: "Collector approved." });
+  } catch (err) {
+    res.status(500).json({ message: "Server error." });
+  }
+};
+
+// Reject/Delete collector
+export const rejectCollector = async (req, res) => {
+  try {
+    await User.findByIdAndDelete(req.params.id);
+    res.json({ message: "Collector rejected and removed." });
+  } catch (err) {
     res.status(500).json({ message: "Server error." });
   }
 };
