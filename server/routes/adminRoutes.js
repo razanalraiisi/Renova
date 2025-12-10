@@ -9,6 +9,6 @@ const router = express.Router();
 
 router.get("/pendingCollectors", getPendingCollectors);
 router.put("/approveCollector/:id", approveCollector);
-router.delete("/rejectCollector/:id", rejectCollector);
+router.post("/rejectCollector/:id", rejectCollector);
 
 export default router;
