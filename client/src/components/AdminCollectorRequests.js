@@ -66,8 +66,8 @@ const AdminCollectorRequests = () => {
   };
 
   const rejectRequest = (reason) => {
-    axios
-      .delete(`http://localhost:5000/admin/rejectCollector/${selectedRequest._id}`)
+    axios.post(`http://localhost:5000/admin/rejectCollector/${selectedRequest._id}`, { reason })
+
       .then(() => {
         setRequests((prev) =>
           prev.filter((r) => r._id !== selectedRequest._id)
