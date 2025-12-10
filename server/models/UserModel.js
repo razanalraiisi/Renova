@@ -4,7 +4,7 @@ const userSchema = new mongoose.Schema({
   // --------------------------
   // USER FIELDS
   // --------------------------
-  uname: { type: String }, // Only for normal users
+  uname: { type: String },
   phone: { type: String },
   pic: { type: String },
 
@@ -34,8 +34,18 @@ const userSchema = new mongoose.Schema({
     type: String, 
     enum: ["user", "collector", "admin"], 
     required: true 
+  },
+
+  // --------------------------
+  // APPROVAL STATUS (NEW)
+  // --------------------------
+  isApproved: { 
+    type: Boolean,
+    default: function () {
+      return this.role !== "collector"; // users/admins = true, collectors = false
+    }
   }
-});
+}, { timestamps: true });  // ⭐ adds createdAt + updatedAt automatically
 
 const User = mongoose.model("Users", userSchema);
 export default User;
