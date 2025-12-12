@@ -3,7 +3,6 @@ import axios from "axios";
 
 const BASE_URL = "http://localhost:5000";
 
-
 // Add User (normal user & collector)
 export const addUser = createAsyncThunk(
   "users/addUser",
@@ -13,7 +12,12 @@ export const addUser = createAsyncThunk(
       if (udata.role === "collector") {
         url = `${BASE_URL}/registerCollector`;
       }
-      const response = await axios.post(url, udata);
+
+      // ✅ FIX: backend sets role, remove it from payload
+      const payload = { ...udata };
+      delete payload.role;
+
+      const response = await axios.post(url, payload);
       return response.data.message;
     } catch (error) {
       return rejectWithValue(
@@ -37,7 +41,6 @@ export const getUser = createAsyncThunk(
   }
 );
 
-
 const initialState = {
   user: {},
   message: "",
@@ -56,15 +59,12 @@ export const UserSlice = createSlice({
       state.isError = false;
       state.message = "";
     },
-
-    // ✅ FIX ADDED — CLEAR USER AFTER REGISTRATION
     resetUser: (state) => {
       state.user = {};
     },
   },
   extraReducers: (builder) => {
     builder
-      // --- Add User ---
       .addCase(addUser.pending, (state) => {
         state.isLoading = true;
         state.isError = false;
@@ -81,7 +81,6 @@ export const UserSlice = createSlice({
         state.isError = true;
         state.message = action.payload || "Registration failed.";
       })
-      // --- Get User / Login ---
       .addCase(getUser.pending, (state) => {
         state.isLoading = true;
         state.isError = false;
