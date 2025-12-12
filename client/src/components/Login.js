@@ -9,6 +9,8 @@ import { getUser } from '../features/UserSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import ValidationInput from '../components/ValidationInput';
+import { resetState } from '../features/UserSlice';
+
 
 const Login = () => {
   let [email, setEmail] = useState('');
@@ -27,9 +29,10 @@ const Login = () => {
   } = useForm({ resolver: yupResolver(UserSchemaValidation) });
 
   const validate = () => {
-    const data = { email, password };
-    dispatch(getUser(data));
-  };
+  dispatch(resetState());  
+  dispatch(getUser({ email, password }));
+};
+
 
   useEffect(() => {
     if (isSuccess && user?.role) {
