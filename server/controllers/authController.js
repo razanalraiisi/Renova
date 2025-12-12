@@ -283,3 +283,84 @@ export const rejectCollector = async (req, res) => {
     res.status(500).json({ message: "Server error." });
   }
 };
+
+
+export const sendPasswordOtp = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: "Email not found." });
+
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    user.otp = otp;
+    user.otpExpires = Date.now() + 5 * 60 * 1000; // 5 min validity
+    await user.save();
+
+    const html = `
+      <div style="font-family: Arial; padding: 20px;">
+        <h2 style="color:#0080AA;">We Got Your Request</h2>
+        <p>You can now reset your password using this verification code:</p>
+        <h1 style="letter-spacing: 5px;">${otp}</h1>
+        <p>This code expires in <strong>5 minutes</strong>.</p>
+      </div>
+    `;
+
+    await sendEmail(email, "ReNova Password Reset Request", html);
+
+    res.json({ message: "OTP sent to email." });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error." });
+  }
+};
+
+
+export const verifyPasswordOtp = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: "Email not found." });
+
+    if (user.otp !== otp) {
+      return res.status(400).json({ message: "Invalid OTP." });
+    }
+
+    if (user.otpExpires < Date.now()) {
+      return res.status(400).json({ message: "OTP has expired." });
+    }
+
+    res.json({ message: "OTP verified successfully." });
+
+  } catch (err) {
+    res.status(500).json({ message: "Server error." });
+  }
+};
+
+
+export const resetPassword = async (req, res) => {
+  try {
+    const { email, newPassword } = req.body;
+
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: "Email not found." });
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+
+    user.password = hashed;
+    user.otp = null;
+    user.otpExpires = null;
+
+    await user.save();
+
+    res.json({ message: "Password has been reset successfully." });
+
+  } catch (err) {
+    res.status(500).json({ message: "Server error." });
+  }
+};
+

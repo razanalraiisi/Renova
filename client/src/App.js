@@ -15,6 +15,7 @@ import AdminDash from './components/AdminDash';
 import UserDash from './components/UserDash';
 import CollectorDash from './components/CollectorDash';
 import AdminCollectorRequests from './components/AdminCollectorRequests.js';
+import VerifyOtp from './components/VerifyOtp.js';
 
 function App() {
   const email = useSelector((state) => state.users.user.email);
@@ -34,6 +35,7 @@ function App() {
             <Route path="/ForgetPassword" element={<ForgetPassword />} />
             <Route path="/ResetPassword" element={<ResetPassword />} />
             <Route path="/AdminCollectorRequests" element={<AdminCollectorRequests />} />
+            <Route path="/VerifyOtp" element={<VerifyOtp />} />
           </Routes>
         </Row>
         <Row>

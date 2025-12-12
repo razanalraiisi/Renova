@@ -32,13 +32,13 @@ const Login = () => {
   };
 
   useEffect(() => {
-    if (isSuccess && user && Object.keys(user).length > 0) {
-      const role = user.role || (user.user && user.user.role) || user?.role;
-      if (role === 'admin') navigate('/AdminDash');
-      else if (role === 'collector') navigate('/CollectorDash');
-      else navigate('/UserDash');
+    if (isSuccess && user?.role) {
+      if (user.role === "admin") navigate("/AdminDash");
+      else if (user.role === "collector") navigate("/CollectorDash");
+      else navigate("/UserDash");
     }
-  }, [user, isSuccess, navigate]);
+  }, [isSuccess, user, navigate]);
+
 
   return (
     <>

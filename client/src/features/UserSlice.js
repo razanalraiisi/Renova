@@ -1,20 +1,24 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
+const BASE_URL = "http://localhost:5000";
+
+
 // Add User (normal user & collector)
 export const addUser = createAsyncThunk(
   "users/addUser",
   async (udata, { rejectWithValue }) => {
     try {
-      let url = "http://localhost:5000/registerUser";
-      if (udata.role === "collector") url = "http://localhost:5000/registerCollector";
+      let url = `${BASE_URL}/registerUser`;
+      if (udata.role === "collector") {
+        url = `${BASE_URL}/registerCollector`;
+      }
       const response = await axios.post(url, udata);
       return response.data.message;
     } catch (error) {
-      if (error.response && error.response.data && error.response.data.message) {
-        return rejectWithValue(error.response.data.message);
-      }
-      return rejectWithValue("Registration failed. Please try again.");
+      return rejectWithValue(
+        error.response?.data?.message || "Registration failed."
+      );
     }
   }
 );
@@ -23,16 +27,16 @@ export const getUser = createAsyncThunk(
   "users/getUser",
   async (udata, { rejectWithValue }) => {
     try {
-      const response = await axios.post("http://localhost:5000/login", udata);
+      const response = await axios.post(`${BASE_URL}/login`, udata);
       return response.data;
     } catch (error) {
-      if (error.response && error.response.data && error.response.data.message) {
-        return rejectWithValue(error.response.data.message);
-      }
-      return rejectWithValue("Login failed. Please try again.");
+      return rejectWithValue(
+        error.response?.data?.message || "Login failed."
+      );
     }
   }
 );
+
 
 const initialState = {
   user: {},

@@ -30,16 +30,18 @@ const userSchema = new mongoose.Schema({
   // --------------------------
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  role: { 
-    type: String, 
-    enum: ["user", "collector", "admin"], 
-    required: true 
+  role: {
+    type: String,
+    enum: ["user", "collector", "admin"],
+    required: true
   },
+  otp: { type: String },
+  otpExpires: { type: Date },
 
   // --------------------------
   // APPROVAL STATUS (NEW)
   // --------------------------
-  isApproved: { 
+  isApproved: {
     type: Boolean,
     default: function () {
       return this.role !== "collector"; // users/admins = true, collectors = false

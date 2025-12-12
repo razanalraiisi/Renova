@@ -3,21 +3,26 @@ import {
   registerUser,
   registerCollector,
   registerAdmin,
-  login
+  login,
+  sendPasswordOtp,
+  verifyPasswordOtp,
+  resetPassword
 } from "../controllers/authController.js";
 
 const router = express.Router();
 
-// User registration
+router.get("/test", (req, res) => {
+  res.send("AUTH ROUTES WORKING ✅");
+});
+
 router.post("/registerUser", registerUser);
-
-// Collector registration
 router.post("/registerCollector", registerCollector);
-
-// Admin creation (protected)
 router.post("/registerAdmin", registerAdmin);
-
-// Login
 router.post("/login", login);
+
+// ✅ OTP / Forgot Password Routes
+router.post("/forgot-password", sendPasswordOtp);
+router.post("/verify-otp", verifyPasswordOtp);
+router.post("/reset-password", resetPassword);
 
 export default router;
