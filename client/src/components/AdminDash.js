@@ -13,9 +13,10 @@ const AdminDash = () => {
 
   return (
     <div style={{ padding: '20px' }}>
-      <h2>Admin Dashboard</h2>
-      <p>Welcome, Admin!</p> 
+      <h2 className="text-center" style={{color:'#006D90'}}>Admin Dashboard</h2>
+      <p className="text-center" style={{color:'#006D90'}}>Welcome, Admin!</p> 
 
+      <div className="justify-content-end" style={{ display: 'flex' }}>
       <button
         onClick={handleLogout}
         style={{
@@ -32,7 +33,7 @@ const AdminDash = () => {
         }}
       >
         <FaSignOutAlt /> Logout
-      </button>
+      </button></div>
 <AdminCollectorRequests/>
     </div>
   );

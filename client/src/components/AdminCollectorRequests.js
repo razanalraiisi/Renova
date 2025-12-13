@@ -3,6 +3,9 @@ import axios from "axios";
 import AcceptModal from "../components/AcceptModal";
 import RejectModal from "../components/RejectModal";
 import "./AdminCollectorRequests.css";
+import { FcDepartment } from "react-icons/fc";
+import { FcViewDetails } from "react-icons/fc";
+import { FcBusinessContact } from "react-icons/fc";
 
 const AdminCollectorRequests = () => {
   const [requests, setRequests] = useState([]);
@@ -89,13 +92,13 @@ const AdminCollectorRequests = () => {
 
       {requests.map((req) => (
         <div className="request-card" key={req._id}>
-          <h4 className="collector-name">{req.companyName}</h4>
+          <h4 className="collector-name"><FcDepartment /> {req.companyName}</h4>
 
           {/* COLLAPSED */}
           {!req.moreInfo && (
             <>
-              <p><strong>Collector Type:</strong> {req.collectorType}</p>
-              <p><strong>Registered:</strong> {formatDate(req.createdAt)}</p>
+              <p style={{color:'#006D90'}}><strong>Collector Type:</strong> {req.collectorType}</p>
+              <p style={{color:'#006D90'}}><strong>Registered:</strong> {formatDate(req.createdAt)}</p>
 
               <button
                 className="info-btn"
@@ -111,19 +114,19 @@ const AdminCollectorRequests = () => {
             <>
               <div className="info-grid">
                 <div>
-                  <h5>Collector Details</h5>
-                  <p><strong>ID:</strong> {req.collectorId}</p>
-                  <p><strong>Type:</strong> {req.collectorType}</p>
-                  <p><strong>Opening Hours:</strong> {req.openHr}</p>
-                  <p><strong>Categories:</strong> {req.acceptedCategories.join(", ")}</p>
-                  <p><strong>Address:</strong> {req.address}</p>
-                  <p><strong>Registered On:</strong> {formatDate(req.createdAt)}</p>
+                  <h5><FcViewDetails /> Collector Details</h5>
+                  <p style={{color:'#006D90'}}><strong>ID:</strong> {req.collectorId}</p>
+                  <p style={{color:'#006D90'}}><strong>Type:</strong> {req.collectorType}</p>
+                  <p style={{color:'#006D90'}}><strong>Opening Hours:</strong> {req.openHr}</p>
+                  <p style={{color:'#006D90'}}><strong>Categories:</strong> {req.acceptedCategories.join(", ")}</p>
+                  <p style={{color:'#006D90'}}><strong>Address:</strong> {req.address}</p>
+                  <p style={{color:'#006D90'}}><strong>Registered On:</strong> {formatDate(req.createdAt)}</p>
                 </div>
 
                 <div>
-                  <h5>Contact Info</h5>
-                  <p><strong>Email:</strong> {req.email}</p>
-                  <p><strong>Phone:</strong> {req.phone}</p>
+                  <h5><FcBusinessContact /> Contact Info</h5>
+                  <p style={{color:'#006D90'}}><strong>Email:</strong> {req.email}</p>
+                  <p style={{color:'#006D90'}}><strong>Phone:</strong> {req.phone}</p>
                 </div>
               </div>
 
@@ -137,7 +140,7 @@ const AdminCollectorRequests = () => {
           )}
 
           {/* ACTION BUTTONS */}
-          <div className="btn-row">
+          <div className="btn-row justify-content-end" style={{ display: 'flex' }}>
             <button className="accept-btn" onClick={() => openAcceptModal(req)}>
               Accept
             </button>
