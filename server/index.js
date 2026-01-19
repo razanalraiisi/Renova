@@ -12,7 +12,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-console.log("🔥 AUTH ROUTES LOADED");
+console.log("✓ AUTH ROUTES LOADED");
 
 // Routes
 app.use('/', authRoutes);

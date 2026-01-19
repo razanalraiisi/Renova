@@ -38,6 +38,6 @@ transporter.verify((error, success) => {
   if (error) {
     console.log("SMTP ERROR:", error);
   } else {
-    console.log("SMTP CONNECTED!");
+    console.log("✓ SMTP CONNECTED");
   }
 });

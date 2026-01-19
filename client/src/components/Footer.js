@@ -28,7 +28,7 @@ const Footer = () => {
         <Col><h6>Contact Information</h6>
         <p>Renova.om@hotmail.com</p>
             <p>+968 99552311</p>
-            <p>Sunday - Thursday (BAM-5PM)</p></Col>
+            <p>Sunday - Thursday (8AM-5PM)</p></Col>
         <Col><h6>Legal</h6>
         <ul className="list-unstyled legal-links">
               <li><a href="#">Terms & Conditions</a></li>
