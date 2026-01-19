@@ -13,7 +13,7 @@ const AdminCollectorRequests = () => {
   const [showAccept, setShowAccept] = useState(false);
   const [showReject, setShowReject] = useState(false);
 
-  // ⭐ Format dates nicely
+  // Format dates nicely
   const formatDate = (iso) => {
     const d = new Date(iso);
     return (
@@ -23,7 +23,7 @@ const AdminCollectorRequests = () => {
     );
   };
 
-  // ⭐ Fetch collectors sorted by newest
+  // Fetch collectors sorted by newest
   useEffect(() => {
     axios
       .get("http://localhost:5000/admin/pendingCollectors")
@@ -82,7 +82,7 @@ const AdminCollectorRequests = () => {
 
   return (
     <div className="admin-container">
-      <h2 className="admin-title">⚠️ Collector Approval Requests</h2>
+      <h2 className="admin-title"> Collector Approval Requests</h2>
 
       {requests.length === 0 && (
         <p style={{ textAlign: "center", marginTop: "20px" }}>

@@ -96,7 +96,7 @@ export const registerCollector = async (req, res) => {
       role: "collector",
       collectorId: ids.collectorId,
       collectorIdNumber: ids.collectorIdNumber,
-      isApproved: false  // ⭐ collector must wait for approval
+      isApproved: false  
     });
 
     await newCollector.save();
@@ -143,7 +143,7 @@ export const login = async (req, res) => {
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) return res.status(400).json({ message: "Invalid password." });
 
-    // ⭐ BLOCK UNAPPROVED COLLECTORS
+    
     if (user.role === "collector" && user.isApproved === false) {
       return res.status(403).json({
         message: "Your collector account is pending admin approval."
@@ -168,7 +168,7 @@ export const getPendingCollectors = async (req, res) => {
   try {
     const collectors = await User
       .find({ role: "collector", isApproved: false })
-      .sort({ createdAt: -1 });  // ⭐ newest first
+      .sort({ createdAt: -1 });  
 
     res.json(collectors);
   } catch (err) {

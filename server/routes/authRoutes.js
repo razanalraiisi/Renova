@@ -12,7 +12,7 @@ import {
 const router = express.Router();
 
 router.get("/test", (req, res) => {
-  res.send("AUTH ROUTES WORKING ✅");
+  res.send("AUTH ROUTES WORKING");
 });
 
 router.post("/registerUser", registerUser);
@@ -20,7 +20,7 @@ router.post("/registerCollector", registerCollector);
 router.post("/registerAdmin", registerAdmin);
 router.post("/login", login);
 
-// ✅ OTP / Forgot Password Routes
+// OTP / Forgot Password Routes
 router.post("/forgot-password", sendPasswordOtp);
 router.post("/verify-otp", verifyPasswordOtp);
 router.post("/reset-password", resetPassword);
