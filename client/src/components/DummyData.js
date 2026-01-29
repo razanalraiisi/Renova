@@ -1,0 +1,63 @@
+// ---------- Charts Data ----------
+export const desktopOS = [
+  { id: 0, value: 40, label: 'Small Electronics' },
+  { id: 1, value: 30, label: 'IT & Office Equipment' },
+  { id: 2, value: 20, label: 'Entertainment Devices' },
+  { id: 3, value: 10, label: 'Other' },
+];
+
+export const valueFormatter = (value) => `${value}%`;
+
+export const months = [
+  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+];
+
+export const deviceCounts = [
+  12, 19, 8, 15, 22, 30, 25, 18, 20, 27, 35, 40,
+];
+
+export const pieColors = [
+  '#0D47A1',
+  '#1976D2',
+  '#42A5F5',
+  '#90CAF9',
+];
+
+// ---------- Widgets ----------
+export const widgetData = [
+  { number: 120, label: 'Electronics Recycled' },
+  { number: 75, label: 'Electronics Upcycled' },
+  { number: 7, label: 'Upcoming Pickups Today' },
+];
+
+// ---------- Requests ----------
+export const requests = [
+  {
+    id: 1,
+    type: 'Laptop',
+    image: 'https://i.dell.com/is/image/DellContent/content/dam/ss2/product-images/dell-client-products/notebooks/dell-plus/db16255/media-gallery/non-touch/laptop-dell-plus-db16255nt-ice-bl-fpr-gallery-5.psd?fmt=png-alpha&pscan=auto&scl=1&hei=804&wid=979&qlt=100,1&resMode=sharp2&size=979,804&chrss=full',
+    date: '16/11/2025',
+    time: '11:43 PM',
+    condition: 'Not Working',
+    method: 'Pick Up',
+  },
+  {
+    id: 2,
+    type: 'Phone',
+    image: 'https://cdn.mos.cms.futurecdn.net/hf2CQvHr9KNtKuUSDkeQVH.jpg',
+    date: '1/11/2025',
+    time: '10:00 AM',
+    condition: 'Working',
+    method: 'Drop Off',
+  },
+  {
+    id: 3,
+    type: 'PC',
+    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSMgwMWbZLv8i_-QfS2mWOcmXKKOy5kN877zA&s',
+    date: '15/9/2025',
+    time: '2:30 PM',
+    condition: 'Working',
+    method: 'Pick Up',
+  },
+];
