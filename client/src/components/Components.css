@@ -1,0 +1,68 @@
+.dashboard {
+  padding: 40px;
+  min-height: 100vh;
+  background: #f5f7fa;
+}
+
+.logout-btn {
+  margin-top: 20px;
+  padding: 8px 16px;
+  background-color: #006D90;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chart-container {
+  margin-top: 50px;
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  flex-wrap: wrap;
+}
+
+.chart-card {
+  background: white;
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+  text-align: center;
+}
+
+.widgets {
+  display: flex;
+  justify-content: center;
+  gap: 50px;
+  margin-top: 30px;
+  flex-wrap: wrap;
+}
+
+.widget {
+  width: 140px;
+  padding: 15px;
+  background-color: rgba(195, 210, 229, 0.7);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  text-align: center;
+  transition: transform 0.2s;
+}
+
+.widget:hover {
+  transform: scale(1.05);
+}
+
+.widget-number {
+  font-size: 25px;
+  font-weight: bold;
+  color: #006D90;
+  margin-bottom: 8px;
+}
+
+.widget-label {
+  font-size: 14px;
+  color: #006D90;
+}
