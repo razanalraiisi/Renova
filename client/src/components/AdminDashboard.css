@@ -1,0 +1,121 @@
+:root {
+  --admin-blue: #0080AA; /* SAME as Login.js */
+  --admin-blue-dark: #006D90;
+  --admin-card: #d9ebf3; /* light blue tint */
+  --admin-border: #b7c9d6;
+}
+
+.admin-board {
+  background: #ffffff;
+  border: 1px solid #d7dbe0;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.admin-title {
+  font-weight: 900;
+  text-align: center;
+  margin: 10px 0 18px;
+  color: #c94141; /* your screenshot shows red title */
+}
+
+.side-card {
+  border: 1px solid var(--admin-border);
+  background: var(--admin-card);
+  border-radius: 4px;
+  padding: 14px 12px;
+  margin-bottom: 14px;
+  text-align: center;
+}
+
+.side-card h6 {
+  font-weight: 900;
+  margin-bottom: 8px;
+}
+
+.mini-btn {
+  background-color: var(--admin-blue) !important;
+  border: none !important;
+  color: #fff !important;
+  font-weight: 700 !important;
+  font-size: 13px !important;
+
+  padding: 8px 18px !important;
+  border-radius: 18px !important;
+
+  min-width: 110px;   /* ✅ makes buttons equal width */
+  height: 36px;       /* ✅ same height (fixes wonky look) */
+  line-height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+.mini-btn:hover {
+  background-color: var(--admin-blue-dark) !important;
+}
+
+.stat-card {
+  border: 1px solid var(--admin-border);
+  background: var(--admin-card);
+  border-radius: 4px;
+  padding: 12px;
+  height: 140px; /* more room for 2 buttons */
+  position: relative;
+}
+
+.stat-card-title {
+  font-weight: 900;
+  font-size: 13px;
+  margin-bottom: 6px;
+  text-align: center;
+}
+
+.stat-card-value {
+  font-weight: 900;
+  font-size: 20px;
+  text-align: center;
+  margin-top: 2px;
+}
+
+.stat-card-sub {
+  font-size: 12px;
+  text-align: center;
+  margin-top: 4px;
+  opacity: 0.85;
+}
+
+.stat-btn-row {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap; /* ✅ prevents overlapping */
+}
+
+.center-graph-box {
+  border: 1px solid #d7dbe0;
+  border-radius: 8px;
+  background: white;
+  padding: 14px;
+  min-height: 360px;
+}
+
+.carousel-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #c5c9cf;
+}
+
+.dot.active {
+  background: var(--admin-blue);
+}
