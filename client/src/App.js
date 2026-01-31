@@ -17,6 +17,9 @@ import CollectorDash from './components/CollectorDash';
 import AdminCollectorRequests from './components/AdminCollectorRequests.js';
 import VerifyOtp from './components/VerifyOtp.js';
 import NewRecycleRequest from './components/NewRecycleRequest.js';
+import AboutUs from './components/AboutUs.js';
+import FAQ from './components/FAQ.js';
+import AdminFAQ from './components/AdminFAQ.js';
 
 function App() {
   const email = useSelector((state) => state.users.user.email);
@@ -38,6 +41,9 @@ function App() {
             <Route path="/AdminCollectorRequests" element={<AdminCollectorRequests />} />
             <Route path="/VerifyOtp" element={<VerifyOtp />} />
             <Route path="/NewRecycleRequest" element={<NewRecycleRequest/>} />
+            <Route path="/AboutUs" element={<AboutUs/>} />
+            <Route path="/FAQ" element={<FAQ/>} />
+            <Route path="/AdminFAQ" element={<AdminFAQ/>} />
           </Routes>
         </Row>
         <Row>
