@@ -20,6 +20,7 @@ import FAQ from './components/FAQ.js';
 import AdminFAQ from './components/AdminFAQ.js';
 import AdminLayout from "./components/AdminLayout";
 import AdminDashboard from "./components/AdminDashboard"; // fixed import
+import Start from "./components/Start.js";
 
 function App() {
   const email = useSelector((state) => state.users?.user?.email);
@@ -41,7 +42,7 @@ function App() {
             <Route path="/AboutUs" element={<AboutUs/>} />
             <Route path="/FAQ" element={<FAQ/>} />
             <Route path="/AdminFAQ" element={<AdminFAQ/>} />
-
+            <Route path="/start" element={<Start />} />
             {/* Dashboard routes */}
             <Route path="/UserDash" element={<UserDash />} />
             <Route path="/CollectorDash" element={<CollectorDash />} />
