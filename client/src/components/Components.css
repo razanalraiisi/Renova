@@ -160,3 +160,148 @@
 .faq-item:hover {
   transform: scale(1.01);
 }
+.collector-navbar {
+  background-color: #0080AA;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  height: 60px;
+}
+
+.navbar-logo {
+  height: 40px;
+  width: 40px;
+  margin-right: 10px;
+}
+
+/* Centered links */
+.navbar-links .btn-link,
+.navbar-dropdown {
+  color: white;
+  font-weight: 600;
+  text-decoration: none;
+  padding: 8px 12px;
+}
+
+.navbar-links .btn-link:hover,
+.navbar-dropdown:hover {
+  text-decoration: underline;
+}
+
+/* Right side */
+.navbar-right .profile-icon {
+  color: white;
+  cursor: pointer;
+}
+
+/* Notification styles */
+.notif-wrap {
+  position: relative;
+}
+
+.notif-bell {
+  position: relative;
+  font-size: 20px;
+  cursor: pointer;
+  color: white;
+}
+
+.notif-badge {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  background: red;
+  color: white;
+  border-radius: 50%;
+  font-size: 12px;
+  padding: 2px 6px;
+  font-weight: 600;
+}
+
+.notif-panel {
+  position: absolute;
+  right: 0;
+  top: 30px;
+  width: 260px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+  z-index: 100;
+  padding: 10px 0;
+}
+
+.notif-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 12px;
+  border-bottom: 1px solid #eaeaea;
+  margin-bottom: 8px;
+}
+
+.notif-title {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.notif-count-pill {
+  background: #ff4d4d;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 12px;
+  font-size: 12px;
+  margin-left: 6px;
+}
+
+.notif-clear {
+  font-size: 12px;
+  padding: 0;
+  margin: 0;
+}
+
+.notif-list {
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.notif-item {
+  padding: 8px 12px;
+  border-bottom: 1px solid #f1f1f1;
+}
+
+.notif-item-top {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.notif-message {
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+.notif-actions {
+  text-align: right;
+}
+
+.notif-view {
+  background: none;
+  border: none;
+  color: #0080AA;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.notif-view:hover {
+  text-decoration: underline;
+}
+
+.notif-empty {
+  text-align: center;
+  font-size: 12px;
+  padding: 10px 0;
+  color: #888;
+}

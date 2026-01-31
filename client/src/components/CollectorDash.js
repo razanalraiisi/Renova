@@ -30,6 +30,7 @@ import {
 // Import your ready modal components
 import AcceptModal from './AcceptModal';
 import RejectModal from './RejectModal';
+import CollectorNavbar from './CollectorNav';
 
 const CollectorDash = () => {
   const navigate = useNavigate();
@@ -63,6 +64,7 @@ const CollectorDash = () => {
   const cardHeight = 350;
 
   return (
+    <div><CollectorNavbar/>
     <div style={{ padding: '40px', minHeight: '100vh', background: '#f5f7fa' }}>
       <h2 style={{ marginBottom: '5px' }}>Collector Dashboard</h2>
       <p style={{ color: '#555' }}>Welcome, Collector!</p>
@@ -84,6 +86,7 @@ const CollectorDash = () => {
       >
         <FaSignOutAlt /> Logout
       </button>
+      
 
       {/* Charts Container */}
       <div style={{ marginTop: '50px', display: 'flex', justifyContent: 'center', gap: '40px', flexWrap: 'wrap' }}>
@@ -277,6 +280,7 @@ const CollectorDash = () => {
           {snackbar.message}
         </Alert>
       </Snackbar>
+    </div>
     </div>
   );
 };
