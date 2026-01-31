@@ -34,13 +34,17 @@ const Login = () => {
 };
 
 
-  useEffect(() => {
-    if (isSuccess && user?.role) {
-      if (user.role === "admin") navigate("/AdminDash");
-      else if (user.role === "collector") navigate("/CollectorDash");
-      else navigate("/UserDash");
-    }
-  }, [isSuccess, user, navigate]);
+useEffect(() => {
+  if (isSuccess && user?.role) {
+    const role = String(user.role).toLowerCase();
+
+    if (role === "admin") navigate("/admin/dashboard");
+    else if (role === "collector") navigate("/CollectorDash");
+    else navigate("/UserDash");
+
+    dispatch(resetState()); 
+  }
+}, [isSuccess, user, navigate, dispatch]);
 
 
   return (
