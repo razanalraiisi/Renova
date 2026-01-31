@@ -10,7 +10,6 @@ import Footer from './components/Footer.js';
 import RegisterCollector from './components/RegisterCollector.js';
 import ForgetPassword from './components/ForgetPassword.js';
 import ResetPassword from './components/ResetPass.js';
-import AdminDash from './components/AdminDash';
 import UserDash from './components/UserDash';
 import CollectorDash from './components/CollectorDash';
 import AdminCollectorRequests from './components/AdminCollectorRequests.js';
@@ -20,11 +19,9 @@ import AboutUs from './components/AboutUs.js';
 import FAQ from './components/FAQ.js';
 import AdminFAQ from './components/AdminFAQ.js';
 import AdminLayout from "./components/AdminLayout";
-import AdminDashboard from "./components/AdminDashboard";
-
+import AdminDashboard from "./components/AdminDashboard"; // fixed import
 
 function App() {
-  // ✅ safer (won’t crash if state.users.user is null)
   const email = useSelector((state) => state.users?.user?.email);
 
   return (
@@ -32,7 +29,7 @@ function App() {
       <Router>
         <Row>
           <Routes>
-            {/* Public */}
+            {/* Public routes */}
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
@@ -45,15 +42,14 @@ function App() {
             <Route path="/FAQ" element={<FAQ/>} />
             <Route path="/AdminFAQ" element={<AdminFAQ/>} />
 
-            {/* Existing dashboards (keep them working) */}
+            {/* Dashboard routes */}
             <Route path="/UserDash" element={<UserDash />} />
             <Route path="/CollectorDash" element={<CollectorDash />} />
-            <Route path="/NewRecycleRequest" element={<NewRecycleRequest />} />
 
-            {/* ✅ Existing admin requests page (keep) */}
+            {/* Admin requests page */}
             <Route path="/AdminCollectorRequests" element={<AdminCollectorRequests />} />
 
-            {/* ✅ NEW admin routes using your prototype layout */}
+            {/* Admin routes using AdminLayout */}
             <Route
               path="/admin/dashboard"
               element={
@@ -62,8 +58,6 @@ function App() {
                 </AdminLayout>
               }
             />
-
-            {/* OPTIONAL: if you want collector requests to also use AdminLayout */}
             <Route
               path="/admin/collector-requests"
               element={
