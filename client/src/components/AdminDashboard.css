@@ -16,7 +16,7 @@
   font-weight: 900;
   text-align: center;
   margin: 10px 0 18px;
-  color: #c94141; /* your screenshot shows red title */
+  color: #c94141;
 }
 
 .side-card {
@@ -43,8 +43,8 @@
   padding: 8px 18px !important;
   border-radius: 18px !important;
 
-  min-width: 110px;   /* ✅ makes buttons equal width */
-  height: 36px;       /* ✅ same height (fixes wonky look) */
+  min-width: 110px;
+  height: 36px;
   line-height: 20px;
   display: inline-flex;
   align-items: center;
@@ -61,7 +61,7 @@
   background: var(--admin-card);
   border-radius: 4px;
   padding: 12px;
-  height: 140px; /* more room for 2 buttons */
+  height: 140px;
   position: relative;
 }
 
@@ -91,7 +91,7 @@
   display: flex;
   justify-content: center;
   gap: 10px;
-  flex-wrap: wrap; /* ✅ prevents overlapping */
+  flex-wrap: wrap;
 }
 
 .center-graph-box {
@@ -118,4 +118,130 @@
 
 .dot.active {
   background: var(--admin-blue);
+}
+
+/* ===== Collectors card buttons ===== */
+.collector-btns {
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+  margin-top: 10px;
+}
+
+/* ===== View All Graphs Card (updated layout) ===== */
+
+.graphs-card {
+  border: 1px solid var(--admin-border);
+  background: #ffffff;
+  border-radius: 6px;
+  padding: 12px 14px;
+  height: 140px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* LEFT: bar + line icons */
+.graphs-icons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.graphs-icon-box {
+  width: 64px;
+  height: 32px;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
+  background: #ffffff;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.graphs-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* RIGHT side: button top-right + pie under it */
+.graphs-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: space-between;
+  height: 100%;
+  gap: 10px;
+}
+
+.graphs-donut-box {
+  width: 48px;
+  height: 48px;
+  border: 1px solid #d0d7de;
+  border-radius: 50%;
+  background: #ffffff;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.graphs-donut-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+/* ===== GRID & SPACING FIXES ===== */
+
+/* Give all rows consistent vertical spacing */
+.admin-board .row {
+  row-gap: 18px;
+}
+
+/* Ensure all top cards align visually */
+.stat-card,
+.graphs-card,
+.side-card {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Top row cards: equal height alignment */
+.top-cards-row > .col-md-4,
+.top-cards-row > .col-md-2 {
+  display: flex;
+}
+
+.top-cards-row > div > * {
+  flex: 1;
+}
+
+/* Left & right side columns spacing */
+.side-column {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Center column spacing */
+.center-column {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* Make sure cards never stick to chart */
+.center-graph-box {
+  margin-top: 6px;
+}
+
+/* Slight breathing room between chart and dots */
+.carousel-dots {
+  margin-top: 12px;
 }
