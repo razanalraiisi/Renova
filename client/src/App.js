@@ -23,6 +23,7 @@ import AdminDashboard from "./components/AdminDashboard"; // fixed import
 import Start from "./components/Start.js";
 import Recycle from './components/Recycle.js';
 import Upcycle from './components/Upcycle.js';
+import Dispose from './components/Dispose.js';
 function App() {
   const email = useSelector((state) => state.users?.user?.email);
 
@@ -46,6 +47,7 @@ function App() {
             <Route path="/start" element={<Start />} />
              <Route path="/recycle" element={<Recycle />} />
              <Route path="/upcycle" element={<Upcycle />} />
+             <Route path="/dispose" element={<Dispose />} />
             {/* Dashboard routes */}
             <Route path="/UserDash" element={<UserDash />} />
             <Route path="/CollectorDash" element={<CollectorDash />} />
