@@ -1,6 +1,7 @@
 import React from "react";
-import Header from "./Header"; // Make sure the path matches your Header component
-import Footer from "./Footer"; // Optional if you also have a Footer component
+import { Navbar, NavbarBrand } from "reactstrap";
+import { Link } from "react-router-dom";
+import logo from "../assets/logo.png";
 
 const Recycle = () => {
   const styles = {
@@ -84,12 +85,20 @@ const Recycle = () => {
 
   return (
     <div style={styles.page}>
-      {/* HEADER */}
-      <Header /> {/* <-- Your existing header component */}
+      {/* NAVBAR */}
+      <Navbar style={{ backgroundColor: "#0080AA" }}>
+        <NavbarBrand tag={Link} to="/" style={{ color: "white" }}>
+          <img
+            src={logo}
+            alt="logo"
+            style={{ height: 40, width: 40, marginRight: 10 }}
+          />
+          ReNova
+        </NavbarBrand>
+      </Navbar>
 
-      {/* MAIN CONTENT */}
+      {/* MAIN CONTENT (UNCHANGED) */}
       <main style={styles.main}>
-        {/* HERO */}
         <section style={styles.hero}>
           <h1 style={styles.heroTitle}>RECYCLE</h1>
           <p style={styles.heroSubtitle}>Recycle Your E-waste Responsibly</p>
@@ -98,7 +107,6 @@ const Recycle = () => {
           </p>
         </section>
 
-        {/* WHY & HOW */}
         <section style={styles.columns}>
           <div style={styles.column}>
             <h2 style={styles.columnTitleBlue}>Why Recycle E-Waste?</h2>
@@ -120,7 +128,6 @@ const Recycle = () => {
           </div>
         </section>
 
-        {/* ACCEPTED ITEMS */}
         <section style={styles.itemsSection}>
           <h3 style={styles.columnTitleBlue}>Accepted Items for Recycle</h3>
           <p>(We accept most electronic devices, even if broken, damaged, or not working)</p>
@@ -140,20 +147,15 @@ const Recycle = () => {
           </div>
         </section>
 
-        {/* BUTTONS */}
         <section style={styles.buttons}>
           <button style={styles.pickupBtn}>PICKUP MY ITEMS</button>
           <button style={styles.dropoffBtn}>I'LL DROP THEM OFF</button>
         </section>
 
-        {/* FUN FACT */}
         <p style={styles.fact}>
           1 recycled laptop = saves enough energy to power a home for several days.
         </p>
       </main>
-
-      {/* FOOTER */}
-      <Footer /> {/* Optional if you have a Footer component */}
     </div>
   );
 };
