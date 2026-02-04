@@ -1,22 +1,37 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import {
+  Navbar,
+  NavbarBrand
+} from "reactstrap";
+
 import recycle from "../assets/recycle.png";
 import Dispose from "../assets/Dispose.jpg";
 import ddc from "../assets/ddc.png";
 import Upcycle from "../assets/Upcycle.jpg";
-import Header from "../components/Header";
-import Footer from "../components/Footer";
+import logo from "../assets/logo.png";
 
 const Start = () => {
   const navigate = useNavigate();
 
   return (
     <>
-      <Header />
+      {/* 🔵 NAVBAR (NO SIGN IN / SIGN UP) */}
+      <Navbar style={{ backgroundColor: "#0080AA" }}>
+        <NavbarBrand tag={Link} to="/" style={{ color: "white" }}>
+          <img
+            src={logo}
+            alt="logo"
+            style={{ height: 40, width: 40, marginRight: 10 }}
+          />
+          ReNova
+        </NavbarBrand>
+      </Navbar>
 
+      {/* 🎨 PAGE STYLES */}
       <style>{`
         .action-page {
-          min-height: 70vh;
+          min-height: calc(100vh - 120px);
           padding: 40px 20px;
           display: flex;
           justify-content: center;
@@ -83,6 +98,7 @@ const Start = () => {
         }
       `}</style>
 
+      {/* 🟩 ACTION CARDS */}
       <div className="action-page">
         <div className="action-grid">
 
@@ -90,7 +106,7 @@ const Start = () => {
             className="action-card recycle"
             onClick={() => navigate("/recycle")}
           >
-            <img src= {recycle}/>
+            <img src={recycle} alt="Recycle" />
             <h3>RECYCLE</h3>
           </div>
 
@@ -98,7 +114,7 @@ const Start = () => {
             className="action-card upcycle"
             onClick={() => navigate("/upcycle")}
           >
-            <img src= {Upcycle}  />
+            <img src={Upcycle} alt="Upcycle" />
             <h3>UPCYCLE</h3>
           </div>
 
@@ -106,7 +122,7 @@ const Start = () => {
             className="action-card dispose"
             onClick={() => navigate("/dispose")}
           >
-            <img src= {Dispose} />
+            <img src={Dispose} alt="Dispose" />
             <h3>DISPOSE</h3>
           </div>
 
@@ -114,14 +130,13 @@ const Start = () => {
             className="action-card decide"
             onClick={() => navigate("/decideForMe")}
           >
-            <img src= {ddc} />
+            <img src={ddc} alt="Decide for me" />
             <h3>DECIDE FOR ME</h3>
           </div>
 
         </div>
       </div>
 
-      <Footer />
     </>
   );
 };
