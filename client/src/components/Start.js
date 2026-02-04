@@ -112,7 +112,7 @@ const Start = () => {
 
           <div
             className="action-card decide"
-            onClick={() => navigate("/decide")}
+            onClick={() => navigate("/decideForMe")}
           >
             <img src= {ddc} />
             <h3>DECIDE FOR ME</h3>
