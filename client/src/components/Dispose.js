@@ -1,6 +1,7 @@
 import React from "react";
-import Header from "./Header";
-import Footer from "./Footer";
+import { Navbar, NavbarBrand } from "reactstrap";
+import { Link } from "react-router-dom";
+import logo from "../assets/logo.png";
 
 const Dispose = () => {
   const styles = {
@@ -20,7 +21,6 @@ const Dispose = () => {
       width: "100%",
     },
 
-    /* HERO */
     hero: {
       textAlign: "center",
       marginBottom: "50px",
@@ -41,7 +41,6 @@ const Dispose = () => {
       color: "#555",
     },
 
-    /* COLUMNS */
     columns: {
       display: "flex",
       gap: "60px",
@@ -61,7 +60,6 @@ const Dispose = () => {
       fontSize: "1.3rem",
     },
 
-    /* LEFT BOX LIST */
     reasonItem: {
       border: "1px solid #0078a8",
       padding: "8px 12px",
@@ -71,7 +69,6 @@ const Dispose = () => {
       width: "fit-content",
     },
 
-    /* RIGHT LIST */
     acceptList: {
       listStyle: "none",
       padding: 0,
@@ -85,7 +82,6 @@ const Dispose = () => {
       marginBottom: "6px",
     },
 
-    /* BUTTONS */
     buttons: {
       display: "flex",
       justifyContent: "center",
@@ -117,12 +113,15 @@ const Dispose = () => {
 
   return (
     <div style={styles.page}>
-      {/* HEADER */}
-      <Header />
+      {/* NAVBAR */}
+      <Navbar style={{ backgroundColor: "#0080AA" }}>
+        <NavbarBrand tag={Link} to="/" style={{ color: "white" }}>
+          <img src={logo} alt="logo" style={{ height: 40, marginRight: 10 }} />
+          ReNova
+        </NavbarBrand>
+      </Navbar>
 
-      {/* MAIN */}
       <main style={styles.main}>
-        {/* HERO */}
         <section style={styles.hero}>
           <h1 style={styles.heroTitle}>DISPOSE</h1>
           <p style={styles.heroSubtitle}>Safe E-Waste Disposal</p>
@@ -131,24 +130,19 @@ const Dispose = () => {
           </p>
         </section>
 
-        {/* CONTENT */}
         <section style={styles.columns}>
-          {/* LEFT */}
           <div style={styles.column}>
             <h3 style={styles.sectionTitle}>
               Why Some Electronics Can’t Be Recycled or Upcycled?
             </h3>
-
             <div style={styles.reasonItem}>– Batteries with leaks</div>
             <div style={styles.reasonItem}>– Devices contaminated with chemicals</div>
             <div style={styles.reasonItem}>– Burned or damaged electronics</div>
             <div style={styles.reasonItem}>– Outdated tech with unsafe components</div>
           </div>
 
-          {/* RIGHT */}
           <div style={styles.column}>
             <h3 style={styles.sectionTitle}>Items We Accept for Disposal</h3>
-
             <ul style={styles.acceptList}>
               <li style={styles.acceptItem}>🟢 Damaged or bloated batteries</li>
               <li style={styles.acceptItem}>📱 Broken phones</li>
@@ -160,15 +154,11 @@ const Dispose = () => {
           </div>
         </section>
 
-        {/* BUTTONS */}
         <section style={styles.buttons}>
           <button style={styles.pickupBtn}>PICKUP MY ITEMS</button>
           <button style={styles.dropoffBtn}>I'LL DROP THEM OFF</button>
         </section>
       </main>
-
-      {/* FOOTER */}
-      <Footer />
     </div>
   );
 };
