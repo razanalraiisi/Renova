@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import Header from "./Header";
-import Footer from "./Footer";
+import { Navbar, NavbarBrand } from "reactstrap";
+import { Link } from "react-router-dom";
+import logo from "../assets/logo.png";
 
 const DecideForMe = () => {
   const [condition, setCondition] = useState("");
@@ -11,7 +12,6 @@ const DecideForMe = () => {
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
     setImage(file);
     setPreview(URL.createObjectURL(file));
   };
@@ -22,15 +22,9 @@ const DecideForMe = () => {
       return;
     }
 
-    /* 🔮 TEMP LOGIC (AI SIMULATION)
-       Later this will be replaced with real AI API */
-    if (condition === "working") {
-      setResult("✅ Recommended: UPCYCLE");
-    } else if (condition === "damaged") {
-      setResult("♻️ Recommended: RECYCLE");
-    } else {
-      setResult("⚠️ Recommended: DISPOSE");
-    }
+    if (condition === "working") setResult("✅ Recommended: UPCYCLE");
+    else if (condition === "damaged") setResult("♻️ Recommended: RECYCLE");
+    else setResult("⚠️ Recommended: DISPOSE");
   };
 
   const styles = {
@@ -97,13 +91,18 @@ const DecideForMe = () => {
 
   return (
     <div style={styles.page}>
-      <Header />
+      {/* NAVBAR */}
+      <Navbar style={{ backgroundColor: "#0080AA" }}>
+        <NavbarBrand tag={Link} to="/" style={{ color: "white" }}>
+          <img src={logo} alt="logo" style={{ height: 40, marginRight: 10 }} />
+          ReNova
+        </NavbarBrand>
+      </Navbar>
 
       <main style={styles.main}>
         <div style={styles.card}>
           <h2 style={styles.title}>Decide for Me!</h2>
 
-          {/* CONDITION */}
           <label>Device Condition</label>
           <select
             style={styles.select}
@@ -116,7 +115,6 @@ const DecideForMe = () => {
             <option value="dangerous">Burned / Dangerous</option>
           </select>
 
-          {/* UPLOAD */}
           <label>Upload photo of device here...</label>
           <div style={styles.uploadBox}>
             <input type="file" accept="image/*" onChange={handleImageUpload} />
@@ -125,17 +123,13 @@ const DecideForMe = () => {
 
           {preview && <img src={preview} alt="Preview" style={styles.preview} />}
 
-          {/* BUTTON */}
           <button style={styles.button} onClick={handleDecision}>
             Upload
           </button>
 
-          {/* RESULT */}
           {result && <p style={styles.result}>{result}</p>}
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 };
