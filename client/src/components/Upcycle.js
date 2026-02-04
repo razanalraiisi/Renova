@@ -1,6 +1,7 @@
 import React from "react";
-import Header from "./Header";
-import Footer from "./Footer";
+import { Navbar, NavbarBrand } from "reactstrap";
+import { Link } from "react-router-dom";
+import logo from "../assets/logo.png";
 
 const Upcycle = () => {
   const styles = {
@@ -130,12 +131,20 @@ const Upcycle = () => {
 
   return (
     <div style={styles.page}>
-      {/* HEADER */}
-      <Header />
+      {/* NAVBAR */}
+      <Navbar style={{ backgroundColor: "#0080AA" }}>
+        <NavbarBrand tag={Link} to="/" style={{ color: "white" }}>
+          <img
+            src={logo}
+            alt="logo"
+            style={{ height: 40, width: 40, marginRight: 10 }}
+          />
+          ReNova
+        </NavbarBrand>
+      </Navbar>
 
-      {/* MAIN */}
+      {/* MAIN (UNCHANGED) */}
       <main style={styles.main}>
-        {/* HERO */}
         <section style={styles.hero}>
           <h1 style={styles.heroTitle}>UPCYCLE</h1>
           <p style={styles.heroSubtitle}>Give Your Old Electronics a New Life</p>
@@ -144,7 +153,6 @@ const Upcycle = () => {
           </p>
         </section>
 
-        {/* WHAT IS UPCYCLING */}
         <section>
           <h2 style={styles.sectionTitle}>What Is Upcycling?</h2>
           <p style={styles.sectionText}>
@@ -153,7 +161,6 @@ const Upcycle = () => {
           </p>
         </section>
 
-        {/* IDEAS + WHERE ITEMS GO */}
         <section style={styles.columns}>
           <div style={styles.column}>
             <h3 style={styles.sectionTitle}>Upcycling Ideas</h3>
@@ -181,15 +188,11 @@ const Upcycle = () => {
           </div>
         </section>
 
-        {/* BUTTONS */}
         <section style={styles.buttons}>
           <button style={styles.pickupBtn}>PICKUP MY ITEMS</button>
           <button style={styles.dropoffBtn}>I'LL DROP THEM OFF</button>
         </section>
       </main>
-
-      {/* FOOTER */}
-      <Footer />
     </div>
   );
 };
