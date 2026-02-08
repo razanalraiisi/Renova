@@ -19,6 +19,7 @@ import {
 import logo from "../assets/logo.png"; 
 import { FaUserCircle } from "react-icons/fa"; 
 import "./Components.css";
+import { FaBell } from "react-icons/fa";
 
 const CollectorNavbar = () => {
   const dispatch = useDispatch();
@@ -48,9 +49,9 @@ const CollectorNavbar = () => {
 
   return (
   <Navbar className="collector-navbar d-flex align-items-center">
-    <Container className="d-flex align-items-center">
+    <Container fluid className="d-flex align-items-center">
       
-      <NavbarBrand href="/" className="d-flex align-items-center">
+      <NavbarBrand href="/" className="d-flex align-items-center" style={{color:"#ffff"}}>
         <img src={logo} alt="logo" className="navbar-logo" />
         ReNova
       </NavbarBrand>
@@ -87,7 +88,7 @@ const CollectorNavbar = () => {
       <div className="navbar-right d-flex align-items-center gap-3">
         <div className="notif-wrap">
           <div className="notif-bell" onClick={() => setNotifOpen((v) => !v)}>
-            🔔
+            <FaBell size={28}/>
             {unreadCount > 0 && (
               <span className="notif-badge">{unreadCount}</span>
             )}
