@@ -17,8 +17,6 @@ import {
 
 import './Components.css';
 import { requests } from './DummyData';
-
-// Import your ready modals
 import AcceptModal from './AcceptModal';
 import RejectModal from './RejectModal';
 
@@ -29,11 +27,11 @@ const NewRecycleRequest = () => {
   const [rejectModal, setRejectModal] = useState(null);
   const [rejectReason, setRejectReason] = useState('');
 
-  // Snackbar for client-side messages
+
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: '',
-    severity: 'success', // 'success' | 'error'
+    severity: 'success', 
   });
 
   return (
@@ -48,14 +46,14 @@ const NewRecycleRequest = () => {
       <Box
         sx={{
           width: '100%',
-          maxWidth: 900, // Limits width of the content
+          maxWidth: 900, 
           background: 'white',
           borderRadius: 3,
           p: 3,
           boxShadow: '0 8px 20px rgba(0,0,0,0.08)',
         }}
       >
-        {/* Header */}
+       
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <IconButton onClick={() => navigate('/CollectorDash')}>
@@ -68,7 +66,7 @@ const NewRecycleRequest = () => {
           
         </Box>
 
-        {/* Scrollable Requests */}
+        
         <Box sx={{ maxHeight: 420, overflowY: 'auto', pr: 1 }}>
           {requests.map((r) => (
             <Card key={r.id} sx={{ mb: 2, borderRadius: 3 }}>
@@ -116,7 +114,7 @@ const NewRecycleRequest = () => {
                   )}
                 </Box>
 
-                {/* Accept / Reject Buttons */}
+                
                 <Box sx={{ display: 'flex', gap: 1, alignSelf: 'flex-end' }}>
                   <Button size="small" variant="contained" color="success" onClick={() => setAcceptModal(r)}>
                     Accept
@@ -131,7 +129,7 @@ const NewRecycleRequest = () => {
         </Box>
       </Box>
 
-      {/* Modals */}
+    
       {acceptModal && (
         <AcceptModal
           request={acceptModal}
@@ -164,7 +162,7 @@ const NewRecycleRequest = () => {
         />
       )}
 
-      {/* Snackbar */}
+      
       <Snackbar
         open={snackbar.open}
         autoHideDuration={4000}
