@@ -25,6 +25,7 @@ import Recycle from './components/Recycle.js';
 import Upcycle from './components/Upcycle.js';
 import Dispose from './components/Dispose.js';
 import DecideForMe from './components/DecideForMe.js';
+import CollectorRequestsHistory from './components/CollectorRequestsHistory.js';
 function App() {
   const email = useSelector((state) => state.users?.user?.email);
 
@@ -50,6 +51,7 @@ function App() {
              <Route path="/upcycle" element={<Upcycle />} />
              <Route path="/dispose" element={<Dispose />} />
              <Route path="/decideForMe" element={<DecideForMe />} />
+             <Route path="/CollectorRequestsHistory" element={<CollectorRequestsHistory />} />
             {/* Dashboard routes */}
             <Route path="/UserDash" element={<UserDash />} />
             <Route path="/CollectorDash" element={<CollectorDash />} />
