@@ -1,9 +1,12 @@
 import React from "react";
 import { Navbar, NavbarBrand } from "reactstrap";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { FaArrowLeft } from "react-icons/fa";
 import logo from "../assets/logo.png";
 
 const Recycle = () => {
+  const navigate = useNavigate();
+
   const styles = {
     page: {
       fontFamily: "Arial, sans-serif",
@@ -12,6 +15,19 @@ const Recycle = () => {
       flexDirection: "column",
       backgroundColor: "#ffffff",
       color: "#333",
+    },
+    backWrapper: {
+      maxWidth: "1200px",
+      margin: "10px 0 0 0", 
+      padding: "0 30px",
+      display: "flex",
+      justifyContent: "flex-start",
+      alignItems: "center", 
+    },
+    backIcon: {
+      color: "#0080AA",
+      cursor: "pointer",
+      fontSize: "22px", 
     },
     main: {
       flex: "1",
@@ -87,17 +103,24 @@ const Recycle = () => {
     <div style={styles.page}>
       {/* NAVBAR */}
       <Navbar style={{ backgroundColor: "#0080AA" }}>
-        <NavbarBrand tag={Link} to="/" style={{ color: "white" }}>
+        <NavbarBrand tag={Link} to="/start" style={{ color: "white" }}>
           <img
             src={logo}
             alt="logo"
-            style={{ height: 40, width: 40, marginRight: 10 }}
+            style={{ height: 40, width: 50, marginRight: 10 }}
           />
           ReNova
         </NavbarBrand>
       </Navbar>
 
-      {/* MAIN CONTENT (UNCHANGED) */}
+      <div style={styles.backWrapper}>
+        <FaArrowLeft
+          style={styles.backIcon}
+          onClick={() => navigate("/start")}
+        />
+      </div>
+
+      {/* MAIN CONTENT */}
       <main style={styles.main}>
         <section style={styles.hero}>
           <h1 style={styles.heroTitle}>RECYCLE</h1>
