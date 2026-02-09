@@ -33,7 +33,7 @@ import EWasteLibrary from './components/EWasteLibrary.js';
 import AdminEWasteLibrary from './components/AdminEWasteLibrary.js';
 import OmanMap from './components/OmanMap.js';
 import PickupRequest from './components/PickupRequest.js';
-
+import DropOff from './components/DropOff .js';
 
 
 // Admin – Reports
@@ -74,7 +74,7 @@ function App() {
             <Route path="/admin/devices" element={<AdminEWasteLibrary />} />
             <Route path="/omanmap" element={<OmanMap />} />
             <Route path="/PickupRequest" element={<PickupRequest />} />
-
+            <Route path="/DropOff" element={<DropOff />} />
             {/* Dashboard routes */}
             <Route path="/UserDash" element={<UserDash />} />
             <Route path="/CollectorDash" element={<CollectorDash />} />
