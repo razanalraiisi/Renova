@@ -15,7 +15,6 @@ import {
   Snackbar,
   Alert,
 } from '@mui/material';
-
 import './Components.css';
 import {
   desktopOS,
@@ -44,10 +43,7 @@ const CollectorDash = () => {
     severity: 'success', 
   });
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    navigate('/');
-  };
+ 
 
   const top6Indices = deviceCounts
     .map((count, index) => ({ count, index }))
@@ -66,24 +62,6 @@ const CollectorDash = () => {
     <div style={{ padding: '40px', minHeight: '100vh', background: '#f5f7fa' }}>
       <h2 style={{ marginBottom: '5px' }}>Collector Dashboard</h2>
       <p style={{ color: '#555' }}>Welcome, Collector!</p>
-
-      <button
-        onClick={handleLogout}
-        style={{
-          marginTop: '20px',
-          padding: '8px 16px',
-          backgroundColor: '#006D90',
-          color: 'white',
-          border: 'none',
-          borderRadius: '8px',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-        }}
-      >
-        <FaSignOutAlt /> Logout
-      </button>
       
 
       
