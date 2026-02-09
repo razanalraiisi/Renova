@@ -1,9 +1,11 @@
 import React, { useMemo, useState } from "react";
-import AdminTopbar from "./AdminTopbar"; // ✅ matches your file name
+import { useNavigate } from "react-router-dom";
+import AdminTopbar from "./AdminTopbar";
 import BasicModal from "./BasicModal";
 import "./AdminPages.css";
 
 export default function AdminManageCollectors() {
+
   const initial = useMemo(
     () => [
       {
@@ -43,7 +45,6 @@ export default function AdminManageCollectors() {
   };
 
   const save = () => {
-    // UI-only: remove collector and show success
     setCollectors((prev) => prev.filter((c) => c.id !== activeId));
     setOpen(false);
     setSuccessOpen(true);
@@ -55,6 +56,13 @@ export default function AdminManageCollectors() {
 
       <div className="adminBody">
         <div className="adminCardWrap">
+          {/* ✅ Back + Title row */}
+          <div className="adminPageHeaderRow">
+            <div className="adminPageHeaderLeft">
+
+            </div>
+          </div>
+
           <div className="pageTitleCentered">Manage Collectors</div>
 
           <div className="manageList">
@@ -88,7 +96,6 @@ export default function AdminManageCollectors() {
           <div className="modalRow">
             <div className="modalLabel">Specify Reason:</div>
 
-            {/* ✅ textarea matches Figma better */}
             <textarea
               className="modalTextarea"
               value={reason}
@@ -102,11 +109,7 @@ export default function AdminManageCollectors() {
             <button className="btnSave" type="button" onClick={save}>
               Save Changes
             </button>
-            <button
-              className="btnCloseGray"
-              type="button"
-              onClick={() => setOpen(false)}
-            >
+            <button className="btnCloseGray" type="button" onClick={() => setOpen(false)}>
               Close
             </button>
           </div>

@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import "./AdminCollectorRequests.css";
+import AdminShell from "./AdminShell";
 import { FcDepartment, FcViewDetails, FcBusinessContact } from "react-icons/fc";
 
 const AdminCollectorRequests = () => {
@@ -93,6 +94,7 @@ const AdminCollectorRequests = () => {
   };
 
   return (
+    <AdminShell title="Collectors Requests" backTo="/admin/collectors-requests">
     <div className="admin-page-bg">
       <div className="admin-panel">
         <div className="pageTitleRow">
@@ -264,6 +266,7 @@ const AdminCollectorRequests = () => {
         </div>
       )}
     </div>
+    </AdminShell>
   );
 };
 

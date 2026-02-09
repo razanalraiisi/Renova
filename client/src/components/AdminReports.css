@@ -1,0 +1,78 @@
+.reportsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.reportsActions {
+  display: flex;
+  gap: 12px;
+}
+
+.searchBox {
+  background: #f1f1f1;
+  border-radius: 20px;
+  padding: 6px 12px;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.searchBox input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 13px;
+}
+
+.downloadBtn {
+  background: #e9f1ff;
+  border: 1px solid #c6d9ff;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.reportsContent {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.reportCard {
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 6px;
+  padding: 14px 16px;
+}
+
+.expandRow {
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.muted {
+  color: #666;
+  font-size: 13px;
+  margin-top: 2px;
+}
+
+.link {
+  color: #2c7be5;
+  font-size: 12px;
+  margin-top: 6px;
+  cursor: pointer;
+}
+
+.viewMore {
+  margin-top: 16px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.reportsTitle {
+  margin: 0;
+  font-weight: 800;
+}
