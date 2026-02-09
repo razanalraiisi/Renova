@@ -26,6 +26,7 @@ import Dispose from './components/Dispose.js';
 import DecideForMe from './components/DecideForMe.js';
 import CollectorRequestsHistory from './components/CollectorRequestsHistory.js';
 import UserRequestHistory from './components/UserHistoryRequests.js';
+import CollectorProfile from './components/CollectorProfile.js';
 import AdminCollectorRequests from "./components/AdminCollectorRequests";
 import AdminManageCollectors from "./components/AdminManageCollectors";
 function App() {
@@ -49,12 +50,13 @@ function App() {
             <Route path="/FAQ" element={<FAQ />} />
             <Route path="/AdminFAQ" element={<AdminFAQ />} />
             <Route path="/start" element={<Start />} />
-            <Route path="/recycle" element={<Recycle />} />
-            <Route path="/upcycle" element={<Upcycle />} />
-            <Route path="/dispose" element={<Dispose />} />
-            <Route path="/decideForMe" element={<DecideForMe />} />
-            <Route path="/CollectorRequestsHistory" element={<CollectorRequestsHistory />} />
-            <Route path="/UserRequestHistory" element={<UserRequestHistory />} />
+             <Route path="/recycle" element={<Recycle />} />
+             <Route path="/upcycle" element={<Upcycle />} />
+             <Route path="/dispose" element={<Dispose />} />
+             <Route path="/decideForMe" element={<DecideForMe />} />
+             <Route path="/CollectorRequestsHistory" element={<CollectorRequestsHistory />} />
+             <Route path="/UserRequestHistory" element={<UserRequestHistory />} />
+             <Route path="/CollectorProfile" element={<CollectorProfile />} 
             {/* Dashboard routes */}
             <Route path="/UserDash" element={<UserDash />} />
             <Route path="/CollectorDash" element={<CollectorDash />} />

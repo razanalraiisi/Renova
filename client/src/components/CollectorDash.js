@@ -26,8 +26,6 @@ import {
   widgetData,
   requests,
 } from './DummyData';
-
-// Import your ready modal components
 import AcceptModal from './AcceptModal';
 import RejectModal from './RejectModal';
 import CollectorNavbar from './CollectorNav';
@@ -39,11 +37,11 @@ const CollectorDash = () => {
   const [rejectModal, setRejectModal] = useState(null);
   const [rejectReason, setRejectReason] = useState('');
 
-  // Snackbar state for pretty notifications
+ 
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: '',
-    severity: 'success', // 'success' | 'error'
+    severity: 'success', 
   });
 
   const handleLogout = () => {
@@ -88,9 +86,9 @@ const CollectorDash = () => {
       </button>
       
 
-      {/* Charts Container */}
+      
       <div style={{ marginTop: '50px', display: 'flex', justifyContent: 'center', gap: '40px', flexWrap: 'wrap' }}>
-        {/* Pie Chart Card */}
+        
         <div style={{
           background: 'white',
           width: `${cardWidth}px`,
@@ -114,7 +112,7 @@ const CollectorDash = () => {
           />
         </div>
 
-        {/* Bar Chart Card */}
+       
         <div style={{
           background: 'white',
           width: `${cardWidth}px`,
@@ -137,7 +135,7 @@ const CollectorDash = () => {
         </div>
       </div>
 
-      {/* Widgets */}
+     
       <div style={{ display: 'flex', justifyContent: 'center', gap: '50px', marginTop: '30px', flexWrap: 'wrap' }}>
         {widgetData.map((widget, index) => (
           <div key={index} style={{
@@ -161,7 +159,7 @@ const CollectorDash = () => {
         ))}
       </div>
 
-      {/* New Requests Section */}
+      
       <Box sx={{ background: 'white', borderRadius: 3, p: 3, mt: 6, boxShadow: '0 8px 20px rgba(0,0,0,0.08)' }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
           <Typography variant="h6" fontWeight={600}>
@@ -176,7 +174,7 @@ const CollectorDash = () => {
           </Button>
         </Box>
 
-        {/* Scrollable Requests */}
+        
         <Box sx={{ maxHeight: 420, overflowY: 'auto', pr: 1 }}>
           {requests.map((r) => (
             <Card key={r.id} sx={{ mb: 2, borderRadius: 3 }}>
@@ -217,7 +215,7 @@ const CollectorDash = () => {
                   )}
                 </Box>
 
-                {/* Accept / Reject Buttons */}
+                
                 <Box sx={{ display: 'flex', gap: 1, alignSelf: 'flex-end' }}>
                   <Button size="small" variant="contained" color="success" onClick={() => setAcceptModal(r)}>
                     Accept
@@ -232,7 +230,7 @@ const CollectorDash = () => {
         </Box>
       </Box>
 
-      {/* Modals */}
+     
       {acceptModal && (
         <AcceptModal
           request={acceptModal}
@@ -265,7 +263,7 @@ const CollectorDash = () => {
         />
       )}
 
-      {/* Snackbar for pretty notifications */}
+      
       <Snackbar
         open={snackbar.open}
         autoHideDuration={4000}

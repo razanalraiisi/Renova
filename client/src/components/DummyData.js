@@ -116,3 +116,36 @@ export const requestHistoryData = [
     status: "Rejected",
   },
 ];
+
+export const collectorProfileData = {
+  logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTTN7Ik2Tsq6SeEyuBudrRAKkwCi6BgMPLhHg&s",
+  companyName: "Oman Environmental Services Holding Company",
+
+  basicInfo: {
+    collectorId: "101",
+    collectorType: "Government-approved recycler",
+    workingHours: "Sunday - Thursday 8AM - 4PM",
+    phone: "+968 24228401",
+    email: "beah@gmail.com",
+  },
+
+  acceptedCategories: [
+    { name: "Small Electronics", checked: true },
+    { name: "Large Electronics", checked: true },
+    { name: "Home Appliances (Small)", checked: true },
+    { name: "Home Appliances (Large)", checked: true },
+    { name: "IT & Office Equipment", checked: true },
+    { name: "Kitchen & Cooking Appliances", checked: true },
+    { name: "Entertainment Devices", checked: true },
+    { name: "Personal Care Electronics", checked: true },
+    { name: "Tools & Outdoor Equipment", checked: true },
+    { name: "Lighting Equipment", checked: true },
+    { name: "Medical & Fitness Devices", checked: true },
+    { name: "Batteries & Accessories", checked: true },
+  ],
+
+  location: {
+    address: "Muscat, ALSEEB",
+  },
+};
+
