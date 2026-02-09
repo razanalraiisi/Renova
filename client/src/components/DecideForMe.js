@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { Navbar, NavbarBrand } from "reactstrap";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { FaArrowLeft } from "react-icons/fa";
 import logo from "../assets/logo.png";
 
 const DecideForMe = () => {
+  const navigate = useNavigate();
   const [condition, setCondition] = useState("");
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState(null);
@@ -35,6 +37,21 @@ const DecideForMe = () => {
       flexDirection: "column",
       backgroundColor: "#fff",
     },
+
+    backWrapper: {
+      maxWidth: "1200px",
+      margin: "10px 0 0 0", // align left
+      padding: "0 30px",
+      display: "flex",
+      justifyContent: "flex-start",
+      alignItems: "center",
+    },
+    backIcon: {
+      color: "#0080AA",
+      cursor: "pointer",
+      fontSize: "22px",
+    },
+
     main: {
       flex: 1,
       display: "flex",
@@ -99,6 +116,15 @@ const DecideForMe = () => {
         </NavbarBrand>
       </Navbar>
 
+      {/* ⬅️ BACK ARROW */}
+      <div style={styles.backWrapper}>
+        <FaArrowLeft
+          style={styles.backIcon}
+          onClick={() => navigate("/start")}
+        />
+      </div>
+
+      {/* MAIN */}
       <main style={styles.main}>
         <div style={styles.card}>
           <h2 style={styles.title}>Decide for Me!</h2>
