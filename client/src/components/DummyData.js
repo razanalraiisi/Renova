@@ -250,3 +250,43 @@ export const devices = [
   },
 ];
 
+
+export const recyclingCenters = [
+  {
+    id: 1,
+    name: "Oman Environmental Services Holding Company",
+    address: "HCF5+XF9, Muscat",
+    phone: "24228401",
+    hours: "Sunday - Thursday (8AM - 4PM)",
+    lat: 23.5880,
+    lng: 58.3829,
+    image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTTN7Ik2Tsq6SeEyuBudrRAKkwCi6BgMPLhHg&s", 
+    rating: 3.6,
+    reviews: 84,
+  },
+  {
+    id: 2,
+    name: "SARCO Samsung Authorized Service",
+    address: "Al Ghala, Muscat",
+    phone: "24567890",
+    hours: "Sunday - Thursday (8AM - 5PM)",
+    lat: 23.6140,
+    lng: 58.5380,
+    image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUWiSlNkbA4k09LAYzfUIgXUdK20yFXrdn4g&s",
+    rating: 4.2,
+    reviews: 52,
+  },
+  {
+    id: 3,
+    name: "Tradebe Services LLC, Muscat",
+    address: "Al Amarat, Muscat",
+    phone: "24678901",
+    hours: "Sunday - Thursday (8AM - 4PM)",
+    lat: 23.5800,
+    lng: 58.4200,
+    image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ9ZzqpIzcThKSOroKRvmkZiOcbPyZws1HJ7w&s",
+    rating: 4.0,
+    reviews: 36,
+  },
+  
+];
