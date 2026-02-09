@@ -31,6 +31,7 @@ import AdminCollectorRequests from "./components/AdminCollectorRequests";
 import AdminManageCollectors from "./components/AdminManageCollectors";
 import EWasteLibrary from './components/EWasteLibrary.js';
 import AdminEWasteLibrary from './components/AdminEWasteLibrary.js';
+import OmanMap from './components/OmanMap.js';
 
 
 
@@ -70,6 +71,7 @@ function App() {
             <Route path="/CollectorProfile" element={<CollectorProfile />} />
             <Route path="/EWasteLibrary" element={<EWasteLibrary />} />
             <Route path="/admin/devices" element={<AdminEWasteLibrary />} />
+            <Route path="/omanmap" element={<OmanMap />} />
 
             {/* Dashboard routes */}
             <Route path="/UserDash" element={<UserDash />} />
