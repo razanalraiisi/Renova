@@ -1,9 +1,12 @@
 import React from "react";
 import { Navbar, NavbarBrand } from "reactstrap";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { FaArrowLeft } from "react-icons/fa";
 import logo from "../assets/logo.png";
 
 const Dispose = () => {
+  const navigate = useNavigate();
+
   const styles = {
     page: {
       fontFamily: "Arial, sans-serif",
@@ -13,6 +16,21 @@ const Dispose = () => {
       backgroundColor: "#ffffff",
       color: "#333",
     },
+
+    backWrapper: {
+      maxWidth: "1200px",
+      margin: "10px 0 0 0", // align left
+      padding: "0 30px",
+      display: "flex",
+      justifyContent: "flex-start",
+      alignItems: "center",
+    },
+    backIcon: {
+      color: "#0080AA",
+      cursor: "pointer",
+      fontSize: "22px",
+    },
+
     main: {
       flex: 1,
       padding: "40px 30px",
@@ -121,6 +139,15 @@ const Dispose = () => {
         </NavbarBrand>
       </Navbar>
 
+      {/* ⬅️ BACK ARROW */}
+      <div style={styles.backWrapper}>
+        <FaArrowLeft
+          style={styles.backIcon}
+          onClick={() => navigate("/start")}
+        />
+      </div>
+
+      {/* MAIN */}
       <main style={styles.main}>
         <section style={styles.hero}>
           <h1 style={styles.heroTitle}>DISPOSE</h1>
@@ -135,10 +162,10 @@ const Dispose = () => {
             <h3 style={styles.sectionTitle}>
               Why Some Electronics Can’t Be Recycled or Upcycled?
             </h3>
-            <div style={styles.reasonItem}>– Batteries with leaks</div>
-            <div style={styles.reasonItem}>– Devices contaminated with chemicals</div>
-            <div style={styles.reasonItem}>– Burned or damaged electronics</div>
-            <div style={styles.reasonItem}>– Outdated tech with unsafe components</div>
+            <div style={styles.reasonItem}> Batteries with leaks</div>
+            <div style={styles.reasonItem}> Devices contaminated with chemicals</div>
+            <div style={styles.reasonItem}> Burned or damaged electronics</div>
+            <div style={styles.reasonItem}> Outdated tech with unsafe components</div>
           </div>
 
           <div style={styles.column}>
