@@ -29,6 +29,8 @@ import UserRequestHistory from './components/UserHistoryRequests.js';
 import CollectorProfile from './components/CollectorProfile.js';
 import AdminCollectorRequests from "./components/AdminCollectorRequests";
 import AdminManageCollectors from "./components/AdminManageCollectors";
+import EWasteLibrary from './components/EWasteLibrary.js';
+import AdminEWasteLibrary from './components/AdminEWasteLibrary.js';
 
 
 
@@ -66,6 +68,8 @@ function App() {
             <Route path="/CollectorRequestsHistory" element={<CollectorRequestsHistory />} />
             <Route path="/UserRequestHistory" element={<UserRequestHistory />} />
             <Route path="/CollectorProfile" element={<CollectorProfile />} />
+            <Route path="/EWasteLibrary" element={<EWasteLibrary />} />
+            <Route path="/admin/devices" element={<AdminEWasteLibrary />} />
 
             {/* Dashboard routes */}
             <Route path="/UserDash" element={<UserDash />} />
