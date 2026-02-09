@@ -32,6 +32,7 @@ import AdminManageCollectors from "./components/AdminManageCollectors";
 import EWasteLibrary from './components/EWasteLibrary.js';
 import AdminEWasteLibrary from './components/AdminEWasteLibrary.js';
 import OmanMap from './components/OmanMap.js';
+import PickupRequest from './components/PickupRequest.js';
 
 
 
@@ -72,6 +73,7 @@ function App() {
             <Route path="/EWasteLibrary" element={<EWasteLibrary />} />
             <Route path="/admin/devices" element={<AdminEWasteLibrary />} />
             <Route path="/omanmap" element={<OmanMap />} />
+            <Route path="/PickupRequest" element={<PickupRequest />} />
 
             {/* Dashboard routes */}
             <Route path="/UserDash" element={<UserDash />} />
