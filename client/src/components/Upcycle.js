@@ -213,11 +213,21 @@ const Upcycle = () => {
             </div>
           </div>
         </section>
+<section style={styles.buttons}>
+  <button
+    style={styles.pickupBtn}
+    onClick={() => navigate("/PickupRequest")}
+  >
+    PICKUP MY ITEMS
+  </button>
+  <button
+    style={styles.dropoffBtn}
+    onClick={() => navigate("/DropOff")}
+  >
+    I'LL DROP THEM OFF
+  </button>
+</section>
 
-        <section style={styles.buttons}>
-          <button style={styles.pickupBtn}>PICKUP MY ITEMS</button>
-          <button style={styles.dropoffBtn}>I'LL DROP THEM OFF</button>
-        </section>
       </main>
     </div>
   );
