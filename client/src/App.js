@@ -18,7 +18,7 @@ import AboutUs from './components/AboutUs.js';
 import FAQ from './components/FAQ.js';
 import AdminFAQ from './components/AdminFAQ.js';
 import AdminLayout from "./components/AdminLayout";
-import AdminDashboard from "./components/AdminDashboard"; // fixed import
+import AdminDashboard from "./components/AdminDashboard"; 
 import Start from "./components/Start.js";
 import Recycle from './components/Recycle.js';
 import Upcycle from './components/Upcycle.js';
@@ -50,13 +50,14 @@ function App() {
             <Route path="/FAQ" element={<FAQ />} />
             <Route path="/AdminFAQ" element={<AdminFAQ />} />
             <Route path="/start" element={<Start />} />
-             <Route path="/recycle" element={<Recycle />} />
-             <Route path="/upcycle" element={<Upcycle />} />
-             <Route path="/dispose" element={<Dispose />} />
-             <Route path="/decideForMe" element={<DecideForMe />} />
-             <Route path="/CollectorRequestsHistory" element={<CollectorRequestsHistory />} />
-             <Route path="/UserRequestHistory" element={<UserRequestHistory />} />
-             <Route path="/CollectorProfile" element={<CollectorProfile />} 
+            <Route path="/recycle" element={<Recycle />} />
+            <Route path="/upcycle" element={<Upcycle />} />
+            <Route path="/dispose" element={<Dispose />} />
+            <Route path="/decideForMe" element={<DecideForMe />} />
+            <Route path="/CollectorRequestsHistory" element={<CollectorRequestsHistory />} />
+            <Route path="/UserRequestHistory" element={<UserRequestHistory />} />
+            <Route path="/CollectorProfile" element={<CollectorProfile />} />
+
             {/* Dashboard routes */}
             <Route path="/UserDash" element={<UserDash />} />
             <Route path="/CollectorDash" element={<CollectorDash />} />
