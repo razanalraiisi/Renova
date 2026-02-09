@@ -1,9 +1,12 @@
 import React from "react";
 import { Navbar, NavbarBrand } from "reactstrap";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { FaArrowLeft } from "react-icons/fa";
 import logo from "../assets/logo.png";
 
 const Upcycle = () => {
+  const navigate = useNavigate();
+
   const styles = {
     page: {
       fontFamily: "Arial, sans-serif",
@@ -13,6 +16,21 @@ const Upcycle = () => {
       backgroundColor: "#ffffff",
       color: "#333",
     },
+
+    backWrapper: {
+      maxWidth: "1200px",
+      margin: "10px 0 0 0", // align left
+      padding: "0 30px",
+      display: "flex",
+      justifyContent: "flex-start",
+      alignItems: "center",
+    },
+    backIcon: {
+      color: "#0080AA",
+      cursor: "pointer",
+      fontSize: "22px",
+    },
+
     main: {
       flex: 1,
       padding: "40px 30px",
@@ -143,7 +161,15 @@ const Upcycle = () => {
         </NavbarBrand>
       </Navbar>
 
-      {/* MAIN (UNCHANGED) */}
+      {/* ⬅️ BACK ARROW (LEFT, BELOW NAVBAR) */}
+      <div style={styles.backWrapper}>
+        <FaArrowLeft
+          style={styles.backIcon}
+          onClick={() => navigate("/start")}
+        />
+      </div>
+
+      {/* MAIN */}
       <main style={styles.main}>
         <section style={styles.hero}>
           <h1 style={styles.heroTitle}>UPCYCLE</h1>
