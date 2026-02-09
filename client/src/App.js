@@ -12,7 +12,6 @@ import ForgetPassword from './components/ForgetPassword.js';
 import ResetPassword from './components/ResetPass.js';
 import UserDash from './components/UserDash';
 import CollectorDash from './components/CollectorDash';
-import AdminCollectorRequests from './components/AdminCollectorRequests.js';
 import VerifyOtp from './components/VerifyOtp.js';
 import NewRecycleRequest from './components/NewRecycleRequest.js';
 import AboutUs from './components/AboutUs.js';
@@ -27,6 +26,8 @@ import Dispose from './components/Dispose.js';
 import DecideForMe from './components/DecideForMe.js';
 import CollectorRequestsHistory from './components/CollectorRequestsHistory.js';
 import UserRequestHistory from './components/UserHistoryRequests.js';
+import AdminCollectorRequests from "./components/AdminCollectorRequests";
+import AdminManageCollectors from "./components/AdminManageCollectors";
 function App() {
   const email = useSelector((state) => state.users?.user?.email);
 
@@ -43,17 +44,17 @@ function App() {
             <Route path="/ForgetPassword" element={<ForgetPassword />} />
             <Route path="/ResetPassword" element={<ResetPassword />} />
             <Route path="/VerifyOtp" element={<VerifyOtp />} />
-            <Route path="/NewRecycleRequest" element={<NewRecycleRequest/>} />
-            <Route path="/AboutUs" element={<AboutUs/>} />
-            <Route path="/FAQ" element={<FAQ/>} />
-            <Route path="/AdminFAQ" element={<AdminFAQ/>} />
+            <Route path="/NewRecycleRequest" element={<NewRecycleRequest />} />
+            <Route path="/AboutUs" element={<AboutUs />} />
+            <Route path="/FAQ" element={<FAQ />} />
+            <Route path="/AdminFAQ" element={<AdminFAQ />} />
             <Route path="/start" element={<Start />} />
-             <Route path="/recycle" element={<Recycle />} />
-             <Route path="/upcycle" element={<Upcycle />} />
-             <Route path="/dispose" element={<Dispose />} />
-             <Route path="/decideForMe" element={<DecideForMe />} />
-             <Route path="/CollectorRequestsHistory" element={<CollectorRequestsHistory />} />
-             <Route path="/UserRequestHistory" element={<UserRequestHistory />} />
+            <Route path="/recycle" element={<Recycle />} />
+            <Route path="/upcycle" element={<Upcycle />} />
+            <Route path="/dispose" element={<Dispose />} />
+            <Route path="/decideForMe" element={<DecideForMe />} />
+            <Route path="/CollectorRequestsHistory" element={<CollectorRequestsHistory />} />
+            <Route path="/UserRequestHistory" element={<UserRequestHistory />} />
             {/* Dashboard routes */}
             <Route path="/UserDash" element={<UserDash />} />
             <Route path="/CollectorDash" element={<CollectorDash />} />
@@ -78,6 +79,9 @@ function App() {
                 </AdminLayout>
               }
             />
+            <Route path="/admin/collectors-requests" element={<AdminCollectorRequests />} />
+            <Route path="/admin/manage-collectors" element={<AdminManageCollectors />} />
+
           </Routes>
         </Row>
 
