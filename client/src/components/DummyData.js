@@ -149,3 +149,104 @@ export const collectorProfileData = {
   },
 };
 
+export const ewasteStats = {
+  totalDevices: 28,
+  categories: 6,
+  mostRecycled: "Phones",
+};
+
+export const infoCards = [
+  {
+    title: "Environmental Benefits of E-Waste Recycling",
+    icon: "recycle",
+    points: [
+      "Reduces mining by recovering valuable materials (gold, copper, aluminum).",
+      "Lowers greenhouse gas emissions.",
+      "Helps create a circular economy where materials are reused.",
+      "Protects ecosystems and reduces long-term environmental harm.",
+    ],
+  },
+  {
+    title: "Why You Shouldn’t Throw Electronics in the Trash!!",
+    icon: "trash",
+    points: [
+      "Electronics contain toxic materials (lead, mercury, chemicals).",
+      "Batteries can cause fires in trash bins or landfills.",
+      "E-waste damages soil and water causing environmental pollution.",
+      "Throwing electronics away increases hazardous materials; recycling ensures proper processing.",
+    ],
+  },
+];
+
+export const devices = [
+  {
+    name: "PC",
+    risk: "Medium",
+    category: "Medium",
+    image: "https://cdn-icons-png.flaticon.com/512/3103/3103446.png",
+    steps: [
+      "Back up your files.",
+      "Sign out of accounts.",
+      "Remove any accessories.",
+      "Factory reset or wipe hard drive.",
+      "Do NOT break or burn the drive yourself.",
+    ],
+  },
+  {
+    name: "Monitor",
+    risk: "Medium",
+    category: "Medium",
+    image: "https://cdn-icons-png.flaticon.com/512/1067/1067256.png",
+    steps: [
+      "Unplug everything safely.",
+      "Check for warranty or manufacturer recycling.",
+      "Do NOT open the monitor.",
+    ],
+  },
+  {
+    name: "Phone",
+    risk: "Hazardous",
+    category: "Hazardous",
+    image: "https://cdn-icons-png.flaticon.com/512/545/545245.png",
+    steps: [
+      "Back up your data.",
+      "Sign out of accounts & disable security locks.",
+      "Remove SIM and SD card.",
+      "Factory reset the phone to erase everything.",
+    ],
+  },
+  {
+    name: "Microwave",
+    risk: "Hazardous",
+    category: "Hazardous",
+    image: "https://cdn-icons-png.flaticon.com/512/1046/1046857.png",
+    steps: [
+      "Unplug and clean it.",
+      "Remove the glass plate.",
+      "Do NOT open the microwave yourself.",
+    ],
+  },
+  {
+    name: "Iron",
+    risk: "Low",
+    category: "Low",
+    image: "https://cdn-icons-png.flaticon.com/512/1046/1046875.png",
+    steps: [
+      "Unplug it and make sure it's fully cooled.",
+      "Remove any detachable parts.",
+      "Do NOT try to open or repair wiring.",
+    ],
+  },
+  {
+    name: "Fridge",
+    risk: "Hazardous",
+    category: "Hazardous",
+    image: "https://cdn-icons-png.flaticon.com/512/1046/1046869.png",
+    steps: [
+      "Unplug it and empty it fully.",
+      "Let it defrost.",
+      "Do NOT try to cut pipes or remove the compressor yourself.",
+    ],
+  },
+];
+
