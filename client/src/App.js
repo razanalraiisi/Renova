@@ -28,6 +28,15 @@ import CollectorRequestsHistory from './components/CollectorRequestsHistory.js';
 import UserRequestHistory from './components/UserHistoryRequests.js';
 import AdminCollectorRequests from "./components/AdminCollectorRequests";
 import AdminManageCollectors from "./components/AdminManageCollectors";
+
+
+
+// Admin – Reports
+import RecyclesReport from "./components/RecyclesReport";
+import DisposalsReport from "./components/DisposalsReport";
+import CollectorsReport from "./components/CollectorsReport";
+import UsersReport from "./components/UsersReport";
+
 function App() {
   const email = useSelector((state) => state.users?.user?.email);
 
@@ -81,6 +90,11 @@ function App() {
             />
             <Route path="/admin/collectors-requests" element={<AdminCollectorRequests />} />
             <Route path="/admin/manage-collectors" element={<AdminManageCollectors />} />
+            <Route path="/admin/reports/recycles" element={<RecyclesReport />} />
+            <Route path="/admin/reports/disposals" element={<DisposalsReport />} />
+            <Route path="/admin/reports/collectors" element={<CollectorsReport />} />
+            <Route path="/admin/reports/users" element={<UsersReport />} />
+
 
           </Routes>
         </Row>
