@@ -1,7 +1,10 @@
+import React, { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 import barImg from "../assets/bar.png";
 import lineImg from "../assets/line.png";
 import pieImg from "../assets/pie.png";
-import React, { useMemo, useState } from "react";
+
 import {
   Row,
   Col,
@@ -57,6 +60,8 @@ const SideCard = ({ title, lines = [], buttonText = "View", onClick }) => {
 
 /* ---------- Admin Dashboard ---------- */
 const AdminDashboard = () => {
+  const navigate = useNavigate();
+
   const stats = useSelector((s) => s.admin?.stats) || {
     totalUsers: 315,
     collectors: 195,
@@ -119,8 +124,11 @@ const AdminDashboard = () => {
     ];
   }, []);
 
-  const next = () => !animating && setActiveIndex((i) => (i + 1) % chartSlides.length);
-  const prev = () => !animating && setActiveIndex((i) => (i === 0 ? chartSlides.length - 1 : i - 1));
+  const next = () =>
+    !animating && setActiveIndex((i) => (i + 1) % chartSlides.length);
+  const prev = () =>
+    !animating &&
+    setActiveIndex((i) => (i === 0 ? chartSlides.length - 1 : i - 1));
 
   const chartOptions = (title) => ({
     responsive: true,
@@ -142,16 +150,16 @@ const AdminDashboard = () => {
           <SideCard
             title="Users"
             lines={["Total users registered:", stats.totalUsers]}
-            onClick={() => console.log("Users")}
+            onClick={() => navigate("/admin/reports/users")}
           />
           <SideCard
             title="E-Waste Library"
-            onClick={() => console.log("Library")}
+            onClick={() => navigate("/admin/devices")}
           />
           <SideCard
-            title="Users"
-            lines={["Total users registered:", stats.totalUsers]}
-            onClick={() => console.log("Users")}
+            title="Collectors"
+            lines={["Total collectors:", stats.collectors]}
+            onClick={() => navigate("/admin/reports/collectors")}
           />
         </Col>
 
@@ -166,8 +174,20 @@ const AdminDashboard = () => {
                 <div className="stat-card-value">{stats.collectors}</div>
 
                 <div className="collector-btns">
-                  <Button className="mini-btn" size="sm">Manage</Button>
-                  <Button className="mini-btn" size="sm">Collector Requests</Button>
+                  <Button
+                    className="mini-btn"
+                    size="sm"
+                    onClick={() => navigate("/admin/manage-collectors")}
+                  >
+                    Manage
+                  </Button>
+                  <Button
+                    className="mini-btn"
+                    size="sm"
+                    onClick={() => navigate("/admin/collectors-requests")}
+                  >
+                    Collector Requests
+                  </Button>
                 </div>
               </div>
             </Col>
@@ -185,7 +205,14 @@ const AdminDashboard = () => {
                 </div>
 
                 <div className="graphs-right">
-                  <Button className="mini-btn" size="sm">View All Graphs</Button>
+                  <Button
+                    className="mini-btn"
+                    size="sm"
+                    onClick={() => navigate("/admin/dashboard/graphs")}
+                  >
+                    View All Graphs
+                  </Button>
+
                   <div className="graphs-donut-box">
                     <img src={pieImg} alt="Pie" className="graphs-donut-img" />
                   </div>
@@ -196,7 +223,12 @@ const AdminDashboard = () => {
 
           {/* CHART */}
           <div className="center-graph-box">
-            <Carousel activeIndex={activeIndex} next={next} previous={prev} interval={false}>
+            <Carousel
+              activeIndex={activeIndex}
+              next={next}
+              previous={prev}
+              interval={false}
+            >
               {chartSlides.map((slide, idx) => (
                 <CarouselItem
                   key={idx}
@@ -233,10 +265,23 @@ const AdminDashboard = () => {
         <Col md="2" style={{ minWidth: 200 }} className="side-column">
           <div className="side-card">
             <h6>Disposals</h6>
-            <div><b>{stats.disposals}</b></div>
-            <div>Recycles: <b>{stats.recycles}</b></div>
-            <div>Upcycles: <b>{stats.upcycles}</b></div>
-            <Button className="mini-btn" size="sm">View</Button>
+            <div>
+              <b>{stats.disposals}</b>
+            </div>
+            <div>
+              Recycles: <b>{stats.recycles}</b>
+            </div>
+            <div>
+              Upcycles: <b>{stats.upcycles}</b>
+            </div>
+
+            <Button
+              className="mini-btn"
+              size="sm"
+              onClick={() => navigate("/admin/reports/disposals")}
+            >
+              View
+            </Button>
           </div>
         </Col>
       </Row>

@@ -246,3 +246,12 @@
   .requestLeft { padding-right: 0; }
   .requestRight { position: static; margin-top: 12px; }
 }
+.adminPanelPlain{
+  width: 78%;
+  max-width: 980px;
+  margin: 0 auto;
+  background: #f7f7f7;
+  border-radius: 2px;
+  padding: 28px 28px 40px;
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.05);
+}
