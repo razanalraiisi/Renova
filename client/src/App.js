@@ -34,6 +34,7 @@ import AdminEWasteLibrary from './components/AdminEWasteLibrary.js';
 import OmanMap from './components/OmanMap.js';
 import PickupRequest from './components/PickupRequest.js';
 import DropOff from './components/DropOff .js';
+import AdminDashboardGraphs from "./components/AdminDashboardGraphs";
 
 
 // Admin – Reports
@@ -75,6 +76,7 @@ function App() {
             <Route path="/omanmap" element={<OmanMap />} />
             <Route path="/PickupRequest" element={<PickupRequest />} />
             <Route path="/DropOff" element={<DropOff />} />
+            <Route path="/admin/dashboard/graphs" element={<AdminDashboardGraphs />} />
             {/* Dashboard routes */}
             <Route path="/UserDash" element={<UserDash />} />
             <Route path="/CollectorDash" element={<CollectorDash />} />

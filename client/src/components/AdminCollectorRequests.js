@@ -1,10 +1,9 @@
 import React, { useMemo, useState } from "react";
 import "./AdminCollectorRequests.css";
-import AdminShell from "./AdminShell";
+import AdminTopbar from "./AdminTopbar";
 import { FcDepartment, FcViewDetails, FcBusinessContact } from "react-icons/fc";
 
 const AdminCollectorRequests = () => {
-  // ✅ Frontend-only dummy data (matches your Figma examples)
   const initialRequests = useMemo(
     () => [
       {
@@ -51,7 +50,6 @@ const AdminCollectorRequests = () => {
     initialRequests.map((r) => ({ ...r, moreInfo: false }))
   );
 
-  // Modals (Reject reason + Success)
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [showReject, setShowReject] = useState(false);
   const [rejectReason, setRejectReason] = useState(
@@ -59,7 +57,6 @@ const AdminCollectorRequests = () => {
   );
   const [showSuccess, setShowSuccess] = useState(false);
 
-  // Format date like your UI needs (simple)
   const formatDate = (iso) => {
     const d = new Date(iso);
     return (
@@ -75,141 +72,131 @@ const AdminCollectorRequests = () => {
     );
   };
 
-  // ✅ UI-only accept: remove the request
   const acceptRequest = (req) => {
     setRequests((prev) => prev.filter((r) => r._id !== req._id));
   };
 
-  // ✅ UI-only reject: open modal
   const openRejectModal = (req) => {
     setSelectedRequest(req);
     setShowReject(true);
   };
 
   const saveReject = () => {
-    // UI-only: remove the request, close modal, open success
     setRequests((prev) => prev.filter((r) => r._id !== selectedRequest?._id));
     setShowReject(false);
     setShowSuccess(true);
   };
 
   return (
-    <AdminShell title="Collectors Requests" backTo="/admin/collectors-requests">
-    <div className="admin-page-bg">
-      <div className="admin-panel">
-        <div className="pageTitleRow">
-          <div className="warnDot">🔔</div>
-          <h2 className="pageTitle">Collectors Requests</h2>
-        </div>
+    <div className="adminPage">
+      <AdminTopbar />
 
-        {requests.length === 0 && (
-          <p className="emptyText">No pending collector requests.</p>
-        )}
+      <div className="adminBody">
+        <div className="adminPanelPlain">
+          <div className="pageTitleRow">
+            <div className="warnDot">🔔</div>
+            <h2 className="pageTitle">Collectors Requests</h2>
+          </div>
 
-        <div className="requestsList">
-          {requests.map((req) => (
-            <div className="requestCard" key={req._id}>
-              <div className="requestLeft">
-                <div className="bagIcon">👜</div>
-                <div>
-                  <div className="requestName">
-                    <FcDepartment style={{ marginRight: 6 }} />
-                    {req.companyName}
-                  </div>
+          {requests.length === 0 && (
+            <p className="emptyText">No pending collector requests.</p>
+          )}
 
-                  {!req.moreInfo ? (
-                    <div className="requestMeta">
-                      <div>
-                        <strong>Request Date:</strong>{" "}
-                        {new Date(req.createdAt).toLocaleDateString("en-GB")}
+          <div className="requestsList">
+            {requests.map((req) => (
+              <div className="requestCard" key={req._id}>
+                <div className="requestLeft">
+                  <div className="bagIcon">👜</div>
+                  <div>
+                    <div className="requestName">
+                      <FcDepartment style={{ marginRight: 6 }} />
+                      {req.companyName}
+                    </div>
+
+                    {!req.moreInfo && (
+                      <div className="requestMeta">
+                        <div>
+                          <strong>Request Date:</strong>{" "}
+                          {new Date(req.createdAt).toLocaleDateString("en-GB")}
+                        </div>
+                        <div>
+                          <strong>Collector Type:</strong> {req.collectorType}
+                        </div>
                       </div>
-                      <div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="requestRight">
+                  <button
+                    className="btnAccept"
+                    type="button"
+                    onClick={() => acceptRequest(req)}
+                  >
+                    Accept
+                  </button>
+                  <button
+                    className="btnReject"
+                    type="button"
+                    onClick={() => openRejectModal(req)}
+                  >
+                    Reject
+                  </button>
+                </div>
+
+                <div className="requestBottom">
+                  <button
+                    className="linkBtn"
+                    type="button"
+                    onClick={() => toggleMoreInfo(req._id)}
+                  >
+                    {req.moreInfo ? "Less Information" : "More information"}
+                  </button>
+                </div>
+
+                {req.moreInfo && (
+                  <div className="expandedDetails">
+                    <div className="detailCol">
+                      <div className="detailHead">
+                        <FcViewDetails style={{ marginRight: 6 }} />
+                        Request Details
+                      </div>
+                      <div className="detailText">
+                        <strong>Request ID:</strong> {req.collectorId}
+                      </div>
+                      <div className="detailText">
+                        <strong>Request Date:</strong> {formatDate(req.createdAt)}
+                      </div>
+                      <div className="detailText">
                         <strong>Collector Type:</strong> {req.collectorType}
                       </div>
                     </div>
-                  ) : null}
-                </div>
-              </div>
 
-              {/* Right buttons */}
-              <div className="requestRight">
-                <button
-                  className="btnAccept"
-                  type="button"
-                  onClick={() => acceptRequest(req)}
-                >
-                  Accept
-                </button>
-                <button
-                  className="btnReject"
-                  type="button"
-                  onClick={() => openRejectModal(req)}
-                >
-                  Reject
-                </button>
-              </div>
-
-              {/* Expand/collapse */}
-              <div className="requestBottom">
-                <button
-                  className="linkBtn"
-                  type="button"
-                  onClick={() => toggleMoreInfo(req._id)}
-                >
-                  {req.moreInfo ? "Less Information" : "More information"}
-                </button>
-              </div>
-
-              {/* Expanded details (matches your expanded screenshot layout) */}
-              {req.moreInfo && (
-                <div className="expandedDetails">
-                  <div className="detailCol">
-                    <div className="detailHead">
-                      <FcViewDetails style={{ marginRight: 6 }} />
-                      Request Details
-                    </div>
-                    <div className="detailText">
-                      <strong>Request ID:</strong> {req.collectorId}
-                    </div>
-                    <div className="detailText">
-                      <strong>Request Date:</strong> {formatDate(req.createdAt)}
-                    </div>
-                    <div className="detailText">
-                      <strong>Collector Type:</strong> {req.collectorType}
+                    <div className="detailCol">
+                      <div className="detailHead">
+                        <FcBusinessContact style={{ marginRight: 6 }} />
+                        Collector Details
+                      </div>
+                      <div className="detailText">
+                        <strong>Collector Phone Number:</strong> {req.phone}
+                      </div>
+                      <div className="detailText">
+                        <strong>Collector Email:</strong> {req.email}
+                      </div>
                     </div>
                   </div>
-
-                  <div className="detailCol">
-                    <div className="detailHead">
-                      <FcBusinessContact style={{ marginRight: 6 }} />
-                      Collector Details
-                    </div>
-                    <div className="detailText">
-                      <strong>Collector Phone Number:</strong> {req.phone}
-                    </div>
-                    <div className="detailText">
-                      <strong>Collector Email:</strong> {req.email}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* -------- Reject Reason Modal (Figma-like) -------- */}
+      {/* Reject Modal */}
       {showReject && (
         <div className="modalOverlay" onMouseDown={() => setShowReject(false)}>
-          <div
-            className="modalCard"
-            onMouseDown={(e) => e.stopPropagation()}
-          >
-            <button
-              className="modalClose"
-              type="button"
-              onClick={() => setShowReject(false)}
-            >
+          <div className="modalCard" onMouseDown={(e) => e.stopPropagation()}>
+            <button className="modalClose" type="button" onClick={() => setShowReject(false)}>
               ✕
             </button>
 
@@ -228,11 +215,7 @@ const AdminCollectorRequests = () => {
                 <button className="btnSave" type="button" onClick={saveReject}>
                   Save Changes
                 </button>
-                <button
-                  className="btnCloseGray"
-                  type="button"
-                  onClick={() => setShowReject(false)}
-                >
+                <button className="btnCloseGray" type="button" onClick={() => setShowReject(false)}>
                   Close
                 </button>
               </div>
@@ -241,18 +224,11 @@ const AdminCollectorRequests = () => {
         </div>
       )}
 
-      {/* -------- Success Modal (Figma-like) -------- */}
+      {/* Success Modal */}
       {showSuccess && (
         <div className="modalOverlay" onMouseDown={() => setShowSuccess(false)}>
-          <div
-            className="modalCard successCard"
-            onMouseDown={(e) => e.stopPropagation()}
-          >
-            <button
-              className="modalClose"
-              type="button"
-              onClick={() => setShowSuccess(false)}
-            >
+          <div className="modalCard successCard" onMouseDown={(e) => e.stopPropagation()}>
+            <button className="modalClose" type="button" onClick={() => setShowSuccess(false)}>
               ✕
             </button>
 
@@ -266,7 +242,6 @@ const AdminCollectorRequests = () => {
         </div>
       )}
     </div>
-    </AdminShell>
   );
 };
 
