@@ -3,7 +3,12 @@ import axios from "axios";
 
 const BASE_URL = "http://localhost:5000";
 
-// Add User (normal user & collector)
+
+const storedUser =
+  JSON.parse(localStorage.getItem("user")) ||
+  JSON.parse(sessionStorage.getItem("user"));
+
+
 export const addUser = createAsyncThunk(
   "users/addUser",
   async (udata, { rejectWithValue }) => {
@@ -13,7 +18,6 @@ export const addUser = createAsyncThunk(
         url = `${BASE_URL}/registerCollector`;
       }
 
-      // ✅ FIX: backend sets role, remove it from payload
       const payload = { ...udata };
       delete payload.role;
 
@@ -27,12 +31,23 @@ export const addUser = createAsyncThunk(
   }
 );
 
+
 export const getUser = createAsyncThunk(
   "users/getUser",
-  async (udata, { rejectWithValue }) => {
+  async ({ email, password, rememberMe }, { rejectWithValue }) => {
     try {
-      const response = await axios.post(`${BASE_URL}/login`, udata);
-      return response.data;
+      const response = await axios.post(`${BASE_URL}/login`, {
+        email,
+        password,
+      });
+
+      const data = response.data;
+
+     
+      const storage = rememberMe ? localStorage : sessionStorage;
+      storage.setItem("user", JSON.stringify(data.user));
+
+      return data;
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || "Login failed."
@@ -41,13 +56,15 @@ export const getUser = createAsyncThunk(
   }
 );
 
+
 const initialState = {
-  user: {},
+  user: storedUser || {},
   message: "",
   isLoading: false,
   isSuccess: false,
   isError: false,
 };
+
 
 export const UserSlice = createSlice({
   name: "users",
@@ -59,10 +76,15 @@ export const UserSlice = createSlice({
       state.isError = false;
       state.message = "";
     },
+
+  
     resetUser: (state) => {
       state.user = {};
+      localStorage.removeItem("user");
+      sessionStorage.removeItem("user");
     },
   },
+
   extraReducers: (builder) => {
     builder
       .addCase(addUser.pending, (state) => {
