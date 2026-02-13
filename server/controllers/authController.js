@@ -349,6 +349,16 @@ export const resetPassword = async (req, res) => {
     const user = await User.findOne({ email });
     if (!user) return res.status(404).json({ message: "Email not found." });
 
+    
+    const isSamePassword = await bcrypt.compare(newPassword, user.password);
+
+    if (isSamePassword) {
+      return res.status(400).json({
+        message: "New password cannot be the same as the old password."
+      });
+    }
+
+    
     const hashed = await bcrypt.hash(newPassword, 10);
 
     user.password = hashed;
@@ -363,4 +373,5 @@ export const resetPassword = async (req, res) => {
     res.status(500).json({ message: "Server error." });
   }
 };
+
 
