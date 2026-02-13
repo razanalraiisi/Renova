@@ -782,3 +782,70 @@
     height: 400px;
   }
 }
+
+.support-container {
+  padding: 80px 20px;
+  min-height: 100vh;
+}
+
+.support-title {
+  text-align: center;
+  color: #006D90;
+  margin-bottom: 30px;
+  font-weight: 600;
+}
+
+.support-card {
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease;
+}
+
+.support-card:hover {
+  transform: translateY(-5px);
+}
+
+.support-text {
+  margin-bottom: 25px;
+  color: #555;
+}
+
+.support-contact-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 15px 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.support-icon {
+  color: #006D90;
+  font-size: 18px;
+}
+
+.legal-container {
+  padding: 80px 20px;
+  min-height: 100vh;
+}
+
+.legal-title {
+  text-align: center;
+  color: #006D90;
+  margin-bottom: 30px;
+  font-weight: 600;
+}
+
+.legal-card {
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
+  line-height: 1.8;
+}
+
+.legal-card h5 {
+  margin-top: 20px;
+  color: #006D90;
+}

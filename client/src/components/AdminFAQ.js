@@ -16,11 +16,12 @@ const AdminFAQ = () => {
   const [editId, setEditId] = useState(null);
 
   useEffect(() => {
-    setFaqs(getFAQs());
+    const storedFAQs = getFAQs();
+    setFaqs(storedFAQs);
   }, []);
 
   const handleSave = () => {
-    if (!question || !answer) return;
+    if (!question.trim() || !answer.trim()) return;
 
     let updatedFAQs;
 
@@ -38,6 +39,7 @@ const AdminFAQ = () => {
 
     setFaqs(updatedFAQs);
     saveFAQs(updatedFAQs);
+
     setQuestion("");
     setAnswer("");
   };

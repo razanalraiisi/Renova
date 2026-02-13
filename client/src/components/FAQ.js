@@ -15,7 +15,8 @@ const FAQ = () => {
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
-    setFaqs(getFAQs());
+    const storedFAQs = getFAQs();
+    setFaqs(storedFAQs);
   }, []);
 
   // 🔍 Search logic (non-breaking)
@@ -42,7 +43,7 @@ const FAQ = () => {
 
         {/* 📂 Accordion */}
         <div className="faq-accordion-wrapper">
-          <UncontrolledAccordion>
+          <UncontrolledAccordion stayOpen>
             {filteredFaqs.length > 0 ? (
               filteredFaqs.map((faq, index) => (
                 <AccordionItem key={faq.id} className="fade-in">

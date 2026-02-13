@@ -35,7 +35,9 @@ import OmanMap from './components/OmanMap.js';
 import PickupRequest from './components/PickupRequest.js';
 import DropOff from './components/DropOff .js';
 import AdminDashboardGraphs from "./components/AdminDashboardGraphs";
-
+import Support from './components/Support.js';
+import TermsConditions from './components/TermsConditions.js';
+import PrivacyPolicy from './components/PrivacyPolicy.js';
 
 // Admin – Reports
 import RecyclesReport from "./components/RecyclesReport";
@@ -74,6 +76,9 @@ function App() {
             <Route path="/EWasteLibrary" element={<EWasteLibrary />} />
             <Route path="/admin/devices" element={<AdminEWasteLibrary />} />
             <Route path="/omanmap" element={<OmanMap />} />
+            <Route path="/support" element={<Support />} />
+            <Route path="/terms" element={<TermsConditions />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/PickupRequest" element={<PickupRequest />} />
             <Route path="/DropOff" element={<DropOff />} />
             <Route path="/admin/dashboard/graphs" element={<AdminDashboardGraphs />} />
