@@ -1,202 +1,217 @@
 import React from "react";
 import { Navbar, NavbarBrand } from "reactstrap";
 import { Link, useNavigate } from "react-router-dom";
-import { FaArrowLeft } from "react-icons/fa";
+import {
+  FaArrowLeft,
+  FaExclamationTriangle,
+  FaShieldAlt,
+  FaBatteryFull,
+  FaTrashAlt,
+} from "react-icons/fa";
 import logo from "../assets/logo.png";
 
 const Dispose = () => {
   const navigate = useNavigate();
 
-  const styles = {
-    page: {
-      fontFamily: "Arial, sans-serif",
-      minHeight: "100vh",
-      display: "flex",
-      flexDirection: "column",
-      backgroundColor: "#ffffff",
-      color: "#333",
-    },
-
-    backWrapper: {
-      maxWidth: "1200px",
-      margin: "10px 0 0 0", // align left
-      padding: "0 30px",
-      display: "flex",
-      justifyContent: "flex-start",
-      alignItems: "center",
-    },
-    backIcon: {
-      color: "#0080AA",
-      cursor: "pointer",
-      fontSize: "22px",
-    },
-
-    main: {
-      flex: 1,
-      padding: "40px 30px",
-      maxWidth: "1200px",
-      margin: "0 auto",
-      width: "100%",
-    },
-
-    hero: {
-      textAlign: "center",
-      marginBottom: "50px",
-    },
-    heroTitle: {
-      fontSize: "3rem",
-      color: "#0078a8",
-      fontWeight: "bold",
-      marginBottom: "10px",
-    },
-    heroSubtitle: {
-      fontSize: "1.3rem",
-      color: "#0078a8",
-      marginBottom: "10px",
-    },
-    heroText: {
-      fontSize: "1rem",
-      color: "#555",
-    },
-
-    columns: {
-      display: "flex",
-      gap: "60px",
-      flexWrap: "wrap",
-      marginBottom: "60px",
-      alignItems: "flex-start",
-    },
-    column: {
-      flex: 1,
-      minWidth: "280px",
-    },
-
-    sectionTitle: {
-      color: "#0078a8",
-      fontWeight: "bold",
-      marginBottom: "15px",
-      fontSize: "1.3rem",
-    },
-
-    reasonItem: {
-      border: "1px solid #0078a8",
-      padding: "8px 12px",
-      borderRadius: "4px",
-      fontSize: "0.9rem",
-      marginBottom: "10px",
-      width: "fit-content",
-    },
-
-    acceptList: {
-      listStyle: "none",
-      padding: 0,
-      lineHeight: "2",
-    },
-    acceptItem: {
-      display: "flex",
-      alignItems: "center",
-      gap: "10px",
-      fontSize: "0.95rem",
-      marginBottom: "6px",
-    },
-
-    buttons: {
-      display: "flex",
-      justifyContent: "center",
-      gap: "20px",
-      marginBottom: "40px",
-      flexWrap: "wrap",
-    },
-    pickupBtn: {
-      backgroundColor: "#f57c00",
-      color: "#fff",
-      padding: "15px 30px",
-      border: "none",
-      borderRadius: "6px",
-      fontWeight: "bold",
-      cursor: "pointer",
-      fontSize: "1rem",
-    },
-    dropoffBtn: {
-      backgroundColor: "#0078a8",
-      color: "#fff",
-      padding: "15px 30px",
-      border: "none",
-      borderRadius: "6px",
-      fontWeight: "bold",
-      cursor: "pointer",
-      fontSize: "1rem",
-    },
-  };
-
   return (
-    <div style={styles.page}>
+    <div
+      style={{
+        fontFamily: "Arial, sans-serif",
+        background: "linear-gradient(180deg, #fff9f2 0%, #ffffff 100%)",
+      }}
+    >
       {/* NAVBAR */}
       <Navbar style={{ backgroundColor: "#0080AA" }}>
         <NavbarBrand tag={Link} to="/" style={{ color: "white" }}>
-          <img src={logo} alt="logo" style={{ height: 40, marginRight: 10 }} />
+          <img
+            src={logo}
+            alt="logo"
+            style={{ height: 40, width: 40, marginRight: 10 }}
+          />
           ReNova
         </NavbarBrand>
       </Navbar>
 
-      {/* ⬅️ BACK ARROW */}
-      <div style={styles.backWrapper}>
+      {/* BACK BUTTON */}
+      <div style={{ padding: "20px 30px" }}>
         <FaArrowLeft
-          style={styles.backIcon}
+          style={{ color: "#0080AA", cursor: "pointer", fontSize: 22 }}
           onClick={() => navigate("/start")}
         />
       </div>
 
-      {/* MAIN */}
-      <main style={styles.main}>
-        <section style={styles.hero}>
-          <h1 style={styles.heroTitle}>DISPOSE</h1>
-          <p style={styles.heroSubtitle}>Safe E-Waste Disposal</p>
-          <p style={styles.heroText}>
-            Some tech can’t be reused — we dispose of it the right way.
-          </p>
-        </section>
+      {/* HERO */}
+      <section style={{ textAlign: "center", padding: "40px 20px" }}>
+        <h1 style={{ fontSize: "3rem", color: "#e67e22" }}>
+          ⚠ Safe & Responsible Disposal
+        </h1>
+        <p
+          style={{
+            fontSize: "1.2rem",
+            color: "#555",
+            maxWidth: 750,
+            margin: "20px auto",
+            lineHeight: 1.6,
+          }}
+        >
+          Some electronics cannot be reused or recycled safely.
+          When that happens, we ensure certified, environmentally-safe disposal
+          to protect people and the planet.
+        </p>
+      </section>
 
-        <section style={styles.columns}>
-          <div style={styles.column}>
-            <h3 style={styles.sectionTitle}>
-              Why Some Electronics Can’t Be Recycled or Upcycled?
-            </h3>
-            <div style={styles.reasonItem}> Batteries with leaks</div>
-            <div style={styles.reasonItem}> Devices contaminated with chemicals</div>
-            <div style={styles.reasonItem}> Burned or damaged electronics</div>
-            <div style={styles.reasonItem}> Outdated tech with unsafe components</div>
+      {/* WHY SECTION */}
+      <section
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          gap: 30,
+          flexWrap: "wrap",
+          padding: "30px 20px",
+        }}
+      >
+        {[
+          {
+            icon: <FaBatteryFull size={35} color="#e74c3c" />,
+            title: "Leaking Batteries",
+            text: "Damaged batteries can release toxic chemicals.",
+          },
+          {
+            icon: <FaExclamationTriangle size={35} color="#f39c12" />,
+            title: "Chemical Contamination",
+            text: "Devices exposed to hazardous substances.",
+          },
+          {
+            icon: <FaTrashAlt size={35} color="#34495e" />,
+            title: "Severely Damaged Tech",
+            text: "Burned or unsafe electronics.",
+          },
+        ].map((card, index) => (
+          <div
+            key={index}
+            style={{
+              background: "#ffffff",
+              borderRadius: 15,
+              padding: 30,
+              width: 280,
+              textAlign: "center",
+              boxShadow: "0 8px 20px rgba(0,0,0,0.08)",
+            }}
+          >
+            {card.icon}
+            <h3 style={{ marginTop: 15 }}>{card.title}</h3>
+            <p style={{ color: "#555" }}>{card.text}</p>
           </div>
+        ))}
+      </section>
 
-          <div style={styles.column}>
-            <h3 style={styles.sectionTitle}>Items We Accept for Disposal</h3>
-            <ul style={styles.acceptList}>
-              <li style={styles.acceptItem}>🟢 Damaged or bloated batteries</li>
-              <li style={styles.acceptItem}>📱 Broken phones</li>
-              <li style={styles.acceptItem}>💻 Non-working laptops</li>
-              <li style={styles.acceptItem}>⚠️ Dangerous chargers</li>
-              <li style={styles.acceptItem}>🔥 Burned power banks</li>
-              <li style={styles.acceptItem}>🧩 Electronics with missing parts</li>
-            </ul>
-          </div>
-        </section>
+      {/* ACCEPTED ITEMS */}
+      <section
+        style={{
+          maxWidth: 900,
+          margin: "40px auto",
+          padding: "20px",
+          textAlign: "center",
+        }}
+      >
+        <h2 style={{ color: "#e67e22", marginBottom: 20 }}>
+          Items We Accept for Disposal
+        </h2>
 
-       <section style={styles.buttons}>
-  <button
-    style={styles.pickupBtn}
-    onClick={() => navigate("/PickupRequest")}
-  >
-    PICKUP MY ITEMS
-  </button>
-  <button
-    style={styles.dropoffBtn}
-    onClick={() => navigate("/DropOff")}
-  >
-    I'LL DROP THEM OFF
-  </button>
-</section>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            gap: 20,
+            flexWrap: "wrap",
+          }}
+        >
+          {[
+            "Damaged or bloated batteries",
+            "Broken phones",
+            "Non-working laptops",
+            "Dangerous chargers",
+            "Burned power banks",
+            "Electronics with missing parts",
+          ].map((item, index) => (
+            <span
+              key={index}
+              style={{
+                padding: "10px 18px",
+                borderRadius: 20,
+                backgroundColor: "#fff",
+                border: "2px solid #e67e22",
+                color: "#e67e22",
+                fontWeight: "bold",
+              }}
+            >
+              {item}
+            </span>
+          ))}
+        </div>
+      </section>
 
-      </main>
+      {/* SAFETY PROMISE */}
+      <section
+        style={{
+          backgroundColor: "#fff3e6",
+          padding: "50px 20px",
+          textAlign: "center",
+        }}
+      >
+        <FaShieldAlt size={40} color="#e67e22" />
+        <h2 style={{ color: "#e67e22", marginTop: 15 }}>
+          Our Safety Commitment
+        </h2>
+        <p
+          style={{
+            maxWidth: 700,
+            margin: "15px auto",
+            color: "#555",
+            lineHeight: 1.6,
+          }}
+        >
+          All hazardous materials are processed according to environmental
+          standards. We partner with certified disposal facilities to ensure
+          zero illegal dumping and full regulatory compliance.
+        </p>
+      </section>
+
+      {/* CTA */}
+      <section style={{ textAlign: "center", padding: "60px 20px" }}>
+        <button
+          style={{
+            backgroundColor: "#f57c00",
+            color: "#fff",
+            padding: "15px 30px",
+            border: "none",
+            borderRadius: 8,
+            fontWeight: "bold",
+            fontSize: "1rem",
+            marginRight: 20,
+            cursor: "pointer",
+          }}
+          onClick={() => navigate("/PickupRequest")}
+        >
+          🚚 Schedule Pickup
+        </button>
+
+        <button
+          style={{
+            backgroundColor: "#0080AA",
+            color: "#fff",
+            padding: "15px 30px",
+            border: "none",
+            borderRadius: 8,
+            fontWeight: "bold",
+            fontSize: "1rem",
+            cursor: "pointer",
+          }}
+          onClick={() => navigate("/DropOff")}
+        >
+          📍 Drop Off Instead
+        </button>
+      </section>
     </div>
   );
 };
