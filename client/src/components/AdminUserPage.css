@@ -1,0 +1,306 @@
+.au-page {
+  min-height: 100vh;
+  background: #f4f6f8;
+  font-family: Arial, sans-serif;
+}
+
+/* NAVBAR */
+.au-navbar {
+  background: #0080aa !important;
+  padding: 0 40px !important;
+}
+
+.au-nav-inner {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.au-brand {
+  color: #fff !important;
+  display: flex !important;
+  align-items: center;
+  gap: 10px;
+  font-weight: bold;
+}
+
+.au-logo {
+  height: 40px;
+  width: 40px;
+}
+
+.au-nav-links {
+  display: flex;
+  gap: 22px;
+  font-size: 15px;
+}
+
+.au-nav-link {
+  color: #fff;
+  text-decoration: none;
+  padding-bottom: 5px;
+}
+
+.au-nav-link.active {
+  border-bottom: 2px solid #fff;
+}
+
+.au-nav-icons {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  color: #fff;
+  font-size: 18px;
+}
+
+/* BODY */
+.au-body {
+  padding: 26px 0 40px;
+}
+
+.au-center-bg {
+  max-width: 1100px;
+  margin: 0 auto;
+  background: #0b7ea0;
+  border-radius: 14px;
+  padding: 48px 44px;
+}
+
+.au-grid {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 26px;
+  align-items: start;
+}
+
+.au-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* LEFT */
+.au-left {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.au-profile-card {
+  padding: 18px;
+}
+
+.au-profile-top {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.au-avatar,
+.au-details-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #eef6f8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 34px;
+  color: #0f7c95;
+  flex-shrink: 0;
+}
+
+.au-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.au-profile-meta .au-name {
+  font-size: 13px;
+  font-weight: bold;
+  color: #222;
+}
+
+.au-profile-meta .au-email {
+  font-size: 11px;
+  color: #6f6f6f;
+}
+
+.au-menu {
+  margin-top: 8px;
+}
+
+.au-menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 13px;
+  color: #222;
+}
+
+.au-menu-item:hover {
+  background: #f3f7f9;
+}
+
+.au-menu-item.active {
+  background: #e6f6fb;
+  color: #0f7c95;
+  font-weight: bold;
+}
+
+.au-menu-item.logout {
+  margin-top: 6px;
+}
+
+.au-menu-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.au-menu-icon {
+  width: 18px;
+  display: inline-flex;
+  justify-content: center;
+}
+
+.au-menu-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.au-menu-right-text {
+  font-size: 11px;
+  color: #6f6f6f;
+}
+
+.au-menu-chevron {
+  font-size: 12px;
+  color: #999;
+}
+
+/* SMALL SETTINGS CARD */
+.au-settings-card {
+  padding: 14px 16px;
+}
+
+.au-settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.au-settings-title {
+  font-weight: bold;
+  font-size: 13px;
+}
+
+.au-settings-close {
+  cursor: pointer;
+  color: #666;
+}
+
+.au-setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #333;
+}
+
+.au-select {
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #444;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+/* RIGHT DETAILS */
+.au-details-card {
+  padding: 22px 22px 18px;
+}
+
+.au-details-top {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.au-details-name {
+  font-weight: bold;
+  font-size: 14px;
+  color: #222;
+}
+
+.au-details-email {
+  font-size: 12px;
+  color: #6f6f6f;
+}
+
+.au-fields {
+  margin-top: 6px;
+}
+
+.au-field {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  align-items: center;
+  padding: 12px 0;
+  border-top: 1px solid #f0f0f0;
+}
+
+.au-field:first-child {
+  border-top: none;
+}
+
+.au-field-label {
+  font-size: 12px;
+  color: #4d4d4d;
+}
+
+.au-input {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 12px;
+  color: #333;
+  text-align: right;
+}
+
+.au-save-btn {
+  margin-top: 14px;
+  background: #1f79ff;
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  padding: 8px 14px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.au-save-btn:hover {
+  filter: brightness(0.95);
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .au-grid {
+    grid-template-columns: 1fr;
+  }
+  .au-center-bg {
+    padding: 28px 18px;
+  }
+}

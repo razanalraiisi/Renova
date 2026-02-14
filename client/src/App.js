@@ -38,6 +38,7 @@ import AdminDashboardGraphs from "./components/AdminDashboardGraphs";
 import Support from './components/Support.js';
 import TermsConditions from './components/TermsConditions.js';
 import PrivacyPolicy from './components/PrivacyPolicy.js';
+import AdminUserPage from './components/AdminUserPage.js';
 
 // Admin – Reports
 import RecyclesReport from "./components/RecyclesReport";
@@ -112,6 +113,8 @@ function App() {
             <Route path="/admin/reports/disposals" element={<DisposalsReport />} />
             <Route path="/admin/reports/collectors" element={<CollectorsReport />} />
             <Route path="/admin/reports/users" element={<UsersReport />} />
+            <Route path="/admin/profile" element={<AdminUserPage />} />
+
 
 
           </Routes>

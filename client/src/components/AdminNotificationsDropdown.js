@@ -9,6 +9,8 @@ import {
 } from "../features/adminSlice";
 import { useNavigate } from "react-router-dom";
 import "./AdminNotificationsDropdown.css";
+import { FaBell } from "react-icons/fa";
+
 
 const AdminNotificationsDropdown = () => {
   const dispatch = useDispatch();
@@ -45,7 +47,7 @@ const AdminNotificationsDropdown = () => {
         title="Notifications"
         onClick={() => setOpen((v) => !v)}
       >
-        🔔
+        <FaBell className="notif-icon" />
         {unreadCount > 0 && <span className="notif-badge">{unreadCount}</span>}
       </div>
 

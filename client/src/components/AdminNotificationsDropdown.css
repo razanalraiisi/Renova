@@ -138,3 +138,15 @@
   color: #6b7280;
   font-size: 13px;
 }
+
+.notif-icon {
+  font-size: 22px;
+  color: white;
+  transition: 0.2s ease;
+  cursor: pointer;
+}
+
+.notif-icon:hover {
+  transform: scale(1.12);
+  opacity: 0.85;
+}
