@@ -50,7 +50,7 @@ const Login = () => {
 
       if (role === "admin") navigate("/admin/dashboard");
       else if (role === "collector") navigate("/CollectorDash");
-      else navigate("/UserDash");
+      else navigate("/start");
 
       dispatch(resetState());
     }
