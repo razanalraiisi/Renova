@@ -40,7 +40,7 @@ const DecideForMe = () => {
 
     backWrapper: {
       maxWidth: "1200px",
-      margin: "10px 0 0 0", // align left
+      margin: "10px 0 0 0",
       padding: "0 30px",
       display: "flex",
       justifyContent: "flex-start",
@@ -110,7 +110,7 @@ const DecideForMe = () => {
     <div style={styles.page}>
       {/* NAVBAR */}
       <Navbar style={{ backgroundColor: "#0080AA" }}>
-        <NavbarBrand tag={Link} to="/" style={{ color: "white" }}>
+        <NavbarBrand tag={Link} to="/start" style={{ color: "white" }}>
           <img src={logo} alt="logo" style={{ height: 40, marginRight: 10 }} />
           ReNova
         </NavbarBrand>

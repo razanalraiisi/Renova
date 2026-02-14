@@ -1,9 +1,7 @@
 import React from "react";
 import { useNavigate, Link } from "react-router-dom";
-import {
-  Navbar,
-  NavbarBrand
-} from "reactstrap";
+import { Navbar, NavbarBrand } from "reactstrap";
+import { FaUserCircle } from "react-icons/fa";
 
 import recycle from "../assets/recycle.png";
 import Dispose from "../assets/Dispose.jpg";
@@ -16,16 +14,35 @@ const Start = () => {
 
   return (
     <>
-      {/* 🔵 NAVBAR (NO SIGN IN / SIGN UP) */}
-      <Navbar style={{ backgroundColor: "#0080AA" }}>
-        <NavbarBrand tag={Link} to="/" style={{ color: "white" }}>
-          <img
-            src={logo}
-            alt="logo"
-            style={{ height: 40, width: 40, marginRight: 10 }}
-          />
-          ReNova
-        </NavbarBrand>
+      {/* 🔵 NAVBAR (with user icon) */}
+      <Navbar style={{ backgroundColor: "#0080AA", padding: "0 40px" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            width: "100%",
+          }}
+        >
+          {/* LEFT: Logo */}
+          <NavbarBrand
+            tag={Link}
+            to="/"
+            style={{ color: "white", display: "flex", alignItems: "center" }}
+          >
+            <img
+              src={logo}
+              alt="logo"
+              style={{ height: 40, width: 40, marginRight: 10 }}
+            />
+            ReNova
+          </NavbarBrand>
+
+          {/* RIGHT: User icon */}
+          <div style={{ display: "flex", alignItems: "center", fontSize: "24px", color: "white", cursor: "pointer" }}>
+            <FaUserCircle onClick={() => navigate("/UserDash")} />
+          </div>
+        </div>
       </Navbar>
 
       {/* 🎨 PAGE STYLES */}
@@ -101,42 +118,27 @@ const Start = () => {
       {/* 🟩 ACTION CARDS */}
       <div className="action-page">
         <div className="action-grid">
-
-          <div
-            className="action-card recycle"
-            onClick={() => navigate("/recycle")}
-          >
+          <div className="action-card recycle" onClick={() => navigate("/recycle")}>
             <img src={recycle} alt="Recycle" />
             <h3>RECYCLE</h3>
           </div>
 
-          <div
-            className="action-card upcycle"
-            onClick={() => navigate("/upcycle")}
-          >
+          <div className="action-card upcycle" onClick={() => navigate("/upcycle")}>
             <img src={Upcycle} alt="Upcycle" />
             <h3>UPCYCLE</h3>
           </div>
 
-          <div
-            className="action-card dispose"
-            onClick={() => navigate("/dispose")}
-          >
+          <div className="action-card dispose" onClick={() => navigate("/dispose")}>
             <img src={Dispose} alt="Dispose" />
             <h3>DISPOSE</h3>
           </div>
 
-          <div
-            className="action-card decide"
-            onClick={() => navigate("/decideForMe")}
-          >
+          <div className="action-card decide" onClick={() => navigate("/decideForMe")}>
             <img src={ddc} alt="Decide for me" />
             <h3>DECIDE FOR ME</h3>
           </div>
-
         </div>
       </div>
-
     </>
   );
 };

@@ -12,7 +12,7 @@ const Recycle = () => {
       
       {/* NAVBAR */}
       <Navbar style={{ backgroundColor: "#0080AA" }}>
-        <NavbarBrand tag={Link} to="/" style={{ color: "white" }}>
+        <NavbarBrand tag={Link} to="/start" style={{ color: "white" }}>
           <img
             src={logo}
             alt="logo"
