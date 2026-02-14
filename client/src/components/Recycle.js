@@ -1,197 +1,191 @@
 import React from "react";
 import { Navbar, NavbarBrand } from "reactstrap";
 import { Link, useNavigate } from "react-router-dom";
-import { FaArrowLeft } from "react-icons/fa";
+import { FaArrowLeft, FaRecycle, FaLeaf, FaBolt } from "react-icons/fa";
 import logo from "../assets/logo.png";
 
 const Recycle = () => {
   const navigate = useNavigate();
 
-  const styles = {
-    page: {
-      fontFamily: "Arial, sans-serif",
-      minHeight: "100vh",
-      display: "flex",
-      flexDirection: "column",
-      backgroundColor: "#ffffff",
-      color: "#333",
-    },
-    backWrapper: {
-      maxWidth: "1200px",
-      margin: "10px 0 0 0", 
-      padding: "0 30px",
-      display: "flex",
-      justifyContent: "flex-start",
-      alignItems: "center", 
-    },
-    backIcon: {
-      color: "#0080AA",
-      cursor: "pointer",
-      fontSize: "22px", 
-    },
-    main: {
-      flex: "1",
-      padding: "40px 30px",
-      maxWidth: "1200px",
-      margin: "0 auto",
-      width: "100%",
-    },
-    hero: {
-      textAlign: "center",
-      marginBottom: "50px",
-    },
-    heroTitle: { fontSize: "3rem", color: "#0078a8", marginBottom: "10px" },
-    heroSubtitle: { fontSize: "1.2rem", color: "#2c3e50", marginBottom: "10px" },
-    heroText: { fontSize: "1rem", color: "#333" },
-    columns: {
-      display: "flex",
-      gap: "50px",
-      flexWrap: "wrap",
-      marginBottom: "40px",
-    },
-    column: { flex: "1", minWidth: "250px" },
-    columnTitleBlue: { color: "#0078a8", fontWeight: "bold", marginBottom: "10px" },
-    columnTitleDark: { color: "#000", fontWeight: "bold", marginBottom: "10px" },
-    list: { marginLeft: "20px", lineHeight: "1.6" },
-    itemsSection: { marginBottom: "40px" },
-    itemsGrid: {
-      display: "flex",
-      justifyContent: "space-between",
-      flexWrap: "wrap",
-      marginTop: "15px",
-    },
-    itemCategory: { flex: "1", minWidth: "200px", marginBottom: "15px" },
-    itemTitle: { fontWeight: "bold", marginBottom: "5px" },
-    buttons: {
-      display: "flex",
-      justifyContent: "center",
-      gap: "20px",
-      marginBottom: "40px",
-      flexWrap: "wrap",
-    },
-    pickupBtn: {
-      backgroundColor: "#f57c00",
-      color: "#fff",
-      padding: "15px 25px",
-      border: "none",
-      borderRadius: "6px",
-      fontWeight: "bold",
-      cursor: "pointer",
-      fontSize: "1rem",
-    },
-    dropoffBtn: {
-      backgroundColor: "#0078a8",
-      color: "#fff",
-      padding: "15px 25px",
-      border: "none",
-      borderRadius: "6px",
-      fontWeight: "bold",
-      cursor: "pointer",
-      fontSize: "1rem",
-    },
-    fact: {
-      textAlign: "center",
-      fontStyle: "italic",
-      color: "#3c763d",
-      fontWeight: "bold",
-      fontSize: "1.1rem",
-      marginBottom: "40px",
-    },
-  };
-
   return (
-    <div style={styles.page}>
+    <div style={{ fontFamily: "Arial, sans-serif", background: "#f5fbff" }}>
+      
       {/* NAVBAR */}
       <Navbar style={{ backgroundColor: "#0080AA" }}>
-        <NavbarBrand tag={Link} to="/start" style={{ color: "white" }}>
+        <NavbarBrand tag={Link} to="/" style={{ color: "white" }}>
           <img
             src={logo}
             alt="logo"
-            style={{ height: 40, width: 50, marginRight: 10 }}
+            style={{ height: 40, width: 40, marginRight: 10 }}
           />
           ReNova
         </NavbarBrand>
       </Navbar>
 
-      <div style={styles.backWrapper}>
+      {/* BACK BUTTON */}
+      <div style={{ padding: "20px 30px" }}>
         <FaArrowLeft
-          style={styles.backIcon}
+          style={{ color: "#0080AA", cursor: "pointer", fontSize: 22 }}
           onClick={() => navigate("/start")}
         />
       </div>
 
-      {/* MAIN CONTENT */}
-      <main style={styles.main}>
-        <section style={styles.hero}>
-          <h1 style={styles.heroTitle}>RECYCLE</h1>
-          <p style={styles.heroSubtitle}>Recycle Your E-waste Responsibly</p>
-          <p style={styles.heroText}>
-            We ensure safe dismantling, material recovery, and eco-friendly processing of electronic waste.
-          </p>
-        </section>
-
-        <section style={styles.columns}>
-          <div style={styles.column}>
-            <h2 style={styles.columnTitleBlue}>Why Recycle E-Waste?</h2>
-            <ul style={styles.list}>
-              <li>Prevent toxic materials from entering landfills</li>
-              <li>Recover precious metals</li>
-              <li>Reduce carbon footprint</li>
-              <li>Protect soil and water from contamination</li>
-            </ul>
-          </div>
-          <div style={styles.column}>
-            <h2 style={styles.columnTitleDark}>How We Recycle Your Items?</h2>
-            <ul style={styles.list}>
-              <li>Sorting (separating plastics, metals, glass)</li>
-              <li>Safe dismantling</li>
-              <li>Material recovery</li>
-              <li>Reprocessing / reusing materials</li>
-            </ul>
-          </div>
-        </section>
-
-        <section style={styles.itemsSection}>
-          <h3 style={styles.columnTitleBlue}>Accepted Items for Recycle</h3>
-          <p>(We accept most electronic devices, even if broken, damaged, or not working)</p>
-          <div style={styles.itemsGrid}>
-            <div style={styles.itemCategory}>
-              <p style={styles.itemTitle}>(Small Electronics)</p>
-              <p>Phones, tablets, smartwatches, earbuds, power banks, chargers.</p>
-            </div>
-            <div style={styles.itemCategory}>
-              <p style={styles.itemTitle}>(Large Electronics)</p>
-              <p>Laptops, desktops, monitors, TVs, printers, scanners.</p>
-            </div>
-            <div style={styles.itemCategory}>
-              <p style={styles.itemTitle}>(Household & Other)</p>
-              <p>Cameras, game consoles, speakers, routers, hard drives, batteries, computer parts.</p>
-            </div>
-          </div>
-        </section>
-
-       <section style={styles.buttons}>
-  <button
-    style={styles.pickupBtn}
-    onClick={() => navigate("/PickupRequest")}
-  >
-    PICKUP MY ITEMS
-  </button>
-  <button
-    style={styles.dropoffBtn}
-    onClick={() => navigate("/DropOff")}
-  >
-    I'LL DROP THEM OFF
-  </button>
-</section>
-
-
-        <p style={styles.fact}>
-          1 recycled laptop = saves enough energy to power a home for several days.
+      {/* HERO SECTION */}
+      <section
+        style={{
+          textAlign: "center",
+          padding: "40px 20px",
+        }}
+      >
+        <h1 style={{ fontSize: "3rem", color: "#0080AA" }}>
+          ♻ Recycle Smart. Recycle Right.
+        </h1>
+        <p style={{ fontSize: "1.2rem", color: "#555", maxWidth: 700, margin: "0 auto" }}>
+          Give your electronic waste a second life. Together we reduce pollution,
+          recover valuable materials, and protect our planet.
         </p>
-      </main>
+      </section>
+
+      {/* WHY SECTION */}
+      <section
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          gap: "30px",
+          flexWrap: "wrap",
+          padding: "20px",
+        }}
+      >
+        {[
+          {
+            icon: <FaLeaf size={40} color="#2ecc71" />,
+            title: "Protect Nature",
+            text: "Prevent toxic materials from harming soil and water.",
+          },
+          {
+            icon: <FaBolt size={40} color="#f39c12" />,
+            title: "Save Energy",
+            text: "Recycling saves energy and reduces carbon emissions.",
+          },
+          {
+            icon: <FaRecycle size={40} color="#0080AA" />,
+            title: "Recover Materials",
+            text: "Extract valuable metals and reuse materials safely.",
+          },
+        ].map((card, index) => (
+          <div
+            key={index}
+            style={{
+              background: "#ffffff",
+              borderRadius: 15,
+              padding: 30,
+              width: 280,
+              textAlign: "center",
+              boxShadow: "0 8px 20px rgba(0,0,0,0.08)",
+              transition: "0.3s",
+            }}
+          >
+            {card.icon}
+            <h3 style={{ marginTop: 15 }}>{card.title}</h3>
+            <p style={{ color: "#555" }}>{card.text}</p>
+          </div>
+        ))}
+      </section>
+
+      {/* ACCEPTED ITEMS */}
+      <section style={{ padding: "60px 20px", textAlign: "center" }}>
+        <h2 style={{ color: "#0080AA", marginBottom: 30 }}>
+          What Can You Recycle?
+        </h2>
+
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            gap: 30,
+            flexWrap: "wrap",
+          }}
+        >
+          <div style={itemStyle}>
+            <h4>📱 Small Electronics</h4>
+            <p>Phones, tablets, earbuds, chargers, smartwatches.</p>
+          </div>
+
+          <div style={itemStyle}>
+            <h4>💻 Large Electronics</h4>
+            <p>Laptops, desktops, TVs, printers, monitors.</p>
+          </div>
+
+          <div style={itemStyle}>
+            <h4>🔋 Other Devices</h4>
+            <p>Batteries, routers, hard drives, speakers.</p>
+          </div>
+        </div>
+      </section>
+
+      {/* ACTION BUTTONS */}
+      <section
+        style={{
+          textAlign: "center",
+          paddingBottom: 60,
+        }}
+      >
+        <button
+          style={{
+            backgroundColor: "#f57c00",
+            color: "#fff",
+            padding: "15px 30px",
+            border: "none",
+            borderRadius: 8,
+            fontWeight: "bold",
+            fontSize: "1rem",
+            marginRight: 20,
+            cursor: "pointer",
+          }}
+          onClick={() => navigate("/PickupRequest")}
+        >
+          🚚 Schedule Pickup
+        </button>
+
+        <button
+          style={{
+            backgroundColor: "#0080AA",
+            color: "#fff",
+            padding: "15px 30px",
+            border: "none",
+            borderRadius: 8,
+            fontWeight: "bold",
+            fontSize: "1rem",
+            cursor: "pointer",
+          }}
+          onClick={() => navigate("/DropOff")}
+        >
+          📍 Find Drop-off
+        </button>
+      </section>
+
+      {/* FUN FACT SECTION */}
+      <section
+        style={{
+          backgroundColor: "#eaf7ff",
+          padding: 30,
+          textAlign: "center",
+          fontWeight: "bold",
+          color: "#0078a8",
+        }}
+      >
+        💡 Fun Fact: Recycling one laptop saves enough energy to power a home for several days!
+      </section>
     </div>
   );
+};
+
+const itemStyle = {
+  background: "#ffffff",
+  padding: 25,
+  borderRadius: 15,
+  width: 260,
+  boxShadow: "0 6px 15px rgba(0,0,0,0.06)",
 };
 
 export default Recycle;
