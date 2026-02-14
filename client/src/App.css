@@ -168,3 +168,12 @@
   margin: 4px 0 0 18px;
   padding: 0;
 }
+
+.footer {
+  height: 180px;
+}
+
+.admin-container {
+  min-height: 100vh;
+  padding-bottom: 200px;
+}

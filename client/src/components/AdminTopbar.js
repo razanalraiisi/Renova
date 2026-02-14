@@ -1,6 +1,8 @@
 import React from "react";
 import AdminNotificationsDropdown from "./AdminNotificationsDropdown";
 import { useNavigate } from "react-router-dom";
+import { FaUserCircle } from "react-icons/fa";
+
 
 import {
   Navbar,
@@ -119,10 +121,20 @@ const AdminTopbar = () => {
         </NavItem>
 
         <NavItem>
-          <span style={{ color: "white", fontSize: 18, cursor: "pointer" }}>
-            👤
-          </span>
+          <FaUserCircle
+            onClick={() => navigate("/admin/profile")}
+            title="My Profile"
+            style={{
+              color: "white",
+              fontSize: 24,
+              cursor: "pointer",
+              transition: "0.2s ease",
+            }}
+            className="admin-user-icon"
+          />
         </NavItem>
+
+
       </Nav>
     </Navbar>
   );

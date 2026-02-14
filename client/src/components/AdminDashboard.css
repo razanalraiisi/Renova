@@ -245,3 +245,21 @@
 .carousel-dots {
   margin-top: 12px;
 }
+
+.admin-top-bar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+}
+
+.admin-user-icon {
+  font-size: 26px;
+  cursor: pointer;
+  color: #0080aa;
+  transition: 0.2s;
+}
+
+.admin-user-icon:hover {
+  transform: scale(1.1);
+  color: #005f7a;
+}

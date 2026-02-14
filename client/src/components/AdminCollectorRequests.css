@@ -198,3 +198,9 @@
   color: #0b3954;
   font-weight: 600;
 }
+
+/* page wrapper */
+.admin-container {
+  min-height: 100vh;
+  padding-bottom: 220px; /* ✅ push content above footer (adjust if needed) */
+}
