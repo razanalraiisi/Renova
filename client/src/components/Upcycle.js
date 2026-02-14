@@ -1,154 +1,15 @@
 import React from "react";
 import { Navbar, NavbarBrand } from "reactstrap";
 import { Link, useNavigate } from "react-router-dom";
-import { FaArrowLeft } from "react-icons/fa";
+import { FaArrowLeft, FaLightbulb, FaPaintBrush, FaTools } from "react-icons/fa";
 import logo from "../assets/logo.png";
 
 const Upcycle = () => {
   const navigate = useNavigate();
 
-  const styles = {
-    page: {
-      fontFamily: "Arial, sans-serif",
-      minHeight: "100vh",
-      display: "flex",
-      flexDirection: "column",
-      backgroundColor: "#ffffff",
-      color: "#333",
-    },
-
-    backWrapper: {
-      maxWidth: "1200px",
-      margin: "10px 0 0 0", // align left
-      padding: "0 30px",
-      display: "flex",
-      justifyContent: "flex-start",
-      alignItems: "center",
-    },
-    backIcon: {
-      color: "#0080AA",
-      cursor: "pointer",
-      fontSize: "22px",
-    },
-
-    main: {
-      flex: 1,
-      padding: "40px 30px",
-      maxWidth: "1200px",
-      margin: "0 auto",
-      width: "100%",
-    },
-
-    /* HERO */
-    hero: {
-      textAlign: "center",
-      marginBottom: "50px",
-    },
-    heroTitle: {
-      fontSize: "3rem",
-      color: "#0078a8",
-      marginBottom: "10px",
-      fontWeight: "bold",
-    },
-    heroSubtitle: {
-      fontSize: "1.3rem",
-      color: "#0078a8",
-      marginBottom: "10px",
-    },
-    heroText: {
-      fontSize: "1rem",
-      color: "#555",
-    },
-
-    /* SECTIONS */
-    sectionTitle: {
-      color: "#0078a8",
-      fontWeight: "bold",
-      marginBottom: "10px",
-      fontSize: "1.3rem",
-    },
-    sectionText: {
-      lineHeight: "1.6",
-      marginBottom: "30px",
-    },
-
-    columns: {
-      display: "flex",
-      gap: "60px",
-      flexWrap: "wrap",
-      marginBottom: "40px",
-      alignItems: "flex-start",
-    },
-    column: {
-      flex: 1,
-      minWidth: "280px",
-    },
-
-    list: {
-      marginLeft: "20px",
-      lineHeight: "1.8",
-    },
-
-    /* WHERE YOUR ITEMS GO */
-    pillsContainer: {
-      display: "flex",
-      flexDirection: "column",
-      gap: "10px",
-      marginTop: "10px",
-    },
-    pill: {
-      border: "1px solid #0078a8",
-      borderRadius: "20px",
-      padding: "8px 15px",
-      fontSize: "0.9rem",
-      color: "#0078a8",
-      width: "fit-content",
-    },
-    pillRed: {
-      border: "1px solid #e74c3c",
-      color: "#e74c3c",
-    },
-    pillPurple: {
-      border: "1px solid #9b59b6",
-      color: "#9b59b6",
-    },
-    pillGreen: {
-      border: "1px solid #27ae60",
-      color: "#27ae60",
-    },
-
-    /* BUTTONS */
-    buttons: {
-      display: "flex",
-      justifyContent: "center",
-      gap: "20px",
-      margin: "40px 0",
-      flexWrap: "wrap",
-    },
-    pickupBtn: {
-      backgroundColor: "#f57c00",
-      color: "#fff",
-      padding: "15px 30px",
-      border: "none",
-      borderRadius: "6px",
-      fontWeight: "bold",
-      cursor: "pointer",
-      fontSize: "1rem",
-    },
-    dropoffBtn: {
-      backgroundColor: "#0078a8",
-      color: "#fff",
-      padding: "15px 30px",
-      border: "none",
-      borderRadius: "6px",
-      fontWeight: "bold",
-      cursor: "pointer",
-      fontSize: "1rem",
-    },
-  };
-
   return (
-    <div style={styles.page}>
+    <div style={{ fontFamily: "Arial, sans-serif", background: "#f9f6ff" }}>
+      
       {/* NAVBAR */}
       <Navbar style={{ backgroundColor: "#0080AA" }}>
         <NavbarBrand tag={Link} to="/" style={{ color: "white" }}>
@@ -161,74 +22,160 @@ const Upcycle = () => {
         </NavbarBrand>
       </Navbar>
 
-      {/* ⬅️ BACK ARROW (LEFT, BELOW NAVBAR) */}
-      <div style={styles.backWrapper}>
+      {/* BACK BUTTON */}
+      <div style={{ padding: "20px 30px" }}>
         <FaArrowLeft
-          style={styles.backIcon}
+          style={{ color: "#0080AA", cursor: "pointer", fontSize: 22 }}
           onClick={() => navigate("/start")}
         />
       </div>
 
-      {/* MAIN */}
-      <main style={styles.main}>
-        <section style={styles.hero}>
-          <h1 style={styles.heroTitle}>UPCYCLE</h1>
-          <p style={styles.heroSubtitle}>Give Your Old Electronics a New Life</p>
-          <p style={styles.heroText}>
-            Support creativity, innovation, and sustainability by upcycling your e-waste.
-          </p>
-        </section>
+      {/* HERO */}
+      <section style={{ textAlign: "center", padding: "40px 20px" }}>
+        <h1 style={{ fontSize: "3rem", color: "#7d3cff" }}>
+          ✨ Upcycle & Create Something New
+        </h1>
+        <p style={{ fontSize: "1.2rem", color: "#555", maxWidth: 700, margin: "0 auto" }}>
+          Turn old electronics into creative, useful, and meaningful products.
+          Sustainability meets innovation.
+        </p>
+      </section>
 
-        <section>
-          <h2 style={styles.sectionTitle}>What Is Upcycling?</h2>
-          <p style={styles.sectionText}>
-            Upcycling takes old or broken electronics and transforms them into functional or artistic items.
-            Unlike standard recycling, upcycling keeps more materials in use and reduces the demand for new resources.
-          </p>
-        </section>
+      {/* WHAT IS UPCYCLING */}
+      <section
+        style={{
+          maxWidth: 900,
+          margin: "0 auto",
+          padding: "20px",
+          textAlign: "center",
+        }}
+      >
+        <h2 style={{ color: "#7d3cff" }}>What Is Upcycling?</h2>
+        <p style={{ color: "#555", lineHeight: 1.6 }}>
+          Upcycling transforms old electronics into new functional or artistic creations.
+          Instead of breaking materials down, we redesign and repurpose them —
+          reducing waste and inspiring creativity.
+        </p>
+      </section>
 
-        <section style={styles.columns}>
-          <div style={styles.column}>
-            <h3 style={styles.sectionTitle}>Upcycling Ideas</h3>
-            <ul style={styles.list}>
-              <li>Old PC → Retro home server</li>
-              <li>Circuit boards → Artwork or décor</li>
-              <li>Keyboard keys → Keychains / jewelry</li>
-              <li>Laptop batteries → DIY power banks (for experts)</li>
-              <li>Motherboards → Coasters / frames</li>
-            </ul>
+      {/* IDEAS CARDS */}
+      <section
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          gap: 30,
+          flexWrap: "wrap",
+          padding: "40px 20px",
+        }}
+      >
+        {[
+          {
+            icon: <FaTools size={40} color="#f39c12" />,
+            title: "DIY Projects",
+            text: "Old PC → home server, laptop parts → mini projects.",
+          },
+          {
+            icon: <FaPaintBrush size={40} color="#e84393" />,
+            title: "Art & Decor",
+            text: "Circuit boards → wall art, motherboards → frames.",
+          },
+          {
+            icon: <FaLightbulb size={40} color="#27ae60" />,
+            title: "Innovation",
+            text: "Components reused for robotics & STEM education.",
+          },
+        ].map((card, index) => (
+          <div
+            key={index}
+            style={{
+              background: "#ffffff",
+              borderRadius: 15,
+              padding: 30,
+              width: 280,
+              textAlign: "center",
+              boxShadow: "0 8px 20px rgba(0,0,0,0.08)",
+              transition: "0.3s",
+            }}
+          >
+            {card.icon}
+            <h3 style={{ marginTop: 15 }}>{card.title}</h3>
+            <p style={{ color: "#555" }}>{card.text}</p>
           </div>
+        ))}
+      </section>
 
-          <div style={styles.column}>
-            <h3 style={styles.sectionTitle}>Where Your Items Go?</h3>
-            <div style={styles.pillsContainer}>
-              <span style={styles.pill}>Makerspaces</span>
-              <span style={{ ...styles.pill, ...styles.pillGreen }}>Repair cafés</span>
-              <span style={{ ...styles.pill, ...styles.pillPurple }}>
-                Tech-education programs for kids
-              </span>
-              <span style={{ ...styles.pill, ...styles.pillRed }}>
-                Artists and creative labs
-              </span>
-            </div>
-          </div>
-        </section>
-<section style={styles.buttons}>
-  <button
-    style={styles.pickupBtn}
-    onClick={() => navigate("/PickupRequest")}
-  >
-    PICKUP MY ITEMS
-  </button>
-  <button
-    style={styles.dropoffBtn}
-    onClick={() => navigate("/DropOff")}
-  >
-    I'LL DROP THEM OFF
-  </button>
-</section>
+      {/* WHERE ITEMS GO */}
+      <section style={{ textAlign: "center", paddingBottom: 50 }}>
+        <h2 style={{ color: "#7d3cff", marginBottom: 20 }}>
+          Where Your Items Go
+        </h2>
 
-      </main>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            gap: 15,
+            flexWrap: "wrap",
+          }}
+        >
+          {[
+            "Makerspaces",
+            "Repair Cafés",
+            "Tech Education Programs",
+            "Creative Artists",
+          ].map((item, index) => (
+            <span
+              key={index}
+              style={{
+                padding: "10px 20px",
+                borderRadius: 25,
+                backgroundColor: "#ffffff",
+                border: "2px solid #7d3cff",
+                color: "#7d3cff",
+                fontWeight: "bold",
+              }}
+            >
+              {item}
+            </span>
+          ))}
+        </div>
+      </section>
+
+      {/* BUTTONS */}
+      <section style={{ textAlign: "center", paddingBottom: 60 }}>
+        <button
+          style={{
+            backgroundColor: "#f57c00",
+            color: "#fff",
+            padding: "15px 30px",
+            border: "none",
+            borderRadius: 8,
+            fontWeight: "bold",
+            fontSize: "1rem",
+            marginRight: 20,
+            cursor: "pointer",
+          }}
+          onClick={() => navigate("/PickupRequest")}
+        >
+          🚚 Schedule Pickup
+        </button>
+
+        <button
+          style={{
+            backgroundColor: "#7d3cff",
+            color: "#fff",
+            padding: "15px 30px",
+            border: "none",
+            borderRadius: 8,
+            fontWeight: "bold",
+            fontSize: "1rem",
+            cursor: "pointer",
+          }}
+          onClick={() => navigate("/DropOff")}
+        >
+          📍 Drop Off Instead
+        </button>
+      </section>
     </div>
   );
 };
