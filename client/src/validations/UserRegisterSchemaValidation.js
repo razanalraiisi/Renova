@@ -28,5 +28,5 @@ export const UserRegisterSchemaValidation = yup.object().shape({
 
   pic: yup
     .string()
-    .required("Profile picture URL is required"),
+    
 });

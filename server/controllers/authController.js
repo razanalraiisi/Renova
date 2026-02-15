@@ -375,3 +375,26 @@ export const resetPassword = async (req, res) => {
 };
 
 
+export const updateCollectorProfile = async (req, res) => {
+  try {
+    const { companyName, collectorType, openHr, phone, acceptedCategories, address } = req.body;
+
+    const collector = await User.findById(req.params.id);
+    if (!collector) return res.status(404).json({ message: "Collector not found" });
+
+    
+    collector.companyName = companyName || collector.companyName;
+    collector.collectorType = collectorType || collector.collectorType;
+    collector.openHr = openHr || collector.openHr;
+    collector.phone = phone || collector.phone;
+    collector.acceptedCategories = acceptedCategories || collector.acceptedCategories;
+    collector.address = address || collector.address;
+
+    await collector.save();
+
+    res.json({ message: "Profile updated successfully.", user: collector });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error." });
+  }
+};
