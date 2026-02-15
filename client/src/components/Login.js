@@ -19,43 +19,43 @@ import { getUser, resetState } from "../features/UserSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import ValidationInput from "../components/ValidationInput";
-
+ 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false); // added
-
+ 
   const dispatch = useDispatch();
   const user = useSelector((state) => state.users.user);
   const isSuccess = useSelector((state) => state.users.isSuccess);
   const isError = useSelector((state) => state.users.isError);
   const message = useSelector((state) => state.users.message);
   const navigate = useNavigate();
-
+ 
   const {
     register,
     handleSubmit: submitForm,
     formState: { errors }
   } = useForm({ resolver: yupResolver(UserSchemaValidation) });
-
+ 
   const validate = () => {
     dispatch(resetState());
     dispatch(getUser({ email, password, rememberMe })); // send rememberMe
   };
-
+ 
   useEffect(() => {
     if (isSuccess && user?.role) {
       const role = String(user.role).toLowerCase();
-
+ 
       if (role === "admin") navigate("/admin/dashboard");
       else if (role === "collector") navigate("/CollectorDash");
       else navigate("/start");
-
+ 
       dispatch(resetState());
     }
   }, [isSuccess, user, navigate, dispatch]);
-
+ 
   return (
     <>
       {/* NAVBAR */}
@@ -74,7 +74,7 @@ const Login = () => {
           />
           ReNova
         </NavbarBrand>
-
+ 
         <div className="ms-auto d-flex gap-2">
           <Button
             href="/Login"
@@ -89,7 +89,7 @@ const Login = () => {
           >
             Sign In
           </Button>
-
+ 
           <Button
             href="/Register"
             style={{
@@ -105,7 +105,7 @@ const Login = () => {
           </Button>
         </div>
       </Navbar>
-
+ 
       {/* FORM SECTION */}
       <Container
         fluid
@@ -143,7 +143,7 @@ const Login = () => {
                   Sign in to continue
                 </p>
               </div>
-
+ 
               {/* EMAIL */}
               <ValidationInput label="Email" error={errors.email?.message}>
                 <input
@@ -157,7 +157,7 @@ const Login = () => {
                   style={{ borderRadius: "8px", padding: "10px" }}
                 />
               </ValidationInput>
-
+ 
               {/* PASSWORD */}
               <ValidationInput label="Password" error={errors.password?.message}>
                 <div style={{ position: "relative" }}>
@@ -188,7 +188,7 @@ const Login = () => {
                   </span>
                 </div>
               </ValidationInput>
-
+ 
               {/* REMEMBER + FORGOT */}
               <FormGroup className="d-flex justify-content-between align-items-center mt-3">
                 <div>
@@ -199,7 +199,7 @@ const Login = () => {
                   />{" "}
                   <Label className="mb-0">Remember Me</Label>
                 </div>
-
+ 
                 <Link
                   to="/ForgetPassword"
                   style={{
@@ -212,7 +212,7 @@ const Login = () => {
                   Forget password?
                 </Link>
               </FormGroup>
-
+ 
               {/* BUTTON */}
               <FormGroup className="mt-4">
                 <Button
@@ -230,7 +230,7 @@ const Login = () => {
                   Sign In
                 </Button>
               </FormGroup>
-
+ 
               {/* ERROR */}
               {isError && (
                 <FormGroup>
@@ -253,5 +253,5 @@ const Login = () => {
     </>
   );
 };
-
+ 
 export default Login;

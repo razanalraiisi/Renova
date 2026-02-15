@@ -2,17 +2,17 @@ import React from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Navbar, NavbarBrand } from "reactstrap";
 import { FaBell, FaSignOutAlt, FaUser, FaCog, FaClipboardList } from "react-icons/fa";
-import logo from "../assets/logo.png"; 
-
+import logo from "../assets/logo.png";
+ 
 const UserDash = () => {
   const navigate = useNavigate();
   const location = useLocation();
-
+ 
   const handleLogout = () => {
     localStorage.removeItem("token");
     navigate("/");
   };
-
+ 
   const navItems = [
     { name: "Dispose", path: "/dispose" },
     { name: "Recycle", path: "/recycle" },
@@ -21,25 +21,25 @@ const UserDash = () => {
     { name: "FAQs", path: "/faqs" },
     { name: "About Us", path: "/about" },
   ];
-
+ 
   const styles = {
     page: {
       minHeight: "100vh",
       backgroundColor: "#f4f6f8",
       fontFamily: "Arial, sans-serif",
     },
-
+ 
     navLink: {
       color: "white",
       textDecoration: "none",
       position: "relative",
       paddingBottom: "5px",
     },
-
+ 
     activeLink: {
       borderBottom: "2px solid white",
     },
-
+ 
     /* 🔷 MAIN CONTAINER */
     container: {
       display: "flex",
@@ -48,7 +48,7 @@ const UserDash = () => {
       maxWidth: "1200px",
       margin: "0 auto",
     },
-
+ 
     /* 🔷 SIDEBAR */
     sidebar: {
       width: "260px",
@@ -57,12 +57,12 @@ const UserDash = () => {
       padding: "20px",
       boxShadow: "0 8px 20px rgba(0,0,0,0.05)",
     },
-
+ 
     profileBox: {
       textAlign: "center",
       marginBottom: "25px",
     },
-
+ 
     avatar: {
       width: "70px",
       height: "70px",
@@ -70,12 +70,12 @@ const UserDash = () => {
       backgroundColor: "#0f7c95",
       margin: "0 auto 10px auto",
     },
-
+ 
     email: {
       fontSize: "14px",
       color: "#777",
     },
-
+ 
     menuItem: {
       display: "flex",
       alignItems: "center",
@@ -87,7 +87,7 @@ const UserDash = () => {
       fontSize: "14px",
       transition: "0.2s",
     },
-
+ 
     logoutBtn: {
       marginTop: "20px",
       padding: "10px",
@@ -102,7 +102,7 @@ const UserDash = () => {
       alignItems: "center",
       gap: "6px",
     },
-
+ 
     /* 🔷 MAIN CONTENT */
     content: {
       flex: 1,
@@ -111,25 +111,25 @@ const UserDash = () => {
       padding: "30px",
       boxShadow: "0 8px 20px rgba(0,0,0,0.05)",
     },
-
+ 
     sectionTitle: {
       fontSize: "20px",
       fontWeight: "bold",
       marginBottom: "20px",
       color: "#0f7c95",
     },
-
+ 
     formGroup: {
       marginBottom: "20px",
     },
-
+ 
     label: {
       display: "block",
       fontSize: "14px",
       marginBottom: "6px",
       color: "#555",
     },
-
+ 
     input: {
       width: "100%",
       padding: "10px",
@@ -137,7 +137,7 @@ const UserDash = () => {
       border: "1px solid #ddd",
       fontSize: "14px",
     },
-
+ 
     saveBtn: {
       marginTop: "10px",
       padding: "10px 20px",
@@ -148,7 +148,7 @@ const UserDash = () => {
       cursor: "pointer",
     },
   };
-
+ 
   return (
     <div style={styles.page}>
       {/* 🔷 NAVBAR */}
@@ -174,7 +174,7 @@ const UserDash = () => {
             />
             ReNova
           </NavbarBrand>
-
+ 
           {/* CENTER: Nav links */}
           <div style={{ display: "flex", gap: "30px", fontSize: "15px" }}>
             {navItems.map((item) => (
@@ -190,7 +190,7 @@ const UserDash = () => {
               </Link>
             ))}
           </div>
-
+ 
           {/* RIGHT: Bell icon */}
           <div
             style={{
@@ -204,7 +204,7 @@ const UserDash = () => {
           </div>
         </div>
       </Navbar>
-
+ 
       {/* 🔷 DASHBOARD BODY */}
       <div style={styles.container}>
         {/* SIDEBAR */}
@@ -214,7 +214,7 @@ const UserDash = () => {
             <strong>Your Name</strong>
             <div style={styles.email}>yourname@gmail.com</div>
           </div>
-
+ 
           <div style={styles.menuItem}>
             <FaUser /> My Profile
           </div>
@@ -224,41 +224,41 @@ const UserDash = () => {
           <div style={styles.menuItem}>
             <FaClipboardList /> My Requests
           </div>
-
+ 
           <button style={styles.logoutBtn} onClick={handleLogout}>
             <FaSignOutAlt /> Logout
           </button>
         </div>
-
+ 
         {/* MAIN CONTENT */}
         <div style={styles.content}>
           <div style={styles.sectionTitle}>Profile Information</div>
-
+ 
           <div style={styles.formGroup}>
             <label style={styles.label}>Full Name</label>
             <input style={styles.input} placeholder="Your name" />
           </div>
-
+ 
           <div style={styles.formGroup}>
             <label style={styles.label}>Email</label>
             <input style={styles.input} placeholder="yourname@gmail.com" />
           </div>
-
+ 
           <div style={styles.formGroup}>
             <label style={styles.label}>Mobile Number</label>
             <input style={styles.input} placeholder="Add phone number" />
           </div>
-
+ 
           <div style={styles.formGroup}>
             <label style={styles.label}>Location</label>
             <input style={styles.input} placeholder="Your country" />
           </div>
-
+ 
           <button style={styles.saveBtn}>Save Changes</button>
         </div>
       </div>
     </div>
   );
 };
-
+ 
 export default UserDash;
