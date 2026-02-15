@@ -9,6 +9,8 @@ import { UserRegisterSchemaValidation } from '../validations/UserRegisterSchemaV
 import ValidationInput from '../components/ValidationInput';
 import logo from '../assets/logo.png';
 
+const DEFAULT_PROFILE_PIC = "https://icon-library.com/images/profiles-icon/profiles-icon-0.jpg";
+
 const RegisterCollector = () => {
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState('');
@@ -21,7 +23,6 @@ const RegisterCollector = () => {
   const [address, setAddress] = useState('');
   const [openHr, setOpenHr] = useState("8:00 AM - 6:00 PM");
 
-  // manual errors for collector-only fields
   const [collectorTypeError, setCollectorTypeError] = useState('');
   const [categoriesError, setCategoriesError] = useState('');
   const [addressError, setAddressError] = useState('');
@@ -76,8 +77,9 @@ const RegisterCollector = () => {
       email,
       password,
       phone,
-      pic
+      pic: pic.trim() ? pic : DEFAULT_PROFILE_PIC  
     };
+
     dispatch(addUser(data));
   };
 

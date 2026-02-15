@@ -9,6 +9,8 @@ import { UserRegisterSchemaValidation } from '../validations/UserRegisterSchemaV
 import ValidationInput from '../components/ValidationInput';
 import logo from '../assets/logo.png';
 
+const DEFAULT_PROFILE_PIC = "https://icon-library.com/images/profiles-icon/profiles-icon-0.jpg";
+
 const Register = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -28,14 +30,21 @@ const Register = () => {
   });
 
   const submit = () => {
-    dispatch(addUser({ role: 'user', uname, email, password, phone, pic }));
+    dispatch(addUser({
+      role: 'user',
+      uname,
+      email,
+      password,
+      phone,
+      pic: pic.trim() ? pic : DEFAULT_PROFILE_PIC  
+    }));
   };
 
   useEffect(() => {
     if (isSuccess) {
       setCenterMessage({
         type: "success",
-        text: "🎉 Registration Successful! Redirecting..."
+        text: "Registration Successful! Redirecting..."
       });
 
       setTimeout(() => {

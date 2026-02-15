@@ -3,12 +3,14 @@ import axios from "axios";
 
 const BASE_URL = "http://localhost:5000";
 
-
 const storedUser =
   JSON.parse(localStorage.getItem("user")) ||
   JSON.parse(sessionStorage.getItem("user"));
 
 
+// =============================
+// REGISTER
+// =============================
 export const addUser = createAsyncThunk(
   "users/addUser",
   async (udata, { rejectWithValue }) => {
@@ -32,6 +34,9 @@ export const addUser = createAsyncThunk(
 );
 
 
+// =============================
+// LOGIN
+// =============================
 export const getUser = createAsyncThunk(
   "users/getUser",
   async ({ email, password, rememberMe }, { rejectWithValue }) => {
@@ -43,7 +48,6 @@ export const getUser = createAsyncThunk(
 
       const data = response.data;
 
-     
       const storage = rememberMe ? localStorage : sessionStorage;
       storage.setItem("user", JSON.stringify(data.user));
 
@@ -57,6 +61,35 @@ export const getUser = createAsyncThunk(
 );
 
 
+// =============================
+// UPDATE PROFILE  🔥 NEW
+// =============================
+export const updateUser = createAsyncThunk(
+  "users/updateUser",
+  async (updatedData, { rejectWithValue }) => {
+    try {
+      const response = await axios.put(
+        `${BASE_URL}/updateUser/${updatedData._id}`,
+        updatedData
+      );
+
+      // Update storage
+      localStorage.setItem("user", JSON.stringify(response.data.user));
+      sessionStorage.setItem("user", JSON.stringify(response.data.user));
+
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Update failed."
+      );
+    }
+  }
+);
+
+
+// =============================
+// INITIAL STATE
+// =============================
 const initialState = {
   user: storedUser || {},
   message: "",
@@ -66,6 +99,9 @@ const initialState = {
 };
 
 
+// =============================
+// SLICE
+// =============================
 export const UserSlice = createSlice({
   name: "users",
   initialState,
@@ -77,7 +113,6 @@ export const UserSlice = createSlice({
       state.message = "";
     },
 
-  
     resetUser: (state) => {
       state.user = {};
       localStorage.removeItem("user");
@@ -87,6 +122,8 @@ export const UserSlice = createSlice({
 
   extraReducers: (builder) => {
     builder
+
+      // REGISTER
       .addCase(addUser.pending, (state) => {
         state.isLoading = true;
         state.isError = false;
@@ -103,6 +140,8 @@ export const UserSlice = createSlice({
         state.isError = true;
         state.message = action.payload || "Registration failed.";
       })
+
+      // LOGIN
       .addCase(getUser.pending, (state) => {
         state.isLoading = true;
         state.isError = false;
@@ -112,13 +151,27 @@ export const UserSlice = createSlice({
       .addCase(getUser.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isSuccess = true;
-        state.message = action.payload.message;
         state.user = action.payload.user;
       })
       .addCase(getUser.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
         state.message = action.payload || "Login failed.";
+      })
+
+      // UPDATE PROFILE 🔥
+      .addCase(updateUser.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(updateUser.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.user = action.payload.user;
+        state.message = action.payload.message;
+      })
+      .addCase(updateUser.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.message = action.payload;
       });
   },
 });
