@@ -18,6 +18,7 @@ import "./Components.css";
 import { FaMapLocationDot } from "react-icons/fa6";
 import { GoTasklist } from "react-icons/go";
 import { FaRegUser } from "react-icons/fa";
+import { FaArrowLeft } from "react-icons/fa";
 
 const CollectorProfile = () => {
   const navigate = useNavigate();
@@ -202,14 +203,34 @@ const CollectorProfile = () => {
 
   return (
     <div className="profile-container">
-      <div style={{ display: "flex", justifyContent: "flex-end" }}>
-        {hasChanges && (
-          <Chip label="Unsaved changes" color="warning" size="small" />
-        )}
-        <button className="logout-button" onClick={handleLogout}>
-          <FaSignOutAlt /> Logout
-        </button>
-      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+  <button
+    onClick={() => navigate("/CollectorDash")}
+    style={{
+      background: "transparent",
+      border: "none",
+      color: "#006D90",
+      fontWeight: "600",
+      cursor: "pointer",
+      display: "flex",
+      alignItems: "center",
+      gap: "6px",
+      fontSize: "14px"
+    }}
+  >
+    <FaArrowLeft />
+    Back to Dashboard
+  </button>
+
+  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+    {hasChanges && (
+      <Chip label="Unsaved changes" color="warning" size="small" />
+    )}
+    <button className="logout-button" onClick={handleLogout}>
+      <FaSignOutAlt /> Logout
+    </button>
+  </div>
+</div>
 
       <div className="profile-content">
         <div className="profile-header">
