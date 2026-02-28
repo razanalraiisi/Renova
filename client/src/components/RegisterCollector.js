@@ -27,6 +27,9 @@ const RegisterCollector = () => {
   const [categoriesError, setCategoriesError] = useState('');
   const [addressError, setAddressError] = useState('');
   const [openHrError, setOpenHrError] = useState('');
+  const [locationConsent, setLocationConsent] = useState(false);
+  const [coords, setCoords] = useState(null);
+  const [locationError, setLocationError] = useState("");
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -36,6 +39,25 @@ const RegisterCollector = () => {
   const { register: hookRegister, handleSubmit, formState: { errors } } = useForm({
     resolver: yupResolver(UserRegisterSchemaValidation)
   });
+
+  const getCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by this browser.");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setCoords({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        });
+      },
+      () => {
+        alert("Unable to retrieve your location.");
+      }
+    );
+  };
 
   const handleNextStep = () => {
     let ok = true;
@@ -65,6 +87,17 @@ const RegisterCollector = () => {
       ok = false;
     } else setAddressError('');
 
+    // ✅ LOCATION VALIDATION (ADDED ONLY THIS BLOCK)
+    if (!locationConsent) {
+      setLocationError("You must consent to share your location to appear on the map.");
+      ok = false;
+    } else if (!coords) {
+      setLocationError("Location not detected. Please allow location access.");
+      ok = false;
+    } else {
+      setLocationError('');
+    }
+
     if (!ok) return;
 
     const data = {
@@ -77,7 +110,9 @@ const RegisterCollector = () => {
       email,
       password,
       phone,
-      pic: pic.trim() ? pic : DEFAULT_PROFILE_PIC  
+      pic: pic.trim() ? pic : DEFAULT_PROFILE_PIC,
+      location: coords,            // ✅ ADDED
+      locationConsent              // ✅ ADDED
     };
 
     dispatch(addUser(data));
@@ -221,6 +256,29 @@ const RegisterCollector = () => {
               <form className="div-form" onSubmit={handleSubmit(submitCollector)}>
                 <div className="text-center mb-4">
                   <h5>Accepted Categories & Location</h5>
+                </div>
+
+                {/* LOCATION CONSENT UI (ADDED ONLY THIS SECTION) */}
+                <div style={{ marginBottom: "15px" }}>
+                  <input
+                    type="checkbox"
+                    checked={locationConsent}
+                    onChange={(e) => {
+                      setLocationConsent(e.target.checked);
+                      if (e.target.checked) {
+                        getCurrentLocation();
+                      } else {
+                        setCoords(null);
+                      }
+                    }}
+                    style={{ marginRight: 8 }}
+                  />
+                  I consent to share my current location to appear on the map.
+                  {locationError && (
+                    <div style={{ color: "red", fontSize: "14px", marginTop: "5px" }}>
+                      {locationError}
+                    </div>
+                  )}
                 </div>
 
                 <ValidationInput label="Accepted Categories" error={categoriesError}>

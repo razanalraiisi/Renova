@@ -20,7 +20,15 @@ const userSchema = new mongoose.Schema({
   openHr: { type: String },
   acceptedCategories: { type: [String], default: [] },
   address: { type: String },
-
+  // GEO LOCATION
+  location: {
+    lat: { type: Number },
+    lng: { type: Number }
+  },
+  locationConsent: {
+    type: Boolean,
+    default: false
+  },
   // COLLECTOR AUTO-ID
   collectorId: { type: String },
   collectorIdNumber: { type: Number },
