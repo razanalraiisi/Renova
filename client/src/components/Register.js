@@ -1,28 +1,28 @@
-import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Button, Navbar, NavbarBrand } from 'reactstrap';
-import { useForm } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import { addUser } from '../features/UserSlice';
-import { UserRegisterSchemaValidation } from '../validations/UserRegisterSchemaValidation';
-import ValidationInput from '../components/ValidationInput';
-import logo from '../assets/logo.png';
+import React, { useState, useEffect } from "react";
+import { Container, Row, Col, Button, Navbar, NavbarBrand } from "reactstrap";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { addUser, resetState } from "../features/UserSlice";
+import { UserRegisterSchemaValidation } from "../validations/UserRegisterSchemaValidation";
+import ValidationInput from "../components/ValidationInput";
+import logo from "../assets/logo.png";
 
 const DEFAULT_PROFILE_PIC = "https://icon-library.com/images/profiles-icon/profiles-icon-0.jpg";
 
 const Register = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [uname, setUname] = useState('');
-  const [pic, setPic] = useState('');
-  const [phone, setPhone] = useState('');
-
+  const [isUser, setIsUser] = useState(true); // toggle state: true = user, false = collector
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [uname, setUname] = useState("");
+  const [pic, setPic] = useState("");
+  const [phone, setPhone] = useState("");
   const [centerMessage, setCenterMessage] = useState(null);
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
   const { message, isSuccess, isError } = useSelector(state => state.users);
 
   const { register: hookRegister, handleSubmit, formState: { errors } } = useForm({
@@ -30,41 +30,40 @@ const Register = () => {
   });
 
   const submit = () => {
-    dispatch(addUser({
-      role: 'user',
-      uname,
-      email,
-      password,
-      phone,
-      pic: pic.trim() ? pic : DEFAULT_PROFILE_PIC  
-    }));
+    if (isUser) {
+      dispatch(addUser({
+        role: "user",
+        uname,
+        email,
+        password,
+        phone,
+        pic: pic.trim() ? pic : DEFAULT_PROFILE_PIC
+      }));
+    } else {
+      navigate("/register-collector"); // go to collector form
+    }
   };
 
   useEffect(() => {
-    if (isSuccess) {
-      setCenterMessage({
-        type: "success",
-        text: "Registration Successful! Redirecting..."
-      });
+    dispatch(resetState());
 
+    if (isSuccess) {
+      setCenterMessage({ type: "success", text: "Registration Successful! Redirecting..." });
       setTimeout(() => {
         setCenterMessage(null);
-        navigate('/login');
+        navigate("/login");
       }, 3000);
     }
 
     if (isError) {
-      setCenterMessage({
-        type: "error",
-        text: message || "Registration Failed"
-      });
-
-      setTimeout(() => setCenterMessage(null), 3000); 
+      setCenterMessage({ type: "error", text: message || "Registration Failed" });
+      setTimeout(() => setCenterMessage(null), 3000);
     }
-  }, [isSuccess, isError, message, navigate]);
+  }, [isSuccess, isError, message, navigate, dispatch]);
 
   return (
     <>
+      {/* CENTER MESSAGE */}
       {centerMessage && (
         <div style={{
           position: "fixed",
@@ -97,89 +96,166 @@ const Register = () => {
         `}
       </style>
 
-      <Navbar className="my-2" style={{ backgroundColor: "#0080AA" }}>
-        <NavbarBrand href="/" style={{ color: "white" }}>
+      {/* NAVBAR */}
+      <Navbar
+        style={{ backgroundColor: "#0080AA", padding: "10px 30px", boxShadow: "0 2px 8px rgba(0,0,0,0.15)" }}
+      >
+        <NavbarBrand href="/" style={{ color: "white", fontWeight: "600" }}>
           <img alt="logo" src={logo} style={{ height: 40, width: 40, marginRight: 10 }} />
           ReNova
         </NavbarBrand>
 
         <div className="ms-auto d-flex gap-2">
-          <Button href="/Login" style={{ backgroundColor: "white", color: "#0080AA", border: "none", padding: "8px 16px", borderRadius: "6px", fontWeight: "600" }}>Sign In</Button>
-          <Button href="/Register" style={{ backgroundColor: "#006D90", color: "white", border: "none", padding: "8px 16px", borderRadius: "6px", fontWeight: "600" }}>Sign Up</Button>
+          <Button href="/Login" style={{ backgroundColor: "white", color: "#0080AA", border: "none", padding: "8px 18px", borderRadius: "8px", fontWeight: "600" }}>
+            Sign In
+          </Button>
+          <Button href="/Register" style={{ backgroundColor: "#006D90", color: "white", border: "none", padding: "8px 18px", borderRadius: "8px", fontWeight: "600" }}>
+            Sign Up
+          </Button>
         </div>
       </Navbar>
 
-      <Container fluid>
-        <Row className='div-row'>
-          <Col md='6' className='div-col'>
-            <form className='div-form' onSubmit={handleSubmit(submit)}>
-              <div className="text-center">
-                <img src={logo} width="150" height="150" alt="Logo" />
-              </div>
-
+      {/* FORM */}
+      <Container fluid style={{
+        minHeight: "80vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "#f4f9fb",
+        paddingBottom: "50px",
+        paddingTop: "30px"
+      }}>
+        <Row style={{ width: "100%", maxWidth: "450px" }}>
+          <Col>
+            <form onSubmit={handleSubmit(submit)} style={{ background: "white", padding: "40px", borderRadius: "16px", boxShadow: "0 10px 30px rgba(0,0,0,0.08)" }}>
+              {/* LOGO */}
               <div className="text-center mb-4">
-                <label>
-                  <input type="radio" name="choice" value="user" defaultChecked /> User
-                </label>
-                <label style={{ marginLeft: "15px" }}>
-                  <input type="radio" name="choice" value="collector" onClick={() => navigate('/registerCollector')} /> Collector
-                </label>
+                <img src={logo} width="90" alt="Logo" style={{ marginBottom: "10px" }} />
+                <h4 style={{ fontWeight: "600", color: "#0080AA" }}>Create Account</h4>
+                <p style={{ fontSize: "14px", color: "#666" }}>Sign up to continue</p>
               </div>
 
+              {/* TOGGLE INSIDE FORM */}
+              <div style={{ display: "flex", borderRadius: "12px", overflow: "hidden", marginBottom: "20px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
+                <div
+                  onClick={() => setIsUser(true)}
+                  style={{
+                    flex: 1,
+                    padding: "10px 0",
+                    cursor: "pointer",
+                    backgroundColor: isUser ? "#4DA6FF" : "#fff",
+                    color: isUser ? "#fff" : "#000",
+                    fontWeight: "600",
+                    textAlign: "center",
+                    transition: "0.3s"
+                  }}
+                >
+                  User
+                </div>
+                <div
+                  onClick={() => {
+                    setIsUser(false);
+                    navigate("/registerCollector");
+                  }}
+                  style={{
+                    flex: 1,
+                    padding: "10px 0",
+                    cursor: "pointer",
+                    backgroundColor: !isUser ? "#4DA6FF" : "#fff",
+                    color: !isUser ? "#fff" : "#000",
+                    fontWeight: "600",
+                    textAlign: "center",
+                    transition: "0.3s"
+                  }}
+                >
+                  Collector
+                </div>
+              </div>
+
+              {/* FULL NAME */}
               <ValidationInput label="Full Name" error={errors.uname?.message}>
                 <input
-                  {...hookRegister('uname')}
+                  {...hookRegister("uname")}
                   value={uname}
                   onChange={e => setUname(e.target.value)}
+                  placeholder="Full Name"
                   className={`form-control ${errors.uname ? "input-error" : ""}`}
-                  placeholder="Full name"
+                  style={{ borderRadius: "8px", padding: "10px" }}
                 />
               </ValidationInput>
 
+              {/* EMAIL */}
               <ValidationInput label="Email" error={errors.email?.message}>
                 <input
-                  {...hookRegister('email')}
+                  {...hookRegister("email")}
                   value={email}
                   onChange={e => setEmail(e.target.value)}
-                  className={`form-control ${errors.email ? "input-error" : ""}`}
                   placeholder="Email"
                   type="email"
+                  className={`form-control ${errors.email ? "input-error" : ""}`}
+                  style={{ borderRadius: "8px", padding: "10px" }}
                 />
               </ValidationInput>
 
-              <ValidationInput label="Password" error={errors.password?.message} showPasswordRules={true}>
-                <input
-                  {...hookRegister('password')}
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  className={`form-control ${errors.password ? "input-error" : ""}`}
-                  placeholder="Create a password"
-                  type="password"
-                />
+              {/* PASSWORD */}
+              <ValidationInput label="Password" error={errors.password?.message}>
+                <div style={{ position: "relative" }}>
+                  <input
+                    {...hookRegister("password")}
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    placeholder="Create Password"
+                    type={showPassword ? "text" : "password"}
+                    className={`form-control ${errors.password ? "input-error" : ""}`}
+                    style={{ borderRadius: "8px", padding: "10px 40px 10px 10px" }}
+                  />
+                  <span
+                    onClick={() => setShowPassword(!showPassword)}
+                    style={{
+                      position: "absolute",
+                      right: "12px",
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      cursor: "pointer",
+                      fontSize: "14px",
+                      color: "#0080AA",
+                      fontWeight: "600"
+                    }}
+                  >
+                    {showPassword ? "Hide" : "Show"}
+                  </span>
+                </div>
               </ValidationInput>
 
+              {/* PHONE */}
               <ValidationInput label="Phone" error={errors.phone?.message}>
                 <input
-                  {...hookRegister('phone')}
+                  {...hookRegister("phone")}
                   value={phone}
                   onChange={e => setPhone(e.target.value)}
-                  className={`form-control ${errors.phone ? "input-error" : ""}`}
                   placeholder="Omani phone (8 digits, starts 2/7/9)"
+                  className={`form-control ${errors.phone ? "input-error" : ""}`}
+                  style={{ borderRadius: "8px", padding: "10px" }}
                 />
               </ValidationInput>
 
+              {/* PROFILE PIC */}
               <ValidationInput label="Profile Picture URL" error={errors.pic?.message}>
                 <input
-                  {...hookRegister('pic')}
+                  {...hookRegister("pic")}
                   value={pic}
                   onChange={e => setPic(e.target.value)}
-                  className={`form-control ${errors.pic ? "input-error" : ""}`}
                   placeholder="Profile Pic URL"
+                  className={`form-control ${errors.pic ? "input-error" : ""}`}
+                  style={{ borderRadius: "8px", padding: "10px" }}
                 />
               </ValidationInput>
 
-              <div className="d-flex justify-content-center">
-                <Button type="submit" style={{ backgroundColor: "#006D90" }}>Register</Button>
+              {/* BUTTON */}
+              <div className="mt-3">
+                <Button type="submit" style={{ backgroundColor: "#006D90", width: "100%", padding: "10px", borderRadius: "10px", fontWeight: "600", border: "none" }}>
+                  Register
+                </Button>
               </div>
             </form>
           </Col>

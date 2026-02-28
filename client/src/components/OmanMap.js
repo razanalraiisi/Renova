@@ -4,6 +4,10 @@ import L from "leaflet";
 import axios from "axios"; // fetch from backend
 import "leaflet/dist/leaflet.css";
 import "./Components.css";
+import { FaLocationDot } from "react-icons/fa6";
+import { FaPhoneVolume } from "react-icons/fa6";
+import { IoTime } from "react-icons/io5";
+import { useNavigate } from 'react-router-dom';
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -19,10 +23,11 @@ const OmanMap = () => {
   const [collectors, setCollectors] = useState([]);
   const [selectedCenter, setSelectedCenter] = useState(null);
   const [hoveredCenter, setHoveredCenter] = useState(null);
+  const navigate = useNavigate();
 
   const center = [23.5880, 58.3829];
 
-  // Fetch approved collectors from backend
+  
   useEffect(() => {
     const fetchCollectors = async () => {
       try {
@@ -77,16 +82,16 @@ const OmanMap = () => {
         >
           {activeCenter ? (
             <>
-              <h4>{activeCenter.companyName}</h4>
-              <p><strong>Address:</strong> {activeCenter.address}</p>
-              <p><strong>Phone:</strong> {activeCenter.phone}</p>
-              <p><strong>Hours:</strong> {activeCenter.openHr}</p>
+              <h4 style={{color:"#006D90"}}>{activeCenter.companyName}</h4>
+              <p><FaLocationDot size={19} color="#006D90"/> <strong>Address:</strong> {activeCenter.address}</p>
+              <p><FaPhoneVolume size={17} color="#006D90"/> <strong>Phone:</strong> {activeCenter.phone}</p>
+              <p><IoTime size={20} color="#006D90"/> <strong>Hours:</strong> {activeCenter.openHr}</p>
               {activeCenter.pic && (
                 <img src={activeCenter.pic} alt={activeCenter.companyName} />
               )}
               <div className="buttons-container">
-                <button className="primary-btn">Request Pick Up</button>
-                <button className="secondary-btn">Schedule Drop Off</button>
+                <button className="primary-btn" onClick={() => navigate('/PickupRequest')}>Request Pick Up</button>
+                <button className="primary-btn" onClick={() => navigate('/DropOff')}>Schedule Drop Off</button>
               </div>
             </>
           ) : (
