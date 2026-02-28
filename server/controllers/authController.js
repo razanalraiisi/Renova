@@ -70,6 +70,8 @@ export const registerCollector = async (req, res) => {
       collectorType,
       acceptedCategories = [],
       address,
+      location,
+      locationConsent,
       openHr
     } = req.body;
  
@@ -93,6 +95,8 @@ export const registerCollector = async (req, res) => {
       acceptedCategories,
       address,
       openHr,
+      location,
+      locationConsent,
       role: "collector",
       collectorId: ids.collectorId,
       collectorIdNumber: ids.collectorIdNumber,
@@ -399,3 +403,18 @@ export const updateCollectorProfile = async (req, res) => {
   }
 };
  
+
+export const getApprovedCollectors = async (req, res) => {
+  try {
+    
+    const collectors = await User.find({
+      role: "collector",
+      isApproved: true,
+      location: { $exists: true, $ne: null },
+    });
+    res.json(collectors);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error." });
+  }
+};
