@@ -418,3 +418,30 @@ export const getApprovedCollectors = async (req, res) => {
     res.status(500).json({ message: "Server error." });
   }
 };
+export const updateUserProfile = async (req, res) => {
+  try {
+    const { uname, phone, email } = req.body;
+
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // Only allow normal users here
+    if (user.role !== "user") {
+      return res.status(403).json({ message: "Not authorized" });
+    }
+
+    user.uname = uname || user.uname;
+    user.phone = phone || user.phone;
+    user.email = email || user.email;
+
+    await user.save();
+
+    res.json({
+      message: "Profile updated successfully.",
+      user,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error." });
+  }
+};

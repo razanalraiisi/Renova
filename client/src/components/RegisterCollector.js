@@ -246,7 +246,7 @@ const RegisterCollector = () => {
                       style={{
                         flex: 1,
                         padding: "10px 0",
-                        cursor: "default",
+                        cursor: "pointer",
                         backgroundColor: !isUser ? "#4DA6FF" : "#fff",
                         color: !isUser ? "#fff" : "#000",
                         fontWeight: "600",

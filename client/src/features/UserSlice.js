@@ -159,18 +159,23 @@ export const UserSlice = createSlice({
         state.message = action.payload || "Login failed.";
       })
 
-      // UPDATE PROFILE 🔥
       .addCase(updateUser.pending, (state) => {
         state.isLoading = true;
+        state.isError = false;
+        state.isSuccess = false;
+        state.message = "";
       })
       .addCase(updateUser.fulfilled, (state, action) => {
         state.isLoading = false;
+        state.isSuccess = true;   // 🔥 THIS WAS MISSING
+        state.isError = false;
         state.user = action.payload.user;
         state.message = action.payload.message;
       })
       .addCase(updateUser.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
+        state.isSuccess = false;
         state.message = action.payload;
       });
   },
