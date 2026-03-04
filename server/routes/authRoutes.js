@@ -8,7 +8,8 @@ import {
   verifyPasswordOtp,
   resetPassword,
   updateCollectorProfile,
-  getApprovedCollectors 
+  getApprovedCollectors,
+  updateUserProfile,
 } from "../controllers/authController.js";
  
 const router = express.Router();
@@ -23,6 +24,7 @@ router.post("/registerAdmin", registerAdmin);
 router.post("/login", login);
 router.put("/updateUser/:id", updateCollectorProfile);
 router.get("/admin/getApprovedCollectors", getApprovedCollectors);
+router.put("/updateUser/:id", updateUserProfile);
  
 // OTP / Forgot Password Routes
 router.post("/forgot-password", sendPasswordOtp);
