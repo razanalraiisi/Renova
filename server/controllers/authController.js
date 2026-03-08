@@ -429,10 +429,8 @@ export const updateUserProfile = async (req, res) => {
     if (user.role !== "user") {
       return res.status(403).json({ message: "Not authorized" });
     }
-
-    user.uname = uname || user.uname;
-    user.phone = phone || user.phone;
-    user.email = email || user.email;
+      user.uname = uname;
+      user.phone = phone;
 
     await user.save();
 
