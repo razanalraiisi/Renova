@@ -6,6 +6,7 @@ import logo from "../assets/logo.png";
 
 const PickupRequest = () => {
   const navigate = useNavigate();
+
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -19,11 +20,45 @@ const PickupRequest = () => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  // SUBMIT FORM TO BACKEND
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert("Pickup request submitted!");
-    console.log(form);
-    // Connect to backend or Firebase here
+
+    try {
+      const response = await fetch("http://localhost:5000/api/pickups/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(form),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert("Pickup request submitted successfully!");
+
+        console.log("Saved request:", data);
+
+        // Reset form
+        setForm({
+          name: "",
+          email: "",
+          phone: "",
+          address: "",
+          device: "",
+          condition: "",
+        });
+
+        // optional redirect
+        // navigate("/user-dashboard");
+      } else {
+        alert(data.message || "Error submitting request");
+      }
+    } catch (error) {
+      console.error("Submit error:", error);
+      alert("Server error");
+    }
   };
 
   const styles = {
@@ -37,20 +72,6 @@ const PickupRequest = () => {
     navbar: {
       backgroundColor: "#00a0d0",
       color: "white",
-    },
-    backWrapper: {
-      maxWidth: "600px",
-      margin: "20px auto 0",
-      padding: "0 20px",
-      display: "flex",
-      justifyContent: "flex-start",
-      alignItems: "center",
-    },
-    backIcon: {
-      color: "#0080AA",
-      cursor: "pointer",
-      fontSize: "22px",
-      marginRight: "10px",
     },
     main: {
       flex: 1,
@@ -102,13 +123,21 @@ const PickupRequest = () => {
         </NavbarBrand>
       </Navbar>
 
-<div style={{ maxWidth: "1200px", margin: "10px 0 0 0", padding: "0 30px", display: "flex", justifyContent: "flex-start" }}>
-  <FaArrowLeft
-    style={{ color: "#0080AA", cursor: "pointer", fontSize: "22px" }}
-    onClick={() => navigate("/start")}
-  />
-</div>
-
+      {/* BACK BUTTON */}
+      <div
+        style={{
+          maxWidth: "1200px",
+          margin: "10px 0 0 0",
+          padding: "0 30px",
+          display: "flex",
+          justifyContent: "flex-start",
+        }}
+      >
+        <FaArrowLeft
+          style={{ color: "#0080AA", cursor: "pointer", fontSize: "22px" }}
+          onClick={() => navigate("/start")}
+        />
+      </div>
 
       {/* MAIN FORM */}
       <main style={styles.main}>
@@ -122,7 +151,9 @@ const PickupRequest = () => {
             placeholder="Name"
             value={form.name}
             onChange={handleChange}
+            required
           />
+
           <input
             style={styles.input}
             type="email"
@@ -130,7 +161,9 @@ const PickupRequest = () => {
             placeholder="Email"
             value={form.email}
             onChange={handleChange}
+            required
           />
+
           <input
             style={styles.input}
             type="text"
@@ -138,7 +171,9 @@ const PickupRequest = () => {
             placeholder="Phone"
             value={form.phone}
             onChange={handleChange}
+            required
           />
+
           <input
             style={styles.input}
             type="text"
@@ -146,7 +181,9 @@ const PickupRequest = () => {
             placeholder="Address"
             value={form.address}
             onChange={handleChange}
+            required
           />
+
           <input
             style={styles.input}
             type="text"
@@ -154,7 +191,9 @@ const PickupRequest = () => {
             placeholder="Device"
             value={form.device}
             onChange={handleChange}
+            required
           />
+
           <input
             style={styles.input}
             type="text"
@@ -162,6 +201,7 @@ const PickupRequest = () => {
             placeholder="Condition"
             value={form.condition}
             onChange={handleChange}
+            required
           />
 
           <button type="submit" style={styles.button}>

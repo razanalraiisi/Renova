@@ -14,6 +14,7 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import authRoutes from './routes/authRoutes.js';
 import adminRoutes from "./routes/adminRoutes.js";
+import pickupRoutes from "./routes/pickupRoutes.js";
 
 
 // =======================
@@ -30,6 +31,7 @@ app.use(express.json());
 
 console.log("✓ AUTH ROUTES LOADED");
 
+app.use("/api/pickups", pickupRoutes);
 // =======================
 // Routes
 // =======================
