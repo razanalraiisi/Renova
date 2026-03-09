@@ -11,49 +11,49 @@ import logo from "../assets/logo.png";
 
 const Start = () => {
   const navigate = useNavigate();
+  const userName = JSON.parse(localStorage.getItem("user"))?.uname || "User";
 
   return (
     <>
-      {/* 🔵 NAVBAR (with user icon) */}
+      {/* NAVBAR */}
       <Navbar style={{ backgroundColor: "#0080AA", padding: "0 40px" }}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            width: "100%",
-          }}
-        >
-          {/* LEFT: Logo */}
-          <NavbarBrand
-            tag={Link}
-            to="/"
-            style={{ color: "white", display: "flex", alignItems: "center" }}
-          >
-            <img
-              src={logo}
-              alt="logo"
-              style={{ height: 40, width: 40, marginRight: 10 }}
-            />
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
+          <NavbarBrand tag={Link} to="/" style={{ color: "white", display: "flex", alignItems: "center" }}>
+            <img src={logo} alt="logo" style={{ height: 40, width: 40, marginRight: 10 }} />
             ReNova
           </NavbarBrand>
-
-          {/* RIGHT: User icon */}
           <div style={{ display: "flex", alignItems: "center", fontSize: "24px", color: "white", cursor: "pointer" }}>
             <FaUserCircle onClick={() => navigate("/UserDash")} />
           </div>
         </div>
       </Navbar>
 
-      {/* 🎨 PAGE STYLES */}
       <style>{`
         .action-page {
           min-height: calc(100vh - 120px);
           padding: 40px 20px;
           display: flex;
-          justify-content: center;
+          flex-direction: column;
+          justify-content: flex-start;
           align-items: center;
-          background-color: #ffffff;
+          background: linear-gradient(135deg, #e0f7fa, #ffffff);
+        }
+
+        .welcome-message {
+          font-size: 1.6rem;
+          font-weight: 600;
+          color: #0078a8;
+          margin-bottom: 5px;
+          text-align: center;
+        }
+
+        .main-heading {
+          font-size: 2rem;
+          font-weight: 700;
+          color: #0078a8;
+          margin-bottom: 40px;
+          letter-spacing: 1px;
+          text-align: center;
         }
 
         .action-grid {
@@ -70,13 +70,25 @@ const Start = () => {
           justify-content: center;
           align-items: center;
           cursor: pointer;
-          transition: all 0.3s ease;
+          transition: transform 0.4s ease, box-shadow 0.4s ease;
           text-align: center;
+          position: relative;
+          animation: float 4s ease-in-out infinite;
+        }
+
+        @keyframes float {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-10px); }
         }
 
         .action-card img {
           width: 70px;
           margin-bottom: 15px;
+          transition: transform 0.3s ease;
+        }
+
+        .action-card:hover img {
+          transform: translateY(-12px) rotate(-5deg);
         }
 
         .action-card h3 {
@@ -84,28 +96,22 @@ const Start = () => {
           font-weight: bold;
           letter-spacing: 1px;
           color: #0b4f6c;
+          transition: color 0.3s ease, text-shadow 0.3s ease;
         }
 
-        .recycle {
-          background-color: #c9f0dc;
+        .action-card:hover h3 {
+          color: #004f6b;
+          text-shadow: 0 0 8px rgba(0,0,0,0.3);
         }
 
-        .upcycle {
-          background-color: #cfe8f3;
-        }
-
-        .dispose {
-          background-color: #fff1b8;
-        }
-
-        .decide {
-          background-color: #ffffff;
-          border: 2px solid #dcdcdc;
-        }
+        .recycle { background: linear-gradient(135deg, #c9f0dc, #a6e3c3); }
+        .upcycle { background: linear-gradient(135deg, #cfe8f3, #a0d8f1); }
+        .dispose { background: linear-gradient(135deg, #fff1b8, #ffe085); }
+        .decide { background: linear-gradient(135deg, #ffffff, #e0e0e0); border: 2px solid #dcdcdc; }
 
         .action-card:hover {
-          transform: translateY(-8px);
-          box-shadow: 0px 12px 25px rgba(0, 0, 0, 0.15);
+          transform: translateY(-15px) rotate(2deg);
+          box-shadow: 0px 15px 30px rgba(0, 0, 0, 0.25);
         }
 
         @media (max-width: 700px) {
@@ -115,8 +121,10 @@ const Start = () => {
         }
       `}</style>
 
-      {/* 🟩 ACTION CARDS */}
       <div className="action-page">
+        <div className="welcome-message">Welcome back, {userName}!</div>
+        <div className="main-heading">Choose Your Action</div>
+
         <div className="action-grid">
           <div className="action-card recycle" onClick={() => navigate("/recycle")}>
             <img src={recycle} alt="Recycle" />
