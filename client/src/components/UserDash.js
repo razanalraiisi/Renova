@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Navbar, NavbarBrand } from "reactstrap";
-import { FaBell, FaSignOutAlt, FaUser, FaClipboardList } from "react-icons/fa";
+import { FaBell, FaSignOutAlt, FaUser, FaClipboardList, FaArrowLeft } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import { updateUser, resetUser, resetState } from "../features/UserSlice.js";
 import logo from "../assets/logo.png";
@@ -12,9 +12,7 @@ const UserDash = () => {
   const location = useLocation();
   const dispatch = useDispatch();
 
-  const { user, isSuccess, message, isLoading } = useSelector(
-    (state) => state.users
-  );
+  const { user, isSuccess, message, isLoading } = useSelector((state) => state.users);
 
   const [activeTab, setActiveTab] = useState("profile");
   const [showSnackbar, setShowSnackbar] = useState(false);
@@ -41,7 +39,6 @@ const UserDash = () => {
   useEffect(() => {
     if (isSuccess) {
       setShowSnackbar(true);
-
       setTimeout(() => {
         setShowSnackbar(false);
         dispatch(resetState()); // 🔥 reset success flag after showing
@@ -49,7 +46,7 @@ const UserDash = () => {
     }
   }, [isSuccess, dispatch]);
 
-  // Apply user theme when theme state changes (e.g. dropdown on this page)
+  // Apply user theme
   useEffect(() => {
     const root = document.documentElement;
     const apply = (value) => root.setAttribute("data-theme", value);
@@ -74,10 +71,7 @@ const UserDash = () => {
   };
 
   const handleSave = () => {
-    if (!user?._id) {
-      console.error("User ID missing.");
-      return;
-    }
+    if (!user?._id) return;
     dispatch(updateUser({ ...formData, _id: user._id }));
   };
 
@@ -98,32 +92,35 @@ const UserDash = () => {
 
   return (
     <div className="dashboard-page">
+      {/* NAVBAR */}
       <Navbar className="top-navbar">
         <div className="nav-container">
           <NavbarBrand tag={Link} to="/start" className="brand">
             <img src={logo} alt="logo" className="logo" />
             ReNova
           </NavbarBrand>
-
           <div className="nav-links">
             {navItems.map((item) => (
               <Link
                 key={item.name}
                 to={item.path}
-                className={
-                  location.pathname === item.path
-                    ? "nav-link active-link"
-                    : "nav-link"
-                }
+                className={location.pathname === item.path ? "nav-link active-link" : "nav-link"}
               >
                 {item.name}
               </Link>
             ))}
           </div>
-
           <FaBell className="bell-icon" />
         </div>
       </Navbar>
+
+      {/* BACK BUTTON */}
+      <div style={{ padding: "10px 30px" }}>
+        <FaArrowLeft
+          style={{ color: "#0080AA", cursor: "pointer", fontSize: "22px" }}
+          onClick={() => navigate("/start")}
+        />
+      </div>
 
       <div className="dashboard-container">
         {/* SIDEBAR */}
@@ -138,21 +135,11 @@ const UserDash = () => {
             <div className="email">{user?.email}</div>
           </div>
 
-          <div
-            className={
-              activeTab === "profile" ? "menu-item active" : "menu-item"
-            }
-            onClick={() => setActiveTab("profile")}
-          >
+          <div className={activeTab === "profile" ? "menu-item active" : "menu-item"} onClick={() => setActiveTab("profile")}>
             <FaUser /> My Profile
           </div>
 
-          <div
-            className={
-              activeTab === "requests" ? "menu-item active" : "menu-item"
-            }
-            onClick={() => setActiveTab("requests")}
-          >
+          <div className={activeTab === "requests" ? "menu-item active" : "menu-item"} onClick={() => setActiveTab("requests")}>
             <FaClipboardList /> My Requests
           </div>
 
@@ -169,11 +156,7 @@ const UserDash = () => {
 
               <div className="form-group">
                 <label>Full Name</label>
-                <input
-                  name="uname"
-                  value={formData.uname}
-                  onChange={handleChange}
-                />
+                <input name="uname" value={formData.uname} onChange={handleChange} />
               </div>
 
               <div className="form-group">
@@ -183,11 +166,7 @@ const UserDash = () => {
 
               <div className="form-group">
                 <label>Mobile Number</label>
-                <input
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                />
+                <input name="phone" value={formData.phone} onChange={handleChange} />
               </div>
 
               <div className="form-group" style={{ marginTop: 24 }}>
@@ -196,14 +175,7 @@ const UserDash = () => {
                   value={theme}
                   onChange={handleThemeChange}
                   className="theme-select"
-                  style={{
-                    width: "100%",
-                    padding: "10px",
-                    borderRadius: 6,
-                    border: "1px solid #ddd",
-                    fontSize: 14,
-                    background: "white",
-                  }}
+                  style={{ width: "100%", padding: "10px", borderRadius: 6, border: "1px solid #ddd", fontSize: 14, background: "white" }}
                 >
                   <option value="Light">Light</option>
                   <option value="Dark">Dark</option>
@@ -211,11 +183,7 @@ const UserDash = () => {
                 </select>
               </div>
 
-              <button
-                className="save-btn"
-                onClick={handleSave}
-                disabled={isLoading}
-              >
+              <button className="save-btn" onClick={handleSave} disabled={isLoading}>
                 {isLoading ? "Saving..." : "Save Changes"}
               </button>
             </>
@@ -231,11 +199,7 @@ const UserDash = () => {
       </div>
 
       {/* SNACKBAR */}
-      {showSnackbar && (
-        <div className="snackbar">
-          {message || "Profile updated successfully!"}
-        </div>
-      )}
+      {showSnackbar && <div className="snackbar">{message || "Profile updated successfully!"}</div>}
     </div>
   );
 };

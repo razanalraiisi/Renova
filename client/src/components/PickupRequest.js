@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { Navbar, NavbarBrand } from "reactstrap";
-import { Link, useNavigate } from "react-router-dom";
-import { FaArrowLeft } from "react-icons/fa";
+import { FaArrowLeft, FaUserCircle } from "react-icons/fa";
 import logo from "../assets/logo.png";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -79,7 +79,6 @@ const PickupRequest = () => {
 
   const styles = {
     page: { fontFamily: "Arial, sans-serif", minHeight: "100vh", display: "flex", flexDirection: "column", backgroundColor: "#ffffff" },
-    navbar: { backgroundColor: "#00a0d0", color: "white" },
     main: { flex: 1, display: "flex", justifyContent: "center", alignItems: "center", padding: "40px 20px" },
     formContainer: { border: "1px solid #ccc", borderRadius: "6px", padding: "30px", width: "100%", maxWidth: "450px", textAlign: "center" },
     title: { fontSize: "1.8rem", fontWeight: "bold", marginBottom: "20px", color: "#0078a8" },
@@ -87,16 +86,29 @@ const PickupRequest = () => {
     input: { width: "100%", padding: "10px", marginBottom: "15px", borderRadius: "4px", border: "1px solid #ccc" },
     errorText: { color: "red", fontSize: "12px", marginBottom: "10px", textAlign: "left" },
     button: { backgroundColor: "#0078a8", color: "#fff", border: "none", padding: "10px 25px", borderRadius: "20px", cursor: "pointer", fontWeight: "bold", width: "100%" },
+    navbar: { backgroundColor: "#0080AA", padding: "0 40px" },
+    userIcon: { display: "flex", alignItems: "center", fontSize: "24px", color: "white", cursor: "pointer" },
   };
+
+  // get user name for tooltip / future use
+  const user = JSON.parse(localStorage.getItem("user"));
 
   return (
     <div style={styles.page}>
-      {/* NAVBAR */}
+      {/* 🔵 NAVBAR (with user icon) */}
       <Navbar style={styles.navbar}>
-        <NavbarBrand tag={Link} to="/" style={{ color: "white" }}>
-          <img src={logo} alt="logo" style={{ height: 40, marginRight: 10 }} />
-          ReNova
-        </NavbarBrand>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
+          {/* LEFT: Logo */}
+          <NavbarBrand tag={Link} to="/" style={{ color: "white", display: "flex", alignItems: "center" }}>
+            <img src={logo} alt="logo" style={{ height: 40, width: 40, marginRight: 10 }} />
+            ReNova
+          </NavbarBrand>
+
+          {/* RIGHT: User icon */}
+          <div style={styles.userIcon}>
+            <FaUserCircle onClick={() => navigate("/UserDash")} title={user?.uname || "User"} />
+          </div>
+        </div>
       </Navbar>
 
       {/* BACK BUTTON */}
