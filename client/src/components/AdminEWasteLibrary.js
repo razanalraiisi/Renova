@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Snackbar, Alert } from "@mui/material";
 import "./Components.css";
 
@@ -22,6 +23,7 @@ const categoryOptions = [
 const emptyDevice = { name: "", risk: "", category: "", image: "", steps: [""] };
 
 export default function AdminEWasteLibrary() {
+  const navigate = useNavigate();
   const [devices, setDevices] = useState([]);
   const [form, setForm] = useState(emptyDevice);
   const [editingId, setEditingId] = useState(null);
@@ -63,6 +65,26 @@ export default function AdminEWasteLibrary() {
 
   return (
     <div className="ewaste-container admin">
+      <button
+        type="button"
+        onClick={() => navigate("/admin/dashboard")}
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 6,
+          padding: "8px 14px",
+          fontSize: 14,
+          fontWeight: 600,
+          color: "#0080AA",
+          background: "transparent",
+          border: "1px solid #0080AA",
+          borderRadius: 6,
+          cursor: "pointer",
+          marginBottom: 16,
+        }}
+      >
+        ← Back
+      </button>
       <h1>Admin – E-Waste Library</h1>
       <p className="subtitle">Add, edit, and manage recycling devices</p>
 

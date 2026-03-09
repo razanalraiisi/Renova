@@ -3,7 +3,7 @@ import AdminTopbar from "./AdminTopbar";
 import "./AdminPages.css";
 import "./AdminReports.css";
 
-export default function AdminReportsLayout({ title, children }) {
+export default function AdminReportsLayout({ title, children, onDownload, showFilter: showFilterProp = true, searchValue, onSearchChange, searchPlaceholder }) {
   // UI-only options (dummy)
   const items = useMemo(() => ["Dish washer", "Air Conditioner", "Laptop"], []);
   const users = useMemo(() => ["Faisal Al Wahabi", "Amal Al Abri", "Sulaiman Al Salmi"], []);
@@ -35,90 +35,100 @@ export default function AdminReportsLayout({ title, children }) {
             <h3 className="reportsTitle">{title}</h3>
 
             <div className="reportsActions">
-              <div className="searchBox">
-                🔍 <input placeholder="search" />
-              </div>
-
-              <button className="downloadBtn" type="button">
+              {onSearchChange != null && (
+                <div className="searchBox">
+                  🔍 <input
+                    placeholder={searchPlaceholder ?? "search"}
+                    value={searchValue ?? ""}
+                    onChange={(e) => onSearchChange(e.target.value)}
+                  />
+                </div>
+              )}
+              <button
+                className="downloadBtn"
+                type="button"
+                onClick={() => onDownload?.()}
+              >
                 ⬇ Download
               </button>
             </div>
           </div>
 
-          {/* Main layout: filter + list */}
-          <div className="reportsMain">
-            {/* LEFT FILTER */}
-            <div className="filterCol">
-              <div className="filterTopRow">
-                <div className="filterLabelMain">Filter By:</div>
+          {/* Main layout: filter + list (or list only when showFilter is false) */}
+          <div className="reportsMain" style={!showFilterProp ? { gridTemplateColumns: "1fr" } : undefined}>
+            {showFilterProp && (
+              <div className="filterCol">
+                <div className="filterTopRow">
+                  <div className="filterLabelMain">Filter By:</div>
 
-                <button
-                  type="button"
-                  className="filterClose"
-                  onClick={() => setShowFilter(false)}
-                  title="Close"
-                >
-                  ✕
-                </button>
-              </div>
-
-              {showFilter && (
-                <div className="filterCard">
-                  <div className="filterLabel">Filter By:</div>
-
-                  <div className="filterRow">
-                    <div className="filterFieldLabel">Date:</div>
-                    <input
-                      type="date"
-                      className="filterInput"
-                      value={date}
-                      onChange={(e) => setDate(e.target.value)}
-                    />
-                  </div>
-
-                  <div className="filterRow">
-                    <div className="filterFieldLabel">Item:</div>
-                    <select
-                      className="filterInput"
-                      value={item}
-                      onChange={(e) => setItem(e.target.value)}
-                    >
-                      <option value=""> </option>
-                      {items.map((x) => (
-                        <option key={x} value={x}>
-                          {x}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="filterRow">
-                    <div className="filterFieldLabel">User:</div>
-                    <select
-                      className="filterInput"
-                      value={user}
-                      onChange={(e) => setUser(e.target.value)}
-                    >
-                      <option value=""> </option>
-                      {users.map((x) => (
-                        <option key={x} value={x}>
-                          {x}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="filterBtns">
-                    <button className="filterApply" type="button" onClick={apply}>
-                      Apply
-                    </button>
-                    <button className="filterReset" type="button" onClick={reset}>
-                      Reset
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    className="filterClose"
+                    onClick={() => setShowFilter(false)}
+                    title="Close"
+                  >
+                    ✕
+                  </button>
                 </div>
-              )}
-            </div>
+
+                {showFilter && (
+                  <div className="filterCard">
+                    <div className="filterLabel">Filter By:</div>
+
+                    <div className="filterRow">
+                      <div className="filterFieldLabel">Date:</div>
+                      <input
+                        type="date"
+                        className="filterInput"
+                        value={date}
+                        onChange={(e) => setDate(e.target.value)}
+                      />
+                    </div>
+
+                    <div className="filterRow">
+                      <div className="filterFieldLabel">Item:</div>
+                      <select
+                        className="filterInput"
+                        value={item}
+                        onChange={(e) => setItem(e.target.value)}
+                      >
+                        <option value=""> </option>
+                        {items.map((x) => (
+                          <option key={x} value={x}>
+                            {x}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="filterRow">
+                      <div className="filterFieldLabel">User:</div>
+                      <select
+                        className="filterInput"
+                        value={user}
+                        onChange={(e) => setUser(e.target.value)}
+                      >
+                        <option value=""> </option>
+                        {users.map((x) => (
+                          <option key={x} value={x}>
+                            {x}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="filterBtns">
+                      <button className="filterApply" type="button" onClick={apply}>
+                        Apply
+                      </button>
+                      <button className="filterReset" type="button" onClick={reset}>
+                        Reset
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* RIGHT LIST */}
             <div className="reportsRightCol">

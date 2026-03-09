@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 import barImg from "../assets/bar.png";
@@ -13,7 +13,6 @@ import {
   CarouselItem,
   CarouselControl,
 } from "reactstrap";
-import { useSelector } from "react-redux";
 import "./AdminDashboard.css";
 
 // Chart.js
@@ -58,33 +57,81 @@ const SideCard = ({ title, lines = [], buttonText = "View", onClick }) => {
   );
 };
 
+const API_STATS = "http://localhost:5000/admin/stats";
+const API_CHART_DATA = "http://localhost:5000/admin/chart-data";
+
 /* ---------- Admin Dashboard ---------- */
 const AdminDashboard = () => {
   const navigate = useNavigate();
 
-  const stats = useSelector((s) => s.admin?.stats) || {
-    totalUsers: 315,
-    collectors: 195,
-    disposals: 456,
-    recycles: 216,
-    upcycles: 135,
-  };
+  const [stats, setStats] = useState({
+    totalUsers: 0,
+    collectors: 0,
+    disposals: 0,
+    recycles: 0,
+    upcycles: 0,
+  });
+  const [statsLoading, setStatsLoading] = useState(true);
 
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await fetch(API_STATS);
+        if (res.ok) {
+          const data = await res.json();
+          setStats((prev) => ({
+            ...prev,
+            totalUsers: data.totalUsers ?? 0,
+            collectors: data.totalCollectors ?? 0,
+          }));
+        }
+      } catch (err) {
+        console.error("Failed to load dashboard stats", err);
+      } finally {
+        setStatsLoading(false);
+      }
+    };
+    fetchStats();
+  }, []);
+
+  const [chartData, setChartData] = useState(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [animating, setAnimating] = useState(false);
 
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug"];
+  useEffect(() => {
+    const fetchChartData = async () => {
+      try {
+        const res = await fetch(API_CHART_DATA);
+        if (res.ok) {
+          const data = await res.json();
+          setChartData(data);
+        }
+      } catch (err) {
+        console.error("Failed to load chart data", err);
+      }
+    };
+    fetchChartData();
+  }, []);
 
   const chartSlides = useMemo(() => {
+    const d = chartData;
+    const empty7 = [0, 0, 0, 0, 0, 0, 0];
+    const empty8 = [0, 0, 0, 0, 0, 0, 0, 0];
+    const labels7 = d?.disposals?.labels ?? ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul"];
+    const labels8 = d?.newUsers?.labels ?? ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug"];
+    const dataDisposals = d?.disposals?.data ?? empty7;
+    const dataRecycles = d?.recycles?.data ?? empty7;
+    const dataNewUsers = d?.newUsers?.data ?? empty8;
+
     return [
       {
         title: "Disposals",
         type: "bar",
         data: {
-          labels: months.slice(0, 7),
+          labels: labels7,
           datasets: [
             {
-              data: [55, 49, 55, 64, 74, 89, 70],
+              data: dataDisposals,
               backgroundColor: "#0080AA",
               borderRadius: 6,
             },
@@ -92,13 +139,13 @@ const AdminDashboard = () => {
         },
       },
       {
-        title: "Recycles - 2025",
+        title: "Recycles",
         type: "line",
         data: {
-          labels: months.slice(0, 7),
+          labels: labels7,
           datasets: [
             {
-              data: [52, 40, 40, 52, 64, 84, 76],
+              data: dataRecycles,
               borderColor: "#0080AA",
               backgroundColor: "rgba(0,128,170,0.15)",
               tension: 0.35,
@@ -111,10 +158,10 @@ const AdminDashboard = () => {
         title: "New Users Registered",
         type: "bar",
         data: {
-          labels: months,
+          labels: labels8,
           datasets: [
             {
-              data: [80, 86, 95, 110, 125, 140, 165, 185],
+              data: dataNewUsers,
               backgroundColor: "#0080AA",
               borderRadius: 6,
             },
@@ -122,7 +169,7 @@ const AdminDashboard = () => {
         },
       },
     ];
-  }, []);
+  }, [chartData]);
 
   const next = () =>
     !animating && setActiveIndex((i) => (i + 1) % chartSlides.length);
@@ -149,7 +196,7 @@ const AdminDashboard = () => {
         <Col md="2" style={{ minWidth: 200 }} className="side-column">
           <SideCard
             title="Users"
-            lines={["Total users registered:", stats.totalUsers]}
+            lines={["Total users registered:", statsLoading ? "…" : stats.totalUsers]}
             onClick={() => navigate("/admin/reports/users")}
           />
           <SideCard
@@ -158,8 +205,8 @@ const AdminDashboard = () => {
           />
           <SideCard
             title="Collectors"
-            lines={["Total collectors:", stats.collectors]}
-            onClick={() => navigate("/admin/reports/collectors")}
+            lines={["Total collectors:", statsLoading ? "…" : stats.collectors]}
+            onClick={() => navigate("/admin/manage-collectors")}
           />
         </Col>
 
@@ -171,16 +218,9 @@ const AdminDashboard = () => {
             <Col md="4">
               <div className="stat-card">
                 <div className="stat-card-title">Collectors</div>
-                <div className="stat-card-value">{stats.collectors}</div>
+                <div className="stat-card-value">{statsLoading ? "…" : stats.collectors}</div>
 
                 <div className="collector-btns">
-                  <Button
-                    className="mini-btn"
-                    size="sm"
-                    onClick={() => navigate("/admin/manage-collectors")}
-                  >
-                    Manage
-                  </Button>
                   <Button
                     className="mini-btn"
                     size="sm"
@@ -278,7 +318,7 @@ const AdminDashboard = () => {
             <Button
               className="mini-btn"
               size="sm"
-              onClick={() => navigate("/admin/reports/disposals")}
+              onClick={() => navigate("/admin/reports/disposals-recycles-upcycles")}
             >
               View
             </Button>

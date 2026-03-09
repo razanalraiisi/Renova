@@ -50,6 +50,9 @@ export const getUser = createAsyncThunk(
 
       const storage = rememberMe ? localStorage : sessionStorage;
       storage.setItem("user", JSON.stringify(data.user));
+      if (data.token) {
+        storage.setItem("token", data.token);
+      }
 
       return data;
     } catch (error) {
@@ -116,7 +119,9 @@ export const UserSlice = createSlice({
     resetUser: (state) => {
       state.user = {};
       localStorage.removeItem("user");
+      localStorage.removeItem("token");
       sessionStorage.removeItem("user");
+      sessionStorage.removeItem("token");
     },
   },
 

@@ -37,6 +37,7 @@ const userSchema = new mongoose.Schema({
   // SHARED FIELDS
   // --------------------------
   email: { type: String, required: true, unique: true },
+  locationName: { type: String }, // optional; used e.g. for admin profile "location"
   password: { type: String, required: true },
   role: {
     type: String,

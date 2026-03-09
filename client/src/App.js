@@ -1,4 +1,6 @@
 import './App.css';
+import './components/AdminTheme.css';
+import './components/UserCollectorTheme.css';
 import Login from './components/Login.js';
 import Register from './components/Register.js';
 import Home from './components/Home.js';
@@ -39,12 +41,15 @@ import Support from './components/Support.js';
 import TermsConditions from './components/TermsConditions.js';
 import PrivacyPolicy from './components/PrivacyPolicy.js';
 import AdminUserPage from './components/AdminUserPage.js';
+import AdminMyRequests from './components/AdminMyRequests.js';
 
 // Admin – Reports
 import RecyclesReport from "./components/RecyclesReport";
 import DisposalsReport from "./components/DisposalsReport";
 import CollectorsReport from "./components/CollectorsReport";
 import UsersReport from "./components/UsersReport";
+import DisposalsRecyclesUpcyclesReport from "./components/DisposalsRecyclesUpcyclesReport";
+import AdminThemeSync from "./components/AdminThemeSync.js";
 
 function App() {
   const email = useSelector((state) => state.users?.user?.email);
@@ -52,6 +57,7 @@ function App() {
   return (
     <Container fluid className="appBG">
       <Router>
+        <AdminThemeSync />
         <Row>
           <Routes>
             {/* Public routes */}
@@ -111,9 +117,11 @@ function App() {
             <Route path="/admin/manage-collectors" element={<AdminManageCollectors />} />
             <Route path="/admin/reports/recycles" element={<RecyclesReport />} />
             <Route path="/admin/reports/disposals" element={<DisposalsReport />} />
+            <Route path="/admin/reports/disposals-recycles-upcycles" element={<DisposalsRecyclesUpcyclesReport />} />
             <Route path="/admin/reports/collectors" element={<CollectorsReport />} />
             <Route path="/admin/reports/users" element={<UsersReport />} />
             <Route path="/admin/profile" element={<AdminUserPage />} />
+            <Route path="/admin/my-requests" element={<AdminMyRequests />} />
 
 
 

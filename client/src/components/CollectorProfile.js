@@ -17,7 +17,7 @@ import { updateUser } from "../features/UserSlice";
 import "./Components.css";
 import { FaMapLocationDot } from "react-icons/fa6";
 import { GoTasklist } from "react-icons/go";
-import { FaRegUser } from "react-icons/fa";
+import { FaRegUser, FaPalette } from "react-icons/fa";
 import { FaArrowLeft } from "react-icons/fa";
 
 const CollectorProfile = () => {
@@ -53,6 +53,27 @@ const CollectorProfile = () => {
     message: "",
     severity: "success",
   });
+  const [theme, setTheme] = useState(() => localStorage.getItem("collectorTheme") || "Light");
+
+  // Apply collector theme when theme state changes
+  useEffect(() => {
+    const root = document.documentElement;
+    const apply = (value) => root.setAttribute("data-theme", value);
+    if (theme === "System") {
+      const media = window.matchMedia("(prefers-color-scheme: dark)");
+      const applySystem = () => apply(media.matches ? "dark" : "light");
+      applySystem();
+      media.addEventListener("change", applySystem);
+      return () => media.removeEventListener("change", applySystem);
+    }
+    apply(theme.toLowerCase());
+  }, [theme]);
+
+  const handleThemeChange = (e) => {
+    const value = e.target.value;
+    setTheme(value);
+    localStorage.setItem("collectorTheme", value);
+  };
 
   const allCategories = [
     "Small Electronics",
@@ -403,6 +424,31 @@ const CollectorProfile = () => {
                 <strong>Address:</strong> {data.location.address}
               </p>
             )}
+          </div>
+
+          {/* Theme / Appearance */}
+          <div className="card">
+            <h3 style={{ color: "#006D90" }}>
+              <FaPalette /> Theme
+            </h3>
+            <p style={{ marginBottom: 10 }}>Choose light, dark, or follow your device.</p>
+            <select
+              value={theme}
+              onChange={handleThemeChange}
+              style={{
+                width: "100%",
+                maxWidth: 280,
+                padding: "10px 12px",
+                borderRadius: 8,
+                border: "1px solid #ddd",
+                fontSize: 14,
+                background: "white",
+              }}
+            >
+              <option value="Light">Light</option>
+              <option value="Dark">Dark</option>
+              <option value="System">System</option>
+            </select>
           </div>
         </div>
 

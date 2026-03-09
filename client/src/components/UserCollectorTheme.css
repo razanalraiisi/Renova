@@ -1,0 +1,138 @@
+/* Dark theme for user (UserDash) and collector (CollectorProfile) when Theme = Dark or System prefers dark.
+   Applied via data-theme="dark" set by AdminThemeSync and each settings page. */
+
+/* ---------- User dashboard ---------- */
+[data-theme="dark"] .dashboard-page {
+  background-color: #1a1d21 !important;
+}
+
+[data-theme="dark"] .top-navbar {
+  background-color: #0d5a6e !important;
+}
+
+[data-theme="dark"] .sidebar {
+  background: #25282c !important;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .profile-box strong,
+[data-theme="dark"] .profile-box .email {
+  color: #e8eaed;
+}
+
+[data-theme="dark"] .profile-box .email {
+  color: #9aa0a6;
+}
+
+[data-theme="dark"] .menu-item {
+  color: #e8eaed;
+}
+
+[data-theme="dark"] .menu-item:hover {
+  background-color: #2d3136 !important;
+}
+
+[data-theme="dark"] .menu-item.active {
+  background-color: #0f3d4a !important;
+  color: #7dd3e8 !important;
+}
+
+[data-theme="dark"] .logout-btn {
+  background-color: #c0392b;
+}
+
+[data-theme="dark"] .content {
+  background: #25282c !important;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .section-title {
+  color: #7dd3e8 !important;
+}
+
+[data-theme="dark"] .form-group label {
+  color: #b0b4b8;
+}
+
+[data-theme="dark"] .form-group input,
+[data-theme="dark"] .theme-select {
+  background: #2d3136 !important;
+  border-color: #3a3e42 !important;
+  color: #e8eaed;
+}
+
+[data-theme="dark"] .save-btn {
+  background-color: #0d5a6e;
+}
+
+[data-theme="dark"] .dashboard-container p {
+  color: #9aa0a6;
+}
+
+[data-theme="dark"] .avatar {
+  background: #2d3136;
+}
+
+[data-theme="dark"] .snackbar {
+  background-color: #0d5a6e;
+}
+
+/* ---------- Collector profile ---------- */
+[data-theme="dark"] .profile-container {
+  background-color: #1a1d21 !important;
+}
+
+[data-theme="dark"] .profile-content {
+  background-color: #25282c !important;
+}
+
+[data-theme="dark"] .profile-title {
+  color: #e8eaed;
+}
+
+[data-theme="dark"] .card {
+  background-color: #2d3136 !important;
+}
+
+[data-theme="dark"] .card h3 {
+  color: #7dd3e8 !important;
+}
+
+[data-theme="dark"] .card p,
+[data-theme="dark"] .card li {
+  color: #e8eaed;
+}
+
+[data-theme="dark"] .card input,
+[data-theme="dark"] .card select {
+  background: #25282c !important;
+  border-color: #3a3e42 !important;
+  color: #e8eaed;
+}
+
+[data-theme="dark"] .accepted-categories {
+  background-color: #25282c !important;
+}
+
+[data-theme="dark"] .accepted-categories li {
+  color: #e8eaed;
+}
+
+[data-theme="dark"] .logout-button {
+  background-color: #0d5a6e;
+}
+
+[data-theme="dark"] .profile-container button[style*="transparent"] {
+  color: #7dd3e8 !important;
+}
+
+/* MUI Dialog when dark theme */
+[data-theme="dark"] .MuiDialog-paper {
+  background: #25282c !important;
+  color: #e8eaed;
+}
+
+[data-theme="dark"] .MuiDialogTitle-root,
+[data-theme="dark"] .MuiDialogContentText-root {
+  color: #e8eaed !important;
+}

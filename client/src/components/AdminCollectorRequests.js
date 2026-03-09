@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import AcceptModal from "../components/AcceptModal";
 import RejectModal from "../components/RejectModal";
@@ -8,6 +9,7 @@ import { FcViewDetails } from "react-icons/fc";
 import { FcBusinessContact } from "react-icons/fc";
 
 const AdminCollectorRequests = () => {
+  const navigate = useNavigate();
   const [requests, setRequests] = useState([]);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [showAccept, setShowAccept] = useState(false);
@@ -82,6 +84,26 @@ const AdminCollectorRequests = () => {
 
   return (
     <div className="admin-container">
+      <button
+        type="button"
+        onClick={() => navigate("/admin/dashboard")}
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 6,
+          padding: "8px 14px",
+          fontSize: 14,
+          fontWeight: 600,
+          color: "#0080AA",
+          background: "transparent",
+          border: "1px solid #0080AA",
+          borderRadius: 6,
+          cursor: "pointer",
+          marginBottom: 16,
+        }}
+      >
+        ← Back
+      </button>
       <h2 className="admin-title"> Collector Approval Requests</h2>
 
       {requests.length === 0 && (

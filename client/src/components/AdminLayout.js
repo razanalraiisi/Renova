@@ -4,9 +4,9 @@ import AdminTopbar from "./AdminTopbar";
 
 const AdminLayout = ({ children }) => {
   return (
-    <div style={{ minHeight: "100vh", background: "#f2f3f5" }}>
+    <div className="admin-layout-root" style={{ minHeight: "100vh", background: "#f2f3f5" }}>
       <AdminTopbar />
-      <Container fluid style={{ padding: "18px 18px 40px" }}>
+      <Container fluid className="admin-layout-container" style={{ padding: "18px 18px 40px" }}>
         {children}
       </Container>
     </div>

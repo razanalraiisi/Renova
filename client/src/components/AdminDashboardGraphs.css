@@ -1,16 +1,56 @@
-.dashTitle{
-  text-align: center;
-  font-weight: 800;
-  margin: 10px 0 22px;
+.graphsPageHeader {
+  margin-bottom: 24px;
 }
 
-.graphsGrid{
+.graphsBackBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #0080AA;
+  background: transparent;
+  border: 1px solid #0080AA;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-bottom: 16px;
+}
+
+.graphsBackBtn:hover {
+  background: rgba(0, 128, 170, 0.08);
+}
+
+.dashTitle {
+  text-align: center;
+  font-weight: 800;
+  margin: 10px 0 8px;
+}
+
+.graphsSubtitle {
+  text-align: center;
+  color: #666;
+  font-size: 14px;
+  margin: 0 0 22px;
+}
+
+.graphsLoading {
+  text-align: center;
+  padding: 48px;
+  color: #666;
+}
+
+.graphsGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 22px;
 }
 
-.graphCard{
+.graphsGridDetail {
+  grid-template-columns: 1fr 1fr;
+}
+
+.graphCard {
   background: #fff;
   border: 1px solid rgba(0,0,0,0.08);
   border-radius: 6px;
@@ -20,13 +60,41 @@
   min-height: 240px;
 }
 
-.graphImg{
+.graphCardDetail {
+  min-height: 320px;
+  height: 320px;
+  padding: 20px;
+}
+
+.graphCardDetail > div {
+  width: 100%;
+  height: 100%;
+  min-height: 260px;
+}
+
+.graphCardFullWidth {
+  grid-column: 1 / -1;
+  min-height: 360px;
+  height: 360px;
+}
+
+.graphCardFullWidth > div {
+  min-height: 300px;
+}
+
+.graphImg {
   width: 100%;
   height: auto;
   max-height: 320px;
   object-fit: contain;
 }
 
-@media (max-width: 900px){
-  .graphsGrid{ grid-template-columns: 1fr; }
+@media (max-width: 900px) {
+  .graphsGrid,
+  .graphsGridDetail {
+    grid-template-columns: 1fr;
+  }
+  .graphCardFullWidth {
+    grid-column: 1;
+  }
 }

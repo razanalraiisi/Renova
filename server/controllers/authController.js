@@ -443,3 +443,185 @@ export const updateUserProfile = async (req, res) => {
     res.status(500).json({ message: "Server error." });
   }
 };
+
+// --------------------
+// Admin: dashboard stats (counts from MongoDB)
+// --------------------
+export const getDashboardStats = async (req, res) => {
+  try {
+    const [totalUsers, totalCollectors] = await Promise.all([
+      User.countDocuments({ role: "user" }),
+      User.countDocuments({ role: "collector", isApproved: true }),
+    ]);
+    res.json({ totalUsers, totalCollectors });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error." });
+  }
+};
+
+// --------------------
+// Admin: get all approved collectors (for Manage Collectors page)
+// Reads from MongoDB "users" collection, role: "collector", isApproved: true
+// --------------------
+export const getCollectors = async (req, res) => {
+  try {
+    const collectors = await User.find({ role: "collector", isApproved: true })
+      .sort({ createdAt: -1 })
+      .select("companyName address phone email collectorId collectorType openHr createdAt")
+      .lean();
+    res.json(collectors);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error." });
+  }
+};
+
+// --------------------
+// Admin: deactivate a collector (sets isApproved: false) and email them the reason
+// --------------------
+export const deactivateCollector = async (req, res) => {
+  try {
+    const { reason } = req.body || {};
+
+    const collector = await User.findById(req.params.id);
+    if (!collector) return res.status(404).json({ message: "Collector not found" });
+    if (collector.role !== "collector") return res.status(400).json({ message: "Not a collector" });
+
+    collector.isApproved = false;
+    await collector.save();
+
+    const reasonText = reason && String(reason).trim() ? reason : "No reason provided.";
+
+    const html = `
+    <div style="font-family: Arial; padding: 20px; max-width: 600px; margin: auto; border-radius: 10px; background: #ffffff;">
+      <div style="text-align: center;">
+        <img src="https://i.imgur.com/lF0sKzC.png" width="70" style="margin-bottom: 10px;" />
+        <h2 style="color: #CC0000;">Collector Account Deactivated</h2>
+      </div>
+
+      <p>Dear <strong>${collector.companyName || "Collector"}</strong>,</p>
+      <p>Your ReNova collector account has been <strong>deactivated</strong> by our admin team.</p>
+
+      <p><strong>Reason for deactivation:</strong></p>
+      <p style="background: #f5f5f5; padding: 12px; border-radius: 6px;">${reasonText}</p>
+
+      <p><strong>Account details:</strong></p>
+      <ul>
+        <li><strong>Collector ID:</strong> ${collector.collectorId || "—"}</li>
+        <li><strong>Status:</strong> Deactivated</li>
+      </ul>
+
+      <div style="text-align: center; margin-top: 20px;">
+        <a href="mailto:support@renova.com"
+          style="padding: 12px 20px; color: white; text-decoration: none; background-color: #005A7A; border-radius: 6px;">
+          Contact Support
+        </a>
+      </div>
+
+      <p style="margin-top: 30px; color: #777; font-size: 12px; text-align: center;">
+        © 2025 ReNova Team. All rights reserved.
+      </p>
+    </div>
+    `;
+
+    await sendEmail(collector.email, "Your ReNova Collector Account Has Been Deactivated", html);
+
+    res.json({ message: "Collector deactivated and email sent." });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error." });
+  }
+};
+
+// --------------------
+// Admin profile: get / update (requires verifyAdmin middleware)
+// --------------------
+export const getAdminProfile = async (req, res) => {
+  try {
+    const admin = req.user;
+    res.json({
+      name: admin.uname || "",
+      email: admin.email || "",
+      mobile: admin.phone || "",
+      location: admin.locationName || "",
+      avatarUrl: admin.pic || "",
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error." });
+  }
+};
+
+export const updateAdminProfile = async (req, res) => {
+  try {
+    const { name, email, mobile, location } = req.body;
+    const admin = await User.findById(req.user._id);
+    if (!admin) return res.status(404).json({ message: "Admin not found." });
+    if (name !== undefined) admin.uname = name;
+    if (email !== undefined) admin.email = email;
+    if (mobile !== undefined) admin.phone = mobile;
+    if (location !== undefined) admin.locationName = location;
+    await admin.save();
+    const updated = await User.findById(admin._id).select("-password").lean();
+    res.json({
+      message: "Profile updated successfully.",
+      profile: {
+        name: updated.uname || "",
+        email: updated.email || "",
+        mobile: updated.phone || "",
+        location: updated.locationName || "",
+        avatarUrl: updated.pic || "",
+      },
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error." });
+  }
+};
+
+// --------------------
+// Admin: all collector registration requests (history: pending + approved)
+// --------------------
+export const getCollectorRequestsHistory = async (req, res) => {
+  try {
+    const collectors = await User.find({ role: "collector" })
+      .sort({ createdAt: -1 })
+      .select("companyName email phone address collectorType openHr collectorId isApproved createdAt")
+      .lean();
+    const list = collectors.map((c) => ({
+      _id: c._id,
+      companyName: c.companyName,
+      email: c.email,
+      phone: c.phone,
+      address: c.address,
+      collectorType: c.collectorType,
+      openHr: c.openHr,
+      collectorId: c.collectorId,
+      status: c.isApproved ? "approved" : "pending",
+      createdAt: c.createdAt,
+    }));
+    res.json(list);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error." });
+  }
+};
+
+// --------------------
+// Admin: get all users (for Users report)
+// Reads from MongoDB "users" collection via User model (UserModel.js)
+// Schema fields: uname, phone, email, userId, role, createdAt (timestamps)
+// --------------------
+export const getUsers = async (req, res) => {
+  try {
+    const users = await User.find({ role: "user" })
+      .sort({ createdAt: -1 })
+      .select("uname email phone userId createdAt")
+      .lean();
+    res.json(users);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error." });
+  }
+};

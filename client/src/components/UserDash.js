@@ -18,6 +18,7 @@ const UserDash = () => {
 
   const [activeTab, setActiveTab] = useState("profile");
   const [showSnackbar, setShowSnackbar] = useState(false);
+  const [theme, setTheme] = useState(() => localStorage.getItem("userTheme") || "Light");
 
   const [formData, setFormData] = useState({
     uname: "",
@@ -48,6 +49,20 @@ const UserDash = () => {
     }
   }, [isSuccess, dispatch]);
 
+  // Apply user theme when theme state changes (e.g. dropdown on this page)
+  useEffect(() => {
+    const root = document.documentElement;
+    const apply = (value) => root.setAttribute("data-theme", value);
+    if (theme === "System") {
+      const media = window.matchMedia("(prefers-color-scheme: dark)");
+      const applySystem = () => apply(media.matches ? "dark" : "light");
+      applySystem();
+      media.addEventListener("change", applySystem);
+      return () => media.removeEventListener("change", applySystem);
+    }
+    apply(theme.toLowerCase());
+  }, [theme]);
+
   const handleLogout = () => {
     dispatch(resetUser());
     localStorage.removeItem("token");
@@ -63,8 +78,13 @@ const UserDash = () => {
       console.error("User ID missing.");
       return;
     }
-
     dispatch(updateUser({ ...formData, _id: user._id }));
+  };
+
+  const handleThemeChange = (e) => {
+    const value = e.target.value;
+    setTheme(value);
+    localStorage.setItem("userTheme", value);
   };
 
   const navItems = [
@@ -168,6 +188,27 @@ const UserDash = () => {
                   value={formData.phone}
                   onChange={handleChange}
                 />
+              </div>
+
+              <div className="form-group" style={{ marginTop: 24 }}>
+                <label>Theme</label>
+                <select
+                  value={theme}
+                  onChange={handleThemeChange}
+                  className="theme-select"
+                  style={{
+                    width: "100%",
+                    padding: "10px",
+                    borderRadius: 6,
+                    border: "1px solid #ddd",
+                    fontSize: 14,
+                    background: "white",
+                  }}
+                >
+                  <option value="Light">Light</option>
+                  <option value="Dark">Dark</option>
+                  <option value="System">System</option>
+                </select>
               </div>
 
               <button

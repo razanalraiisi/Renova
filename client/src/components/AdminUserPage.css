@@ -304,3 +304,84 @@
     padding: 28px 18px;
   }
 }
+
+/* Dark theme (applied when Theme = Dark or System prefers dark) */
+[data-admin-theme="dark"] .au-page {
+  background: #1a1d21;
+}
+
+[data-admin-theme="dark"] .au-card {
+  background: #25282c;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+[data-admin-theme="dark"] .au-center-bg {
+  background: #1e2226;
+}
+
+[data-admin-theme="dark"] .au-profile-meta .au-name,
+[data-admin-theme="dark"] .au-details-name {
+  color: #e8eaed;
+}
+
+[data-admin-theme="dark"] .au-profile-meta .au-email,
+[data-admin-theme="dark"] .au-details-email,
+[data-admin-theme="dark"] .au-menu-right-text {
+  color: #9aa0a6;
+}
+
+[data-admin-theme="dark"] .au-menu-item {
+  color: #e8eaed;
+}
+
+[data-admin-theme="dark"] .au-menu-item:hover {
+  background: #2d3136;
+}
+
+[data-admin-theme="dark"] .au-menu-item.active {
+  background: #0f3d4a;
+  color: #7dd3e8;
+}
+
+[data-admin-theme="dark"] .au-menu-chevron {
+  color: #9aa0a6;
+}
+
+[data-admin-theme="dark"] .au-avatar,
+[data-admin-theme="dark"] .au-details-avatar {
+  background: #2d3136;
+  color: #7dd3e8;
+}
+
+[data-admin-theme="dark"] .au-settings-title,
+[data-admin-theme="dark"] .au-setting-row {
+  color: #e8eaed;
+}
+
+[data-admin-theme="dark"] .au-settings-close {
+  color: #9aa0a6;
+}
+
+[data-admin-theme="dark"] .au-select {
+  color: #e8eaed;
+}
+
+[data-admin-theme="dark"] .au-field-label {
+  color: #b0b4b8;
+}
+
+[data-admin-theme="dark"] .au-field {
+  border-top-color: #3a3e42;
+}
+
+[data-admin-theme="dark"] .au-input {
+  color: #e8eaed;
+}
+
+[data-admin-theme="dark"] .au-muted {
+  color: #9aa0a6;
+}
+
+[data-admin-theme="dark"] .au-save-msg {
+  color: #7dd3e8 !important;
+}

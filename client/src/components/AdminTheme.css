@@ -1,0 +1,194 @@
+/* Dark theme for all admin pages when Theme is Dark or System prefers dark.
+   Applied to document via data-admin-theme="dark" set by AdminThemeSync / AdminUserPage. */
+
+[data-admin-theme="dark"] .admin-layout-root {
+  background: #1a1d21 !important;
+}
+
+[data-admin-theme="dark"] .admin-layout-container {
+  background: #1a1d21;
+}
+
+[data-admin-theme="dark"] .adminPage {
+  background: #1a1d21 !important;
+}
+
+[data-admin-theme="dark"] .adminBody {
+  background: #1a1d21;
+}
+
+[data-admin-theme="dark"] .adminCardWrap {
+  background: #25282c !important;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+[data-admin-theme="dark"] .adminTopbar,
+[data-admin-theme="dark"] .navbar[style*="0b7ea1"] {
+  background: #0d5a6e !important;
+}
+
+/* Dashboard */
+[data-admin-theme="dark"] .admin-board {
+  background: #25282c;
+  border-color: #3a3e42;
+}
+
+[data-admin-theme="dark"] .admin-title {
+  color: #e8a5a5;
+}
+
+[data-admin-theme="dark"] .side-card,
+[data-admin-theme="dark"] .stat-card,
+[data-admin-theme="dark"] .graphs-card {
+  background: #2d3136 !important;
+  border-color: #3a3e42 !important;
+}
+
+[data-admin-theme="dark"] .side-card h6,
+[data-admin-theme="dark"] .stat-card-title,
+[data-admin-theme="dark"] .stat-card-value,
+[data-admin-theme="dark"] .stat-card-sub {
+  color: #e8eaed;
+}
+
+[data-admin-theme="dark"] .center-graph-box {
+  background: #25282c !important;
+  border-color: #3a3e42;
+}
+
+[data-admin-theme="dark"] .graphs-icon-box,
+[data-admin-theme="dark"] .graphs-donut-box {
+  background: #2d3136 !important;
+  border-color: #3a3e42;
+}
+
+[data-admin-theme="dark"] .dot.active {
+  background: #7dd3e8;
+}
+
+[data-admin-theme="dark"] .pageTitleRow,
+[data-admin-theme="dark"] .pageTitleCentered,
+[data-admin-theme="dark"] .pageTitle {
+  color: #e8eaed;
+}
+
+/* Reports */
+[data-admin-theme="dark"] .reportsTitle,
+[data-admin-theme="dark"] .reportsMain {
+  color: #e8eaed;
+}
+
+[data-admin-theme="dark"] .reportsHeader {
+  color: #e8eaed;
+}
+
+[data-admin-theme="dark"] .searchBox {
+  background: #2d3136;
+}
+
+[data-admin-theme="dark"] .searchBox input {
+  color: #e8eaed;
+}
+
+[data-admin-theme="dark"] .reportCard {
+  background: #25282c !important;
+  border-color: #3a3e42;
+}
+
+[data-admin-theme="dark"] .expandRow {
+  color: #e8eaed;
+}
+
+[data-admin-theme="dark"] .muted {
+  color: #9aa0a6;
+}
+
+/* Collector requests & manage collectors */
+[data-admin-theme="dark"] .admin-container {
+  background: #1a1d21;
+}
+
+[data-admin-theme="dark"] .request-card,
+[data-admin-theme="dark"] .requestCard {
+  background: #25282c !important;
+  border-color: #3a3e42;
+}
+
+[data-admin-theme="dark"] .collector-name,
+[data-admin-theme="dark"] .requestName,
+[data-admin-theme="dark"] .manageName {
+  color: #e8eaed;
+}
+
+[data-admin-theme="dark"] .requestMeta,
+[data-admin-theme="dark"] .manageMeta {
+  color: #9aa0a6;
+}
+
+[data-admin-theme="dark"] .info-grid h5,
+[data-admin-theme="dark"] .info-grid p {
+  color: #e8eaed;
+}
+
+[data-admin-theme="dark"] .manageCard {
+  background: #25282c !important;
+  border-color: #3a3e42;
+}
+
+[data-admin-theme="dark"] .requestLeft,
+[data-admin-theme="dark"] .requestRight {
+  color: #e8eaed;
+}
+
+[data-admin-theme="dark"] .bagIcon {
+  background: #2d3136;
+}
+
+/* Modals */
+[data-admin-theme="dark"] .modalOverlay {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+[data-admin-theme="dark"] .modalCard {
+  background: #25282c !important;
+  border-color: #3a3e42;
+}
+
+[data-admin-theme="dark"] .modalLabel,
+[data-admin-theme="dark"] .modalBodyLarge {
+  color: #e8eaed;
+}
+
+[data-admin-theme="dark"] .modalTextarea,
+[data-admin-theme="dark"] .modalInput {
+  background: #2d3136;
+  border-color: #3a3e42;
+  color: #e8eaed;
+}
+
+[data-admin-theme="dark"] .successText {
+  color: #e8eaed;
+}
+
+[data-admin-theme="dark"] .btnCloseGray {
+  background: #3a3e42;
+  color: #e8eaed;
+}
+
+/* Disposals/Recycles/Upcycles report page */
+[data-admin-theme="dark"] .section-title,
+[data-admin-theme="dark"] .report-section h3 {
+  color: #e8eaed;
+}
+
+[data-admin-theme="dark"] .downloadBtn {
+  background: #2d3136;
+  border-color: #3a3e42;
+  color: #e8eaed;
+}
+
+/* Admin dashboard graphs page */
+[data-admin-theme="dark"] .graphs-page-title,
+[data-admin-theme="dark"] .admin-board .row {
+  color: #e8eaed;
+}
