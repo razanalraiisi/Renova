@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Navbar, NavbarBrand } from "reactstrap";
-import { FaBell, FaSignOutAlt, FaUser, FaClipboardList, FaArrowLeft } from "react-icons/fa";
+import { FaBell, FaSignOutAlt, FaArrowLeft, FaUser, FaClipboardList } from "react-icons/fa"; // ✅ icons fixed
 import { useDispatch, useSelector } from "react-redux";
 import { updateUser, resetUser, resetState } from "../features/UserSlice.js";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as Yup from "yup";
 import logo from "../assets/logo.png";
 import "./Components.css";
 
@@ -12,41 +15,61 @@ const UserDash = () => {
   const location = useLocation();
   const dispatch = useDispatch();
 
-  const { user, isSuccess, message, isLoading } = useSelector((state) => state.users);
+  const { user, isSuccess, message, isLoading } = useSelector(
+    (state) => state.users
+  );
 
   const [activeTab, setActiveTab] = useState("profile");
   const [showSnackbar, setShowSnackbar] = useState(false);
-  const [theme, setTheme] = useState(() => localStorage.getItem("userTheme") || "Light");
+  const [theme, setTheme] = useState(
+    () => localStorage.getItem("userTheme") || "Light"
+  );
 
-  const [formData, setFormData] = useState({
-    uname: "",
-    email: "",
-    phone: "",
+  // Default form values
+  const defaultValues = {
+    uname: user?.uname || "",
+    phone: user?.phone || "",
+  };
+
+  // Validation schema
+  const schema = Yup.object().shape({
+    uname: Yup.string()
+      .required("Full Name is required")
+      .min(3, "Full Name must be at least 3 characters"),
+    phone: Yup.string()
+      .required("Phone is required")
+      .matches(/^[0-9]+$/, "Phone must be numbers only")
+      .min(7, "Phone must be at least 7 digits"),
   });
 
-  // Populate form when user changes
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+    setValue,
+  } = useForm({
+    defaultValues,
+    resolver: yupResolver(schema),
+  });
+
   useEffect(() => {
     if (user && user._id) {
-      setFormData({
-        uname: user.uname || "",
-        email: user.email || "",
-        phone: user.phone || "",
-      });
+      setValue("uname", user.uname);
+      setValue("phone", user.phone);
     }
-  }, [user]);
+  }, [user, setValue]);
 
-  // Snackbar logic
   useEffect(() => {
     if (isSuccess) {
       setShowSnackbar(true);
       setTimeout(() => {
         setShowSnackbar(false);
-        dispatch(resetState()); // 🔥 reset success flag after showing
+        dispatch(resetState());
       }, 3000);
     }
   }, [isSuccess, dispatch]);
 
-  // Apply user theme
   useEffect(() => {
     const root = document.documentElement;
     const apply = (value) => root.setAttribute("data-theme", value);
@@ -66,19 +89,15 @@ const UserDash = () => {
     navigate("/");
   };
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleSave = () => {
-    if (!user?._id) return;
-    dispatch(updateUser({ ...formData, _id: user._id }));
-  };
-
   const handleThemeChange = (e) => {
     const value = e.target.value;
     setTheme(value);
     localStorage.setItem("userTheme", value);
+  };
+
+  const onSubmit = (data) => {
+    if (!user?._id) return;
+    dispatch(updateUser({ ...data, _id: user._id }));
   };
 
   const navItems = [
@@ -104,7 +123,11 @@ const UserDash = () => {
               <Link
                 key={item.name}
                 to={item.path}
-                className={location.pathname === item.path ? "nav-link active-link" : "nav-link"}
+                className={
+                  location.pathname === item.path
+                    ? "nav-link active-link"
+                    : "nav-link"
+                }
               >
                 {item.name}
               </Link>
@@ -114,7 +137,7 @@ const UserDash = () => {
         </div>
       </Navbar>
 
-      {/* BACK BUTTON */}
+      {/* BACK ICON */}
       <div style={{ padding: "10px 30px" }}>
         <FaArrowLeft
           style={{ color: "#0080AA", cursor: "pointer", fontSize: "22px" }}
@@ -135,11 +158,17 @@ const UserDash = () => {
             <div className="email">{user?.email}</div>
           </div>
 
-          <div className={activeTab === "profile" ? "menu-item active" : "menu-item"} onClick={() => setActiveTab("profile")}>
+          <div
+            className={activeTab === "profile" ? "menu-item active" : "menu-item"}
+            onClick={() => setActiveTab("profile")}
+          >
             <FaUser /> My Profile
           </div>
 
-          <div className={activeTab === "requests" ? "menu-item active" : "menu-item"} onClick={() => setActiveTab("requests")}>
+          <div
+            className={activeTab === "requests" ? "menu-item active" : "menu-item"}
+            onClick={() => setActiveTab("requests")}
+          >
             <FaClipboardList /> My Requests
           </div>
 
@@ -151,22 +180,40 @@ const UserDash = () => {
         {/* CONTENT */}
         <div className="content">
           {activeTab === "profile" && (
-            <>
+            <form onSubmit={handleSubmit(onSubmit)}>
               <div className="section-title">Profile Information</div>
 
               <div className="form-group">
                 <label>Full Name</label>
-                <input name="uname" value={formData.uname} onChange={handleChange} />
+                <input
+                  {...register("uname")}
+                  className={`form-control ${errors.uname ? "input-error" : ""}`}
+                  style={{ borderRadius: 6, padding: 10 }}
+                />
+                {errors.uname && (
+                  <div style={{ color: "red", fontSize: 12 }}>{errors.uname.message}</div>
+                )}
               </div>
 
               <div className="form-group">
                 <label>Email</label>
-                <input name="email" value={formData.email} disabled />
+                <input
+                  value={user?.email || ""}
+                  disabled
+                  style={{ borderRadius: 6, padding: 10, backgroundColor: "#f1f1f1" }}
+                />
               </div>
 
               <div className="form-group">
-                <label>Mobile Number</label>
-                <input name="phone" value={formData.phone} onChange={handleChange} />
+                <label>Phone</label>
+                <input
+                  {...register("phone")}
+                  className={`form-control ${errors.phone ? "input-error" : ""}`}
+                  style={{ borderRadius: 6, padding: 10 }}
+                />
+                {errors.phone && (
+                  <div style={{ color: "red", fontSize: 12 }}>{errors.phone.message}</div>
+                )}
               </div>
 
               <div className="form-group" style={{ marginTop: 24 }}>
@@ -175,7 +222,14 @@ const UserDash = () => {
                   value={theme}
                   onChange={handleThemeChange}
                   className="theme-select"
-                  style={{ width: "100%", padding: "10px", borderRadius: 6, border: "1px solid #ddd", fontSize: 14, background: "white" }}
+                  style={{
+                    width: "100%",
+                    padding: "10px",
+                    borderRadius: 6,
+                    border: "1px solid #ddd",
+                    fontSize: 14,
+                    background: "white",
+                  }}
                 >
                   <option value="Light">Light</option>
                   <option value="Dark">Dark</option>
@@ -183,10 +237,15 @@ const UserDash = () => {
                 </select>
               </div>
 
-              <button className="save-btn" onClick={handleSave} disabled={isLoading}>
+              <button
+                type="submit"
+                className="save-btn"
+                disabled={isLoading}
+                style={{ marginTop: 15 }}
+              >
                 {isLoading ? "Saving..." : "Save Changes"}
               </button>
-            </>
+            </form>
           )}
 
           {activeTab === "requests" && (
@@ -199,7 +258,9 @@ const UserDash = () => {
       </div>
 
       {/* SNACKBAR */}
-      {showSnackbar && <div className="snackbar">{message || "Profile updated successfully!"}</div>}
+      {showSnackbar && (
+        <div className="snackbar">{message || "Profile updated successfully!"}</div>
+      )}
     </div>
   );
 };
