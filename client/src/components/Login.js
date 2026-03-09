@@ -24,7 +24,7 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false); // added
+  const [rememberMe, setRememberMe] = useState(false);
  
   const dispatch = useDispatch();
   const user = useSelector((state) => state.users.user);
@@ -41,11 +41,15 @@ const Login = () => {
  
   const validate = () => {
     dispatch(resetState());
-    dispatch(getUser({ email, password, rememberMe })); // send rememberMe
+    dispatch(getUser({ email, password, rememberMe }));
   };
  
   useEffect(() => {
     if (isSuccess && user?.role) {
+
+      // ✅ ADDED: store user after login
+      localStorage.setItem("user", JSON.stringify(user));
+
       const role = String(user.role).toLowerCase();
  
       if (role === "admin") navigate("/admin/dashboard");
@@ -195,7 +199,7 @@ const Login = () => {
                   <Input
                     type="checkbox"
                     checked={rememberMe}
-                    onChange={() => setRememberMe(!rememberMe)} // bind checkbox
+                    onChange={() => setRememberMe(!rememberMe)}
                   />{" "}
                   <Label className="mb-0">Remember Me</Label>
                 </div>

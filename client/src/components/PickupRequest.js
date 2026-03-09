@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Navbar, NavbarBrand } from "reactstrap";
 import { Link, useNavigate } from "react-router-dom";
 import { FaArrowLeft } from "react-icons/fa";
@@ -15,6 +15,19 @@ const PickupRequest = () => {
     device: "",
     condition: "",
   });
+
+  // AUTO FILL NAME & EMAIL FROM LOGIN
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user"));
+
+    if (user) {
+      setForm((prev) => ({
+        ...prev,
+        name: user.uname || "",
+        email: user.email || "",
+      }));
+    }
+  }, []);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -37,7 +50,6 @@ const PickupRequest = () => {
 
       if (response.ok) {
         alert("Pickup request submitted successfully!");
-
         console.log("Saved request:", data);
 
         // Reset form
@@ -86,13 +98,20 @@ const PickupRequest = () => {
       padding: "30px",
       width: "100%",
       maxWidth: "450px",
-      textAlign: "center",
+      textAlign: "left",
     },
     title: {
       fontSize: "1.8rem",
       fontWeight: "bold",
       marginBottom: "20px",
       color: "#0078a8",
+      textAlign: "center",
+    },
+    label: {
+      marginBottom: "5px",
+      display: "block",
+      fontWeight: "600",
+      color: "#333",
     },
     input: {
       width: "100%",
@@ -100,6 +119,7 @@ const PickupRequest = () => {
       marginBottom: "15px",
       borderRadius: "4px",
       border: "1px solid #ccc",
+      boxSizing: "border-box",
     },
     button: {
       backgroundColor: "#0078a8",
@@ -144,61 +164,67 @@ const PickupRequest = () => {
         <form style={styles.formContainer} onSubmit={handleSubmit}>
           <h2 style={styles.title}>Pickup Request</h2>
 
+          <label style={styles.label}>Name</label>
           <input
-            style={styles.input}
+            style={{ ...styles.input, backgroundColor: "#f1f1f1", cursor: "not-allowed" }}
             type="text"
             name="name"
             placeholder="Name"
             value={form.name}
-            onChange={handleChange}
+            readOnly
             required
           />
 
+          <label style={styles.label}>Email</label>
           <input
-            style={styles.input}
+            style={{ ...styles.input, backgroundColor: "#f1f1f1", cursor: "not-allowed" }}
             type="email"
             name="email"
             placeholder="Email"
             value={form.email}
-            onChange={handleChange}
+            readOnly
             required
           />
 
+          <label style={styles.label}>Phone</label>
           <input
             style={styles.input}
             type="text"
             name="phone"
-            placeholder="Phone"
+            placeholder="Enter your Phone no"
             value={form.phone}
             onChange={handleChange}
             required
           />
 
+          <label style={styles.label}>Address</label>
           <input
             style={styles.input}
             type="text"
             name="address"
-            placeholder="Address"
+            placeholder="Enter your Address"
             value={form.address}
             onChange={handleChange}
             required
           />
 
+          <label style={styles.label}>Device</label>
           <input
             style={styles.input}
             type="text"
             name="device"
-            placeholder="Device"
+            placeholder="Enter Device type"
             value={form.device}
             onChange={handleChange}
             required
           />
 
+          <label style={styles.label}>Condition</label>
           <input
             style={styles.input}
             type="text"
             name="condition"
-            placeholder="Condition"
+            placeholder="Enter device Condition"
             value={form.condition}
             onChange={handleChange}
             required
