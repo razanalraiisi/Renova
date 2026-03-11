@@ -155,7 +155,7 @@ const Upcycle = () => {
             marginRight: 20,
             cursor: "pointer",
           }}
-          onClick={() => navigate("/PickupRequest")}
+          onClick={() => navigate("/PickupRequest", { state: { category: "Upcycle" } })}
         >
           🚚 Schedule Pickup
         </button>

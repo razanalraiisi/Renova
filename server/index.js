@@ -29,6 +29,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+app.use("/uploads", express.static("uploads"));
+
 console.log("✓ AUTH ROUTES LOADED");
 
 app.use("/api/pickups", pickupRoutes);

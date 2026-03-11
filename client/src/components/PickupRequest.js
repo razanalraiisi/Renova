@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { Navbar, NavbarBrand } from "reactstrap";
 import { FaArrowLeft, FaUserCircle } from "react-icons/fa";
 import logo from "../assets/logo.png";
@@ -9,7 +9,8 @@ import * as Yup from "yup";
 
 const PickupRequest = () => {
   const navigate = useNavigate();
-
+  const location = useLocation();
+  const category = location.state?.category || "Pickup";
   const [defaultValues, setDefaultValues] = useState({
     name: "",
     email: "",
@@ -19,7 +20,12 @@ const PickupRequest = () => {
     condition: "",
   });
 
-  // auto-fill Name, Email, and Phone from logged-in user
+  const [image, setImage] = useState(null);
+  const [showSnackbar, setShowSnackbar] = useState(false);
+
+  const requestType =
+    location.state?.requestType || "Pickup Request";
+
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
     if (user) {
@@ -34,7 +40,6 @@ const PickupRequest = () => {
     }
   }, []);
 
-  // validation schema (matches Register style)
   const schema = Yup.object().shape({
     phone: Yup.string()
       .required("Phone is required")
@@ -53,24 +58,42 @@ const PickupRequest = () => {
   });
 
   const onSubmit = async (data) => {
-    const formData = { ...defaultValues, ...data };
+
+    const formData = new FormData();
+
+    formData.append("name", defaultValues.name);
+    formData.append("email", defaultValues.email);
+    formData.append("phone", data.phone);
+    formData.append("address", data.address);
+    formData.append("device", data.device);
+    formData.append("condition", data.condition);
+    formData.append("requestType", "Pickup");
+    formData.append("category", category);
+
+    if (image) {
+      formData.append("image", image);
+    }
 
     try {
       const response = await fetch("http://localhost:5000/api/pickups/create", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: formData,
       });
 
       const result = await response.json();
 
       if (response.ok) {
-        alert("Pickup request submitted successfully!");
-        console.log("Saved request:", result);
+        setShowSnackbar(true);
         reset();
+
+        setTimeout(() => {
+          setShowSnackbar(false);
+        }, 3000);
+
       } else {
         alert(result.message || "Error submitting request");
       }
+
     } catch (error) {
       console.error("Submit error:", error);
       alert("Server error");
@@ -88,104 +111,93 @@ const PickupRequest = () => {
     button: { backgroundColor: "#0078a8", color: "#fff", border: "none", padding: "10px 25px", borderRadius: "20px", cursor: "pointer", fontWeight: "bold", width: "100%" },
     navbar: { backgroundColor: "#0080AA", padding: "0 40px" },
     userIcon: { display: "flex", alignItems: "center", fontSize: "24px", color: "white", cursor: "pointer" },
+
+    snackbar: {
+      position: "fixed",
+      bottom: "30px",
+      left: "50%",
+      transform: "translateX(-50%)",
+      background: "#28a745",
+      color: "white",
+      padding: "14px 24px",
+      borderRadius: "8px",
+      fontWeight: "bold",
+      boxShadow: "0 4px 10px rgba(0,0,0,0.2)"
+    }
   };
 
-  // get user name for tooltip / future use
   const user = JSON.parse(localStorage.getItem("user"));
 
   return (
     <div style={styles.page}>
-      {/* 🔵 NAVBAR (with user icon) */}
+
       <Navbar style={styles.navbar}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
-          {/* LEFT: Logo */}
           <NavbarBrand tag={Link} to="/" style={{ color: "white", display: "flex", alignItems: "center" }}>
             <img src={logo} alt="logo" style={{ height: 40, width: 40, marginRight: 10 }} />
             ReNova
           </NavbarBrand>
 
-          {/* RIGHT: User icon */}
           <div style={styles.userIcon}>
             <FaUserCircle onClick={() => navigate("/UserDash")} title={user?.uname || "User"} />
           </div>
         </div>
       </Navbar>
 
-      {/* BACK BUTTON */}
       <div style={{ maxWidth: "1200px", margin: "10px 0 0 0", padding: "0 30px", display: "flex", justifyContent: "flex-start" }}>
         <FaArrowLeft style={{ color: "#0080AA", cursor: "pointer", fontSize: "22px" }} onClick={() => navigate("/start")} />
       </div>
 
-      {/* MAIN FORM */}
       <main style={styles.main}>
         <form style={styles.formContainer} onSubmit={handleSubmit(onSubmit)}>
           <h2 style={styles.title}>Pickup Request</h2>
 
-          {/* Name */}
+          {/* request type hidden */}
+          <input type="hidden" value={requestType} />
+
           <label style={styles.label}>Name</label>
-          <input
-            style={{ ...styles.input, backgroundColor: "#f1f1f1", cursor: "not-allowed" }}
-            type="text"
-            name="name"
-            value={defaultValues.name}
-            readOnly
-          />
+          <input style={{ ...styles.input, backgroundColor: "#f1f1f1" }} type="text" value={defaultValues.name} readOnly />
 
-          {/* Email */}
           <label style={styles.label}>Email</label>
-          <input
-            style={{ ...styles.input, backgroundColor: "#f1f1f1", cursor: "not-allowed" }}
-            type="email"
-            name="email"
-            value={defaultValues.email}
-            readOnly
-          />
+          <input style={{ ...styles.input, backgroundColor: "#f1f1f1" }} type="email" value={defaultValues.email} readOnly />
 
-          {/* Phone */}
           <label style={styles.label}>Phone</label>
-          <input
-            style={styles.input}
-            type="text"
-            {...register("phone")}
-            placeholder="Phone"
-          />
+          <input style={styles.input} type="text" {...register("phone")} placeholder="Phone" />
           {errors.phone && <div style={styles.errorText}>{errors.phone.message}</div>}
 
-          {/* Address */}
           <label style={styles.label}>Address</label>
-          <input
-            style={styles.input}
-            type="text"
-            {...register("address")}
-            placeholder="Address"
-          />
+          <input style={styles.input} type="text" {...register("address")} placeholder="Address" />
           {errors.address && <div style={styles.errorText}>{errors.address.message}</div>}
 
-          {/* Device */}
           <label style={styles.label}>Device</label>
-          <input
-            style={styles.input}
-            type="text"
-            {...register("device")}
-            placeholder="Device"
-          />
+          <input style={styles.input} type="text" {...register("device")} placeholder="Device" />
           {errors.device && <div style={styles.errorText}>{errors.device.message}</div>}
 
-          {/* Condition */}
           <label style={styles.label}>Condition</label>
+          <input style={styles.input} type="text" {...register("condition")} placeholder="Condition" />
+          {errors.condition && <div style={styles.errorText}>{errors.condition.message}</div>}
+
+          {/* IMAGE FIELD */}
+          <label style={styles.label}>Upload Picture</label>
           <input
             style={styles.input}
-            type="text"
-            {...register("condition")}
-            placeholder="Condition"
+            type="file"
+            accept="image/*"
+            onChange={(e) => setImage(e.target.files[0])}
           />
-          {errors.condition && <div style={styles.errorText}>{errors.condition.message}</div>}
 
           <button type="submit" style={styles.button}>
             Request Pickup
           </button>
         </form>
       </main>
+
+      {showSnackbar && (
+        <div style={styles.snackbar}>
+          Pickup Request Submitted Successfully 🎉
+        </div>
+      )}
+
     </div>
   );
 };

@@ -38,7 +38,7 @@ const NewRecycleRequest = () => {
       <Box sx={{ width: '100%', maxWidth: 900, background: 'white', borderRadius: 3, p: 3, boxShadow: '0 8px 20px rgba(0,0,0,0.08)' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
           <IconButton onClick={() => navigate('/CollectorDash')}><ArrowBackIcon /></IconButton>
-          <Typography variant="h6" fontWeight={600}><PiBellRingingDuotone /> New Recycling Requests</Typography>
+          <Typography variant="h6" fontWeight={600}><PiBellRingingDuotone /> New Requests</Typography>
         </Box>
 
         <Box sx={{ maxHeight: 420, overflowY: 'auto', pr: 1 }}>

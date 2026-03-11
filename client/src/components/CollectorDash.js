@@ -145,7 +145,7 @@ const CollectorDash = () => {
         <Box sx={{ background: 'white', borderRadius: 3, p: 3, mt: 6, boxShadow: '0 8px 20px rgba(0,0,0,0.08)' }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
             <Typography variant="h6" fontWeight={600}>
-              <PiBellRingingDuotone /> New Recycling Requests
+              <PiBellRingingDuotone /> New Requests
             </Typography>
             <Button
               variant="text"
