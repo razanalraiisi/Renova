@@ -191,7 +191,7 @@ const Dispose = () => {
             marginRight: 20,
             cursor: "pointer",
           }}
-          onClick={() => navigate("/PickupRequest")}
+          onClick={() => navigate("/PickupRequest", { state: { category: "Dispose" } })}
         >
           🚚 Schedule Pickup
         </button>

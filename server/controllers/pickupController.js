@@ -4,7 +4,31 @@ import PickupRequest from "../models/PickupRequestModel.js";
 export const createPickupRequest = async (req, res) => {
   try {
 
-    const request = new PickupRequest(req.body);
+    const {
+      name,
+      email,
+      phone,
+      address,
+      device,
+      condition,
+      requestType,
+      category
+    } = req.body;
+
+    // get uploaded image if exists
+    const image = req.file ? req.file.filename : null;
+
+    const request = new PickupRequest({
+      name,
+      email,
+      phone,
+      address,
+      device,
+      condition,
+      requestType,
+      category,
+      image
+    });
 
     await request.save();
 

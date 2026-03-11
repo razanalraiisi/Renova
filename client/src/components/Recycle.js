@@ -142,7 +142,7 @@ const Recycle = () => {
             marginRight: 20,
             cursor: "pointer",
           }}
-          onClick={() => navigate("/PickupRequest")}
+          onClick={() => navigate("/PickupRequest", { state: { category: "Recycle" } })}
         >
           🚚 Schedule Pickup
         </button>

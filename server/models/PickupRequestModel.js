@@ -7,10 +7,24 @@ const pickupSchema = new mongoose.Schema({
   address: String,
   device: String,
   condition: String,
+
+  requestType: {
+  type: String,
+  default: "Pickup"
+},
+
+category: {
+  type: String
+},
+
+image: {
+  type: String
+},
   status: {
     type: String,
     default: "Pending"
   },
+
   createdAt: {
     type: Date,
     default: Date.now
