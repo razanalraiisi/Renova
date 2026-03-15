@@ -55,7 +55,7 @@ const CollectorDash = () => {
   }, []);
 
   return (
-    <div><CollectorNav />
+    <div>
       <div style={{ padding: '40px', minHeight: '100vh', background: '#f5f7fa' }}>
         <h2 style={{ marginBottom: '5px' }}>Collector Dashboard</h2>
         <p style={{ color: '#555' }}>
@@ -145,7 +145,6 @@ const CollectorDash = () => {
             </Button>
           </Box>
 
-
           <Box sx={{ maxHeight: 420, overflowY: 'auto', pr: 1 }}>
             {requests.length > 0 ? requests.map((r) => (
               <Card key={r._id} sx={{ mb: 2, borderRadius: 3 }}>
@@ -160,15 +159,35 @@ const CollectorDash = () => {
                       borderRadius: "10px"
                     }}
                   />
+
                   <Box sx={{ flex: 1 }}>
                     <Typography fontWeight={600}>{r.device}</Typography>
+
                     {openId === r._id ? (
                       <>
                         <Divider sx={{ my: 1 }} />
-                        <Typography fontSize={14}>Request Date: {new Date(r.createdAt).toLocaleDateString()}</Typography>
-                        <Typography fontSize={14}>Condition: {r.condition}</Typography>
-                        <Typography fontSize={14}>Collection Method: Pickup</Typography>
-                        <Typography sx={{ mt: 1, color: '#1976D2', cursor: 'pointer', fontSize: 14 }} onClick={() => setOpenId(null)}>
+
+                        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
+                          <Box>
+                            <Typography fontWeight={600}><FcViewDetails /> Request Details</Typography>
+                            <Typography fontSize={14}>Request Date: {new Date(r.createdAt).toLocaleDateString()}</Typography>
+                            <Typography fontSize={14}>Condition: {r.condition}</Typography>
+                            <Typography fontSize={14}>Collection Method: Pickup</Typography>
+                            <Typography fontSize={14}>Address: {r.address}</Typography>
+                          </Box>
+
+                          <Box>
+                            <Typography fontWeight={600}><FcBusinessContact /> User Details</Typography>
+                            <Typography fontSize={14}>Name: {r.name}</Typography>
+                            <Typography fontSize={14}>Phone: {r.phone}</Typography>
+                            <Typography fontSize={14}>Email: {r.email}</Typography>
+                          </Box>
+                        </Box>
+
+                        <Typography
+                          sx={{ mt: 1, color: '#1976D2', cursor: 'pointer', fontSize: 14 }}
+                          onClick={() => setOpenId(null)}
+                        >
                           Less information
                         </Typography>
                       </>
@@ -176,13 +195,16 @@ const CollectorDash = () => {
                       <>
                         <Typography fontSize={14}>Request Date: {new Date(r.createdAt).toLocaleDateString()}</Typography>
                         <Typography fontSize={14}>Condition: {r.condition}</Typography>
-                        <Typography sx={{ mt: 1, color: '#1976D2', cursor: 'pointer', fontSize: 14 }} onClick={() => setOpenId(r._id)}>
+
+                        <Typography
+                          sx={{ mt: 1, color: '#1976D2', cursor: 'pointer', fontSize: 14 }}
+                          onClick={() => setOpenId(r._id)}
+                        >
                           More information
                         </Typography>
                       </>
                     )}
                   </Box>
-
 
                   <Box sx={{ display: 'flex', gap: 1, alignSelf: 'flex-end' }}>
                     <Button
@@ -202,9 +224,7 @@ const CollectorDash = () => {
 
                         await fetch(`http://localhost:5000/api/pickups/accept/${r._id}`, {
                           method: "PUT",
-                          headers: {
-                            Authorization: `Bearer ${token}`
-                          }
+                          headers: { Authorization: `Bearer ${token}` }
                         });
 
                         setRequests(prev => prev.filter(req => req._id !== r._id));
@@ -258,12 +278,12 @@ const CollectorDash = () => {
                       Reject
                     </Button>
                   </Box>
+
                 </CardContent>
               </Card>
             )) : <Typography sx={{ textAlign: 'center', mt: 3 }}>No requests found</Typography>}
           </Box>
         </Box>
-
 
         <Snackbar
           open={snackbar.open}
@@ -279,6 +299,7 @@ const CollectorDash = () => {
             {snackbar.message}
           </Alert>
         </Snackbar>
+
       </div>
     </div>
   );
