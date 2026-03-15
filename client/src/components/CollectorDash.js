@@ -1,11 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSelector } from "react-redux";
 import { useNavigate } from 'react-router-dom';
-import { FaSignOutAlt } from 'react-icons/fa';
-import { PieChart } from '@mui/x-charts/PieChart';
-import { BarChart } from '@mui/x-charts/BarChart';
 import { FcViewDetails, FcBusinessContact } from "react-icons/fc";
 import { PiBellRingingDuotone } from "react-icons/pi";
+import { PieChart } from '@mui/x-charts/PieChart';
+import { BarChart } from '@mui/x-charts/BarChart';
 import {
   Box,
   Card,
@@ -16,28 +15,17 @@ import {
   Snackbar,
   Alert,
 } from '@mui/material';
-import './Components.css';
-import {
-  desktopOS,
-  valueFormatter,
-  months,
-  deviceCounts,
-  pieColors,
-  widgetData,
-  requests,
-} from './DummyData';
-import AcceptModal from './AcceptModal';
-import RejectModal from './RejectModal';
-import CollectorNavbar from './CollectorNav';
+import CollectorNav from './CollectorNav';
+import { desktopOS, valueFormatter, months, deviceCounts, pieColors, widgetData } from './DummyData';
+
+const cardWidth = 600;
+const cardHeight = 400;
 
 const CollectorDash = () => {
   const navigate = useNavigate();
   const loggedUser = useSelector((state) => state.users.user);
-  const [openId, setOpenId] = useState(1);
-  const [acceptModal, setAcceptModal] = useState(null);
-  const [rejectModal, setRejectModal] = useState(null);
-  const [rejectReason, setRejectReason] = useState('');
-
+  const [openId, setOpenId] = useState(null);
+  const [requests, setRequests] = useState([]);
 
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -45,32 +33,36 @@ const CollectorDash = () => {
     severity: 'success',
   });
 
+  const fetchRequests = async () => {
+    try {
+      const collector = JSON.parse(localStorage.getItem("user")) || JSON.parse(sessionStorage.getItem("user"));
+      if (!collector?._id) return;
 
+      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+      const res = await fetch(`http://localhost:5000/api/pickups/all/${collector._id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      console.log("Fetched requests:", data);
+      setRequests(data);
+    } catch (error) {
+      console.error("Error fetching requests:", error);
+    }
+  };
 
-  const top6Indices = deviceCounts
-    .map((count, index) => ({ count, index }))
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 6)
-    .map((item) => item.index);
-
-  const topMonths = top6Indices.map((i) => months[i]);
-  const topCounts = top6Indices.map((i) => deviceCounts[i]);
-
-  const cardWidth = 500;
-  const cardHeight = 350;
+  useEffect(() => {
+    fetchRequests();
+  }, []);
 
   return (
-    <div><CollectorNavbar />
+    <div><CollectorNav />
       <div style={{ padding: '40px', minHeight: '100vh', background: '#f5f7fa' }}>
         <h2 style={{ marginBottom: '5px' }}>Collector Dashboard</h2>
         <p style={{ color: '#555' }}>
           Welcome, {loggedUser?.companyName || "Collector"}!
         </p>
 
-
-
-        <div style={{ marginTop: '50px', display: 'flex', justifyContent: 'center', gap: '40px', flexWrap: 'wrap' }}>
-
+        <Box sx={{ borderRadius: 3, p: 3, mt: 6, display: 'flex', gap: 3, alignItems: 'center', justifyContent: 'center' }}>
           <div style={{
             background: 'white',
             width: `${cardWidth}px`,
@@ -94,7 +86,6 @@ const CollectorDash = () => {
             />
           </div>
 
-
           <div style={{
             background: 'white',
             width: `${cardWidth}px`,
@@ -109,14 +100,13 @@ const CollectorDash = () => {
           }}>
             <h5 style={{ marginBottom: '10px' }}>Your Highest Recycling/Upcycling Months</h5>
             <BarChart
-              xAxis={[{ scaleType: 'band', data: topMonths, label: 'Months' }]}
-              series={[{ data: topCounts, label: 'Number of Electronics', color: '#90CAF9' }]}
+              xAxis={[{ scaleType: 'band', data: months, label: 'Months' }]}
+              series={[{ data: deviceCounts, label: 'Number of Electronics', color: '#90CAF9' }]}
               height={220}
               width={460}
             />
           </div>
-        </div>
-
+        </Box>
 
         <div style={{ display: 'flex', justifyContent: 'center', gap: '50px', marginTop: '30px', flexWrap: 'wrap' }}>
           {widgetData.map((widget, index) => (
@@ -141,7 +131,6 @@ const CollectorDash = () => {
           ))}
         </div>
 
-
         <Box sx={{ background: 'white', borderRadius: 3, p: 3, mt: 6, boxShadow: '0 8px 20px rgba(0,0,0,0.08)' }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
             <Typography variant="h6" fontWeight={600}>
@@ -158,39 +147,36 @@ const CollectorDash = () => {
 
 
           <Box sx={{ maxHeight: 420, overflowY: 'auto', pr: 1 }}>
-            {requests.map((r) => (
-              <Card key={r.id} sx={{ mb: 2, borderRadius: 3 }}>
+            {requests.length > 0 ? requests.map((r) => (
+              <Card key={r._id} sx={{ mb: 2, borderRadius: 3 }}>
                 <CardContent sx={{ display: 'flex', gap: 2 }}>
-                  <img src={r.image} alt={r.type} width={100} />
+                  <img
+                    src={`http://localhost:5000/uploads/${r.image}`}
+                    alt="device"
+                    style={{
+                      width: "100px",
+                      height: "100px",
+                      objectFit: "cover",
+                      borderRadius: "10px"
+                    }}
+                  />
                   <Box sx={{ flex: 1 }}>
-                    <Typography fontWeight={600}>{r.type}</Typography>
-                    {openId === r.id ? (
+                    <Typography fontWeight={600}>{r.device}</Typography>
+                    {openId === r._id ? (
                       <>
                         <Divider sx={{ my: 1 }} />
-                        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
-                          <Box>
-                            <Typography fontWeight={600}><FcViewDetails /> Request Details</Typography>
-                            <Typography fontSize={14}>Request Date: {r.date}</Typography>
-                            <Typography fontSize={14}>Request Time: {r.time}</Typography>
-                            <Typography fontSize={14}>Condition: {r.condition}</Typography>
-                            <Typography fontSize={14}>Collection Method: {r.method}</Typography>
-                          </Box>
-                          <Box>
-                            <Typography fontWeight={600}><FcBusinessContact /> User Details</Typography>
-                            <Typography fontSize={14}>Phone: 98765432</Typography>
-                            <Typography fontSize={14}>Email: mohammed@gmail.com</Typography>
-                          </Box>
-                        </Box>
+                        <Typography fontSize={14}>Request Date: {new Date(r.createdAt).toLocaleDateString()}</Typography>
+                        <Typography fontSize={14}>Condition: {r.condition}</Typography>
+                        <Typography fontSize={14}>Collection Method: Pickup</Typography>
                         <Typography sx={{ mt: 1, color: '#1976D2', cursor: 'pointer', fontSize: 14 }} onClick={() => setOpenId(null)}>
                           Less information
                         </Typography>
                       </>
                     ) : (
                       <>
-                        <Typography fontSize={14}>Request Date: {r.date}</Typography>
-                        <Typography fontSize={14}>Request Time: {r.time}</Typography>
+                        <Typography fontSize={14}>Request Date: {new Date(r.createdAt).toLocaleDateString()}</Typography>
                         <Typography fontSize={14}>Condition: {r.condition}</Typography>
-                        <Typography sx={{ mt: 1, color: '#1976D2', cursor: 'pointer', fontSize: 14 }} onClick={() => setOpenId(r.id)}>
+                        <Typography sx={{ mt: 1, color: '#1976D2', cursor: 'pointer', fontSize: 14 }} onClick={() => setOpenId(r._id)}>
                           More information
                         </Typography>
                       </>
@@ -199,51 +185,84 @@ const CollectorDash = () => {
 
 
                   <Box sx={{ display: 'flex', gap: 1, alignSelf: 'flex-end' }}>
-                    <Button size="small" variant="contained" color="success" onClick={() => setAcceptModal(r)}>
+                    <Button
+                      size="small"
+                      variant="contained"
+                      color="success"
+                      onClick={async () => {
+                        const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+                        if (!token) {
+                          setSnackbar({
+                            open: true,
+                            message: "Authentication required.",
+                            severity: 'error'
+                          });
+                          return;
+                        }
+
+                        await fetch(`http://localhost:5000/api/pickups/accept/${r._id}`, {
+                          method: "PUT",
+                          headers: {
+                            Authorization: `Bearer ${token}`
+                          }
+                        });
+
+                        setRequests(prev => prev.filter(req => req._id !== r._id));
+
+                        setSnackbar({
+                          open: true,
+                          message: `Request "${r.device}" accepted successfully!`,
+                          severity: 'success'
+                        });
+                      }}
+                    >
                       Accept
                     </Button>
-                    <Button size="small" variant="contained" color="error" onClick={() => { setRejectModal(r); setRejectReason(''); }}>
+
+                    <Button
+                      size="small"
+                      variant="contained"
+                      color="error"
+                      onClick={async () => {
+                        const reason = prompt('Enter reason for rejection:');
+                        if (!reason) return;
+
+                        const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+                        if (!token) {
+                          setSnackbar({
+                            open: true,
+                            message: "Authentication required.",
+                            severity: 'error'
+                          });
+                          return;
+                        }
+
+                        await fetch(`http://localhost:5000/api/pickups/reject/${r._id}`, {
+                          method: "PUT",
+                          headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${token}`
+                          },
+                          body: JSON.stringify({ reason })
+                        });
+
+                        setRequests(prev => prev.filter(req => req._id !== r._id));
+
+                        setSnackbar({
+                          open: true,
+                          message: `Request "${r.device}" rejected.`,
+                          severity: 'error'
+                        });
+                      }}
+                    >
                       Reject
                     </Button>
                   </Box>
                 </CardContent>
               </Card>
-            ))}
+            )) : <Typography sx={{ textAlign: 'center', mt: 3 }}>No requests found</Typography>}
           </Box>
         </Box>
-
-
-        {acceptModal && (
-          <AcceptModal
-            request={acceptModal}
-            close={() => setAcceptModal(null)}
-            confirm={() => {
-              setSnackbar({
-                open: true,
-                message: `Request "${acceptModal.type}" accepted successfully!`,
-                severity: 'success',
-              });
-              setAcceptModal(null);
-            }}
-          />
-        )}
-
-        {rejectModal && (
-          <RejectModal
-            request={rejectModal}
-            reason={rejectReason}
-            setReason={setRejectReason}
-            close={() => setRejectModal(null)}
-            confirm={() => {
-              setSnackbar({
-                open: true,
-                message: `Request "${rejectModal.type}" rejected. Reason: ${rejectReason}`,
-                severity: 'error',
-              });
-              setRejectModal(null);
-            }}
-          />
-        )}
 
 
         <Snackbar

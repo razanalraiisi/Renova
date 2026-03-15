@@ -11,6 +11,7 @@ const PickupRequest = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const category = location.state?.category || "Pickup";
+
   const [defaultValues, setDefaultValues] = useState({
     name: "",
     email: "",
@@ -18,186 +19,155 @@ const PickupRequest = () => {
     address: "",
     device: "",
     condition: "",
+    deviceCategory: ""
   });
-
   const [image, setImage] = useState(null);
   const [showSnackbar, setShowSnackbar] = useState(false);
 
-  const requestType =
-    location.state?.requestType || "Pickup Request";
+  const requestType = location.state?.requestType || "Pickup Request";
 
-  useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user"));
-    if (user) {
-      setDefaultValues({
-        name: user.uname || "",
-        email: user.email || "",
-        phone: user.phone || "",
-        address: "",
-        device: "",
-        condition: "",
-      });
-    }
-  }, []);
+  const allCategories = [
+    "Small Electronics","Large Electronics","Home Appliances (Small)","Home Appliances (Large)","IT & Office Equipment",
+    "Kitchen & Cooking Appliances","Entertainment Devices","Personal Care Electronics","Tools & Outdoor Equipment",
+    "Lighting Equipment","Medical & Fitness Devices","Batteries & Accessories"
+  ];
 
   const schema = Yup.object().shape({
-    phone: Yup.string()
-      .required("Phone is required")
-      .matches(/^[0-9]+$/, "Phone must be numbers only")
-      .min(7, "Phone must be at least 7 digits"),
+    phone: Yup.string().required("Phone is required").matches(/^[0-9]+$/, "Phone must be numbers only").min(7),
     address: Yup.string().required("Address is required"),
+    deviceCategory: Yup.string().required("Category is required"),
     device: Yup.string().required("Device is required"),
-    condition: Yup.string()
-      .required("Condition is required")
-      .max(100, "Condition must be at most 100 characters"),
+    condition: Yup.string().required("Condition is required").max(100),
   });
 
-  const { register, handleSubmit, formState: { errors }, reset } = useForm({
+  const { register, handleSubmit, formState: { errors }, reset, setValue } = useForm({
     defaultValues,
     resolver: yupResolver(schema),
   });
 
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem("user")) || JSON.parse(sessionStorage.getItem("user"));
+    if (storedUser) {
+      setValue("name", storedUser.uname || "");
+      setValue("email", storedUser.email || "");
+      setValue("phone", storedUser.phone || "");
+      setDefaultValues({
+        name: storedUser.uname || "",
+        email: storedUser.email || "",
+        phone: storedUser.phone || "",
+        address: "",
+        device: "",
+        condition: "",
+        deviceCategory: ""
+      });
+    }
+  }, [setValue]);
+
   const onSubmit = async (data) => {
-
     const formData = new FormData();
-
     formData.append("name", defaultValues.name);
     formData.append("email", defaultValues.email);
     formData.append("phone", data.phone);
     formData.append("address", data.address);
+    formData.append("deviceCategory", data.deviceCategory);
     formData.append("device", data.device);
     formData.append("condition", data.condition);
     formData.append("requestType", "Pickup");
     formData.append("category", category);
+    if (image) formData.append("image", image);
 
-    if (image) {
-      formData.append("image", image);
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+    if (!token) {
+      alert("You must be logged in to submit a request.");
+      return;
     }
 
     try {
       const response = await fetch("http://localhost:5000/api/pickups/create", {
         method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
         body: formData,
       });
-
       const result = await response.json();
-
       if (response.ok) {
         setShowSnackbar(true);
         reset();
-
-        setTimeout(() => {
-          setShowSnackbar(false);
-        }, 3000);
-
+        setTimeout(() => setShowSnackbar(false), 3000);
       } else {
         alert(result.message || "Error submitting request");
       }
-
     } catch (error) {
       console.error("Submit error:", error);
       alert("Server error");
     }
   };
 
-  const styles = {
-    page: { fontFamily: "Arial, sans-serif", minHeight: "100vh", display: "flex", flexDirection: "column", backgroundColor: "#ffffff" },
-    main: { flex: 1, display: "flex", justifyContent: "center", alignItems: "center", padding: "40px 20px" },
-    formContainer: { border: "1px solid #ccc", borderRadius: "6px", padding: "30px", width: "100%", maxWidth: "450px", textAlign: "center" },
-    title: { fontSize: "1.8rem", fontWeight: "bold", marginBottom: "20px", color: "#0078a8" },
-    label: { display: "block", marginBottom: "5px", fontWeight: "600", textAlign: "left", color: "#333" },
-    input: { width: "100%", padding: "10px", marginBottom: "15px", borderRadius: "4px", border: "1px solid #ccc" },
-    errorText: { color: "red", fontSize: "12px", marginBottom: "10px", textAlign: "left" },
-    button: { backgroundColor: "#0078a8", color: "#fff", border: "none", padding: "10px 25px", borderRadius: "20px", cursor: "pointer", fontWeight: "bold", width: "100%" },
-    navbar: { backgroundColor: "#0080AA", padding: "0 40px" },
-    userIcon: { display: "flex", alignItems: "center", fontSize: "24px", color: "white", cursor: "pointer" },
-
-    snackbar: {
-      position: "fixed",
-      bottom: "30px",
-      left: "50%",
-      transform: "translateX(-50%)",
-      background: "#28a745",
-      color: "white",
-      padding: "14px 24px",
-      borderRadius: "8px",
-      fontWeight: "bold",
-      boxShadow: "0 4px 10px rgba(0,0,0,0.2)"
-    }
-  };
-
   const user = JSON.parse(localStorage.getItem("user"));
 
   return (
-    <div style={styles.page}>
-
-      <Navbar style={styles.navbar}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
-          <NavbarBrand tag={Link} to="/" style={{ color: "white", display: "flex", alignItems: "center" }}>
-            <img src={logo} alt="logo" style={{ height: 40, width: 40, marginRight: 10 }} />
-            ReNova
-          </NavbarBrand>
-
-          <div style={styles.userIcon}>
-            <FaUserCircle onClick={() => navigate("/UserDash")} title={user?.uname || "User"} />
-          </div>
+    <div style={{ fontFamily: "Arial, sans-serif", minHeight: "100vh", backgroundColor: "#ffffff" }}>
+      <Navbar style={{ backgroundColor: "#0080AA", padding: "0 40px" }}>
+        <NavbarBrand tag={Link} to="/" style={{ color: "white", display: "flex", alignItems: "center" }}>
+          <img src={logo} alt="logo" style={{ height: 40, width: 40, marginRight: 10 }} /> ReNova
+        </NavbarBrand>
+        <div style={{ display: "flex", alignItems: "center", fontSize: 24, color: "white", cursor: "pointer" }}>
+          <FaUserCircle onClick={() => navigate("/UserDash")} title={user?.uname || "User"} />
         </div>
       </Navbar>
 
-      <div style={{ maxWidth: "1200px", margin: "10px 0 0 0", padding: "0 30px", display: "flex", justifyContent: "flex-start" }}>
-        <FaArrowLeft style={{ color: "#0080AA", cursor: "pointer", fontSize: "22px" }} onClick={() => navigate("/start")} />
+      <div style={{ padding: "10px 30px" }}>
+        <FaArrowLeft style={{ color: "#0080AA", cursor: "pointer", fontSize: 22 }} onClick={() => navigate("/start")} />
       </div>
 
-      <main style={styles.main}>
-        <form style={styles.formContainer} onSubmit={handleSubmit(onSubmit)}>
-          <h2 style={styles.title}>Pickup Request</h2>
+      <main style={{ display: "flex", justifyContent: "center", alignItems: "center", padding: "40px 20px" }}>
+        <form onSubmit={handleSubmit(onSubmit)} style={{ border: "1px solid #ccc", borderRadius: 6, padding: 30, maxWidth: 450, width: "100%" }}>
+          <h2 style={{ fontSize: "1.8rem", fontWeight: "bold", marginBottom: 20, color: "#0078a8" }}>Pickup Request</h2>
 
-          {/* request type hidden */}
           <input type="hidden" value={requestType} />
 
-          <label style={styles.label}>Name</label>
-          <input style={{ ...styles.input, backgroundColor: "#f1f1f1" }} type="text" value={defaultValues.name} readOnly />
+          <label>Name</label>
+          <input type="text" value={defaultValues.name} readOnly style={{ width: "100%", padding: 10, marginBottom: 10, borderRadius: 4, backgroundColor: "#f1f1f1" }} />
 
-          <label style={styles.label}>Email</label>
-          <input style={{ ...styles.input, backgroundColor: "#f1f1f1" }} type="email" value={defaultValues.email} readOnly />
+          <label>Email</label>
+          <input type="email" value={defaultValues.email} readOnly style={{ width: "100%", padding: 10, marginBottom: 10, borderRadius: 4, backgroundColor: "#f1f1f1" }} />
 
-          <label style={styles.label}>Phone</label>
-          <input style={styles.input} type="text" {...register("phone")} placeholder="Phone" />
-          {errors.phone && <div style={styles.errorText}>{errors.phone.message}</div>}
+          <label>Phone</label>
+          <input type="text" {...register("phone")} placeholder="Phone" style={{ width: "100%", padding: 10, marginBottom: 10, borderRadius: 4, border: "1px solid #ccc" }} />
+          {errors.phone && <div style={{ color: "red", fontSize: 12 }}>{errors.phone.message}</div>}
 
-          <label style={styles.label}>Address</label>
-          <input style={styles.input} type="text" {...register("address")} placeholder="Address" />
-          {errors.address && <div style={styles.errorText}>{errors.address.message}</div>}
+          <label>Address</label>
+          <input type="text" {...register("address")} placeholder="Address" style={{ width: "100%", padding: 10, marginBottom: 10, borderRadius: 4, border: "1px solid #ccc" }} />
+          {errors.address && <div style={{ color: "red", fontSize: 12 }}>{errors.address.message}</div>}
 
-          <label style={styles.label}>Device</label>
-          <input style={styles.input} type="text" {...register("device")} placeholder="Device" />
-          {errors.device && <div style={styles.errorText}>{errors.device.message}</div>}
+          <label>Electronic Category</label>
+          <select {...register("deviceCategory")} style={{ width: "100%", padding: 10, marginBottom: 10, borderRadius: 4, border: "1px solid #ccc" }}>
+            <option value="">Select Category</option>
+            {allCategories.map((cat, idx) => <option key={idx} value={cat}>{cat}</option>)}
+          </select>
+          {errors.deviceCategory && <div style={{ color: "red", fontSize: 12 }}>{errors.deviceCategory.message}</div>}
 
-          <label style={styles.label}>Condition</label>
-          <input style={styles.input} type="text" {...register("condition")} placeholder="Condition" />
-          {errors.condition && <div style={styles.errorText}>{errors.condition.message}</div>}
+          <label>Device</label>
+          <input type="text" {...register("device")} placeholder="Device" style={{ width: "100%", padding: 10, marginBottom: 10, borderRadius: 4, border: "1px solid #ccc" }} />
+          {errors.device && <div style={{ color: "red", fontSize: 12 }}>{errors.device.message}</div>}
 
-          {/* IMAGE FIELD */}
-          <label style={styles.label}>Upload Picture</label>
-          <input
-            style={styles.input}
-            type="file"
-            accept="image/*"
-            onChange={(e) => setImage(e.target.files[0])}
-          />
+          <label>Condition</label>
+          <input type="text" {...register("condition")} placeholder="Condition" style={{ width: "100%", padding: 10, marginBottom: 10, borderRadius: 4, border: "1px solid #ccc" }} />
+          {errors.condition && <div style={{ color: "red", fontSize: 12 }}>{errors.condition.message}</div>}
 
-          <button type="submit" style={styles.button}>
-            Request Pickup
-          </button>
+          <label>Upload Picture</label>
+          <input type="file" accept="image/*" onChange={(e) => setImage(e.target.files[0])} style={{ width: "100%", marginBottom: 10 }} />
+
+          <button type="submit" style={{ backgroundColor: "#0078a8", color: "#fff", border: "none", padding: 10, borderRadius: 20, fontWeight: "bold", width: "100%" }}>Request Pickup</button>
         </form>
       </main>
 
       {showSnackbar && (
-        <div style={styles.snackbar}>
-          Pickup Request Submitted Successfully 🎉
+        <div style={{ position: "fixed", bottom: 30, left: "50%", transform: "translateX(-50%)", background: "#28a745", color: "#fff", padding: "14px 24px", borderRadius: 8, fontWeight: "bold", boxShadow: "0 4px 10px rgba(0,0,0,0.2)" }}>
+          Pickup Request Submitted Successfully
         </div>
       )}
-
     </div>
   );
 };
