@@ -26,12 +26,12 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// USER ROUTES
+/* USER ROUTES */
 router.post("/create", protect, upload.single("image"), createPickupRequest);
 router.get("/user/requests", protect, getUserPickupRequests);
 router.put("/cancel/:id", protect, cancelPickupRequest);
 
-// COLLECTOR / ADMIN ROUTES
+/* COLLECTOR / ADMIN ROUTES */
 router.get("/all/:collectorId", getAllPickupRequests);
 router.get("/history/:collectorId", getCollectorHistory);
 router.put("/accept/:id", protect, acceptPickupRequest);

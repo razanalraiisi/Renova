@@ -1582,3 +1582,31 @@
   90% { opacity: 1; }
   100% { opacity: 0; }
 }
+
+.history-status{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  font-size:14px;
+  font-weight:500;
+}
+
+.status-dot{
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  margin-top:4px;
+}
+
+.history-status.accepted .status-dot{
+  background:#4CAF50;
+}
+
+.history-status.rejected .status-dot{
+  background:#E53935;
+}
+
+.history-status.pending .status-dot{
+  background:#FFB300;
+}
