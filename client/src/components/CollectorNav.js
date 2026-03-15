@@ -71,7 +71,7 @@ const CollectorNavbar = () => {
             <DropdownItem onClick={() => navigate("/CollectorRequestsHistory")}>
               History Requests
             </DropdownItem>
-            <DropdownItem onClick={() => navigate("/NewRecycleRequest")}>
+            <DropdownItem onClick={() => navigate("/CollectorNewRecycleRequest")}>
               New Requests
             </DropdownItem>
           </DropdownMenu>
