@@ -60,10 +60,8 @@ export const getUserPickupRequests = async (req, res) => {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    // Find all requests for this user, newest first
     const requests = await PickupRequest.find({ userId }).sort({ createdAt: -1 });
 
-    // ALWAYS return an array
     res.json(Array.isArray(requests) ? requests : []);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -82,7 +80,6 @@ export const getAllPickupRequests = async (req, res) => {
       return res.status(404).json({ message: "Collector not found" });
     }
 
-    // For dashboard, return pending requests
     const requests = await PickupRequest.find({
       deviceCategory: { $in: collector.acceptedCategories },
       status: "Pending"
@@ -100,7 +97,7 @@ export const getAllPickupRequests = async (req, res) => {
 export const acceptPickupRequest = async (req, res) => {
   try {
     const { id } = req.params;
-    const collectorId = req.user?._id; // Assuming auth middleware sets req.user
+    const collectorId = req.user?._id;
 
     const request = await PickupRequest.findByIdAndUpdate(
       id,
@@ -147,14 +144,13 @@ export const getCollectorHistory = async (req, res) => {
       return res.status(404).json({ message: "Collector not found" });
     }
 
-    // For now, show all processed requests that match collector's categories
-    // Later, when collectorId is set, it will be specific
+    // ✅ ONLY show requests processed by this collector
     const requests = await PickupRequest.find({
-      deviceCategory: { $in: collector.acceptedCategories },
+      collectorId: collectorId,
       status: { $in: ["Accepted", "Rejected"] }
     }).sort({ createdAt: -1 });
 
-    res.json(requests);
+    res.json(Array.isArray(requests) ? requests : []);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
