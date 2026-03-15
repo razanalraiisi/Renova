@@ -5,26 +5,33 @@ const pickupSchema = new mongoose.Schema({
   email: String,
   phone: String,
   address: String,
+  deviceCategory: String,
   device: String,
   condition: String,
-
+  rejectReason: String,
   requestType: {
-  type: String,
-  default: "Pickup"
-},
-
-category: {
-  type: String
-},
-
-image: {
-  type: String
-},
+    type: String,
+    default: "Pickup"
+  },
+  category: {
+    type: String
+  },
+  image: {
+    type: String
+  },
   status: {
     type: String,
     default: "Pending"
   },
-
+  collectorId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User"
+  },
+  userId: {            
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true
+  },
   createdAt: {
     type: Date,
     default: Date.now

@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Navbar, NavbarBrand } from "reactstrap";
-import { FaBell, FaSignOutAlt, FaArrowLeft, FaUser, FaClipboardList } from "react-icons/fa"; // ✅ icons fixed
+import { FaBell, FaSignOutAlt, FaArrowLeft, FaUser, FaClipboardList } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import { updateUser, resetUser, resetState } from "../features/UserSlice.js";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as Yup from "yup";
+import { Snackbar, Alert } from "@mui/material";
 import logo from "../assets/logo.png";
 import "./Components.css";
 
@@ -14,41 +15,22 @@ const UserDash = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
-
-  const { user, isSuccess, message, isLoading } = useSelector(
-    (state) => state.users
-  );
+  const { user, isSuccess, message, isLoading } = useSelector((state) => state.users);
 
   const [activeTab, setActiveTab] = useState("profile");
   const [showSnackbar, setShowSnackbar] = useState(false);
-  const [theme, setTheme] = useState(
-    () => localStorage.getItem("userTheme") || "Light"
-  );
+  const [theme, setTheme] = useState(() => localStorage.getItem("userTheme") || "Light");
+  const [requests, setRequests] = useState([]);
+  const [loadingRequests, setLoadingRequests] = useState(true);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
 
-  // Default form values
-  const defaultValues = {
-    uname: user?.uname || "",
-    phone: user?.phone || "",
-  };
-
-  // Validation schema
+  const defaultValues = { uname: user?.uname || "", phone: user?.phone || "" };
   const schema = Yup.object().shape({
-    uname: Yup.string()
-      .required("Full Name is required")
-      .min(3, "Full Name must be at least 3 characters"),
-    phone: Yup.string()
-      .required("Phone is required")
-      .matches(/^[0-9]+$/, "Phone must be numbers only")
-      .min(7, "Phone must be at least 7 digits"),
+    uname: Yup.string().required("Full Name is required").min(3),
+    phone: Yup.string().required("Phone is required").matches(/^[0-9]+$/).min(7),
   });
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset,
-    setValue,
-  } = useForm({
+  const { register, handleSubmit, formState: { errors }, setValue } = useForm({
     defaultValues,
     resolver: yupResolver(schema),
   });
@@ -66,26 +48,91 @@ const UserDash = () => {
       setTimeout(() => {
         setShowSnackbar(false);
         dispatch(resetState());
+        fetchRequests();
       }, 3000);
     }
   }, [isSuccess, dispatch]);
 
-  useEffect(() => {
-    const root = document.documentElement;
-    const apply = (value) => root.setAttribute("data-theme", value);
-    if (theme === "System") {
-      const media = window.matchMedia("(prefers-color-scheme: dark)");
-      const applySystem = () => apply(media.matches ? "dark" : "light");
-      applySystem();
-      media.addEventListener("change", applySystem);
-      return () => media.removeEventListener("change", applySystem);
+  const fetchRequests = async () => {
+    if (!user?._id) return;
+    setLoadingRequests(true);
+    try {
+      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+      if (!token) return;
+
+      const res = await fetch("http://localhost:5000/api/pickups/user/requests", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      let newRequests = [];
+      if (Array.isArray(data)) newRequests = data;
+      else if (data.requests && Array.isArray(data.requests)) newRequests = data.requests;
+
+      // Only update state if data has changed
+      if (JSON.stringify(newRequests) !== JSON.stringify(requests)) {
+        setRequests(newRequests);
+      }
+    } catch (err) {
+      console.error("Error fetching requests:", err);
+      setRequests([]);
+    } finally {
+      setLoadingRequests(false);
     }
-    apply(theme.toLowerCase());
-  }, [theme]);
+  };
+
+  useEffect(() => {
+    fetchRequests();
+    const interval = setInterval(fetchRequests, 10000);
+    return () => clearInterval(interval);
+  }, [user]);
+
+  const handleCancel = async (id) => {
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+    if (!token) {
+      alert("Authentication required.");
+      return;
+    }
+
+    try {
+      const res = await fetch(`http://localhost:5000/api/pickups/cancel/${id}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      if (res.ok) {
+        // Update local state immediately
+        setRequests(prev => prev.map(req => req._id === id ? { ...req, status: "Canceled" } : req));
+        setSnackbar({
+          open: true,
+          message: "Request canceled successfully!",
+          severity: "success"
+        });
+      } else {
+        const error = await res.json();
+        setSnackbar({
+          open: true,
+          message: error.message || "Failed to cancel request.",
+          severity: "error"
+        });
+      }
+    } catch (err) {
+      console.error("Cancel error:", err);
+      setSnackbar({
+        open: true,
+        message: "Server error.",
+        severity: "error"
+      });
+    }
+  };
 
   const handleLogout = () => {
     dispatch(resetUser());
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("user");
     navigate("/");
   };
 
@@ -95,9 +142,10 @@ const UserDash = () => {
     localStorage.setItem("userTheme", value);
   };
 
-  const onSubmit = (data) => {
+  const onSubmit = async (data) => {
     if (!user?._id) return;
-    dispatch(updateUser({ ...data, _id: user._id }));
+    await dispatch(updateUser({ ...data, _id: user._id }));
+    fetchRequests();
   };
 
   const navItems = [
@@ -109,25 +157,27 @@ const UserDash = () => {
     { name: "About Us", path: "/about" },
   ];
 
+  const getStatusColor = (status) => {
+    if (status === "Pending") return "#9e9e9e";
+    if (status === "Accepted") return "#28a745";
+    if (status === "Rejected") return "#dc3545";
+    if (status === "Canceled") return "#6c757d";
+    return "#9e9e9e";
+  };
+
   return (
     <div className="dashboard-page">
-      {/* NAVBAR */}
       <Navbar className="top-navbar">
         <div className="nav-container">
           <NavbarBrand tag={Link} to="/start" className="brand">
-            <img src={logo} alt="logo" className="logo" />
-            ReNova
+            <img src={logo} alt="logo" className="logo" /> ReNova
           </NavbarBrand>
           <div className="nav-links">
             {navItems.map((item) => (
               <Link
                 key={item.name}
                 to={item.path}
-                className={
-                  location.pathname === item.path
-                    ? "nav-link active-link"
-                    : "nav-link"
-                }
+                className={location.pathname === item.path ? "nav-link active-link" : "nav-link"}
               >
                 {item.name}
               </Link>
@@ -137,7 +187,6 @@ const UserDash = () => {
         </div>
       </Navbar>
 
-      {/* BACK ICON */}
       <div style={{ padding: "10px 30px" }}>
         <FaArrowLeft
           style={{ color: "#0080AA", cursor: "pointer", fontSize: "22px" }}
@@ -146,7 +195,6 @@ const UserDash = () => {
       </div>
 
       <div className="dashboard-container">
-        {/* SIDEBAR */}
         <div className="sidebar">
           <div className="profile-box">
             {user?.pic ? (
@@ -177,90 +225,97 @@ const UserDash = () => {
           </button>
         </div>
 
-        {/* CONTENT */}
         <div className="content">
           {activeTab === "profile" && (
             <form onSubmit={handleSubmit(onSubmit)}>
               <div className="section-title">Profile Information</div>
-
               <div className="form-group">
                 <label>Full Name</label>
-                <input
-                  {...register("uname")}
-                  className={`form-control ${errors.uname ? "input-error" : ""}`}
-                  style={{ borderRadius: 6, padding: 10 }}
-                />
-                {errors.uname && (
-                  <div style={{ color: "red", fontSize: 12 }}>{errors.uname.message}</div>
-                )}
+                <input {...register("uname")} />
+                {errors.uname && <p className="error">{errors.uname.message}</p>}
               </div>
 
               <div className="form-group">
                 <label>Email</label>
-                <input
-                  value={user?.email || ""}
-                  disabled
-                  style={{ borderRadius: 6, padding: 10, backgroundColor: "#f1f1f1" }}
-                />
+                <input value={user?.email || ""} disabled />
               </div>
 
               <div className="form-group">
                 <label>Phone</label>
-                <input
-                  {...register("phone")}
-                  className={`form-control ${errors.phone ? "input-error" : ""}`}
-                  style={{ borderRadius: 6, padding: 10 }}
-                />
-                {errors.phone && (
-                  <div style={{ color: "red", fontSize: 12 }}>{errors.phone.message}</div>
-                )}
+                <input {...register("phone")} />
+                {errors.phone && <p className="error">{errors.phone.message}</p>}
               </div>
 
-              <div className="form-group" style={{ marginTop: 24 }}>
-                <label>Theme</label>
-                <select
-                  value={theme}
-                  onChange={handleThemeChange}
-                  className="theme-select"
-                  style={{
-                    width: "100%",
-                    padding: "10px",
-                    borderRadius: 6,
-                    border: "1px solid #ddd",
-                    fontSize: 14,
-                    background: "white",
-                  }}
-                >
-                  <option value="Light">Light</option>
-                  <option value="Dark">Dark</option>
-                  <option value="System">System</option>
-                </select>
-              </div>
-
-              <button
-                type="submit"
-                className="save-btn"
-                disabled={isLoading}
-                style={{ marginTop: 15 }}
-              >
-                {isLoading ? "Saving..." : "Save Changes"}
-              </button>
+              <button type="submit">{isLoading ? "Saving..." : "Save Changes"}</button>
             </form>
           )}
 
           {activeTab === "requests" && (
             <>
               <div className="section-title">My Requests</div>
-              <p>You don’t have any requests yet.</p>
+              {loadingRequests ? (
+                <p>Loading requests...</p>
+              ) : requests.length === 0 ? (
+                <p>You don’t have any requests yet.</p>
+              ) : (
+                requests.map((req) => (
+                  <div
+                    key={req._id}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      borderBottom: "1px solid #ddd",
+                      padding: "20px 0",
+                      gap: "20px",
+                    }}
+                  >
+                    <img
+                      src={req.image ? `http://localhost:5000/uploads/${req.image}` : "https://via.placeholder.com/100"}
+                      style={{ width: 100, height: 100, objectFit: "cover" }}
+                    />
+                    <div style={{ flex: 1 }}>
+                      <h4 style={{ margin: 0 }}>{req.device}</h4>
+                      <div style={{ fontSize: 13, color: "#666" }}>Date: {new Date(req.createdAt).toLocaleDateString()}</div>
+                      <div style={{ fontSize: 13, color: "#666" }}>Time: {new Date(req.createdAt).toLocaleTimeString()}</div>
+                    </div>
+                    <div style={{ textAlign: "right", minWidth: 120 }}>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 8 }}>
+                        <span>{req.status}</span>
+                        <span
+                          style={{
+                            width: 12,
+                            height: 12,
+                            borderRadius: "50%",
+                            background: getStatusColor(req.status),
+                            display: "inline-block",
+                          }}
+                        />
+                      </div>
+                      {req.status === "Pending" && (
+                        <button
+                          onClick={() => handleCancel(req._id)}
+                          style={{
+                            marginTop: 20,
+                            padding: "6px 14px",
+                            border: "1px solid #ccc",
+                            borderRadius: 6,
+                            background: "#eee",
+                            cursor: "pointer",
+                          }}
+                        >
+                          Cancel
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))
+              )}
             </>
           )}
         </div>
       </div>
 
-      {/* SNACKBAR */}
-      {showSnackbar && (
-        <div className="snackbar">{message || "Profile updated successfully!"}</div>
-      )}
+      {showSnackbar && <div className="snackbar">{message || "Profile updated successfully!"}</div>}
     </div>
   );
 };
