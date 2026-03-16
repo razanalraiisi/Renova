@@ -60,8 +60,8 @@ const CollectorDash = () => {
   const cardHeight = 350;
 
   return (
-    <div><CollectorNavbar />
-      <div style={{ padding: '40px', minHeight: '100vh', background: '#f5f7fa' }}>
+    <div className="collector-dash-page"><CollectorNavbar />
+      <div className="collector-dash-body" style={{ padding: '40px', minHeight: '100vh', background: '#f5f7fa' }}>
         <h2 style={{ marginBottom: '5px' }}>Collector Dashboard</h2>
         <p style={{ color: '#555' }}>
           Welcome, {loggedUser?.companyName || "Collector"}!

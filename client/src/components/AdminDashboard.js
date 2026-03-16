@@ -189,7 +189,7 @@ const AdminDashboard = () => {
 
   return (
     <div className="admin-board">
-      <h3 className="admin-title">Admin Dashboard</h3>
+      <h3 className="admin-title">Welcome Admin!</h3>
 
       <Row>
         {/* LEFT COLUMN */}

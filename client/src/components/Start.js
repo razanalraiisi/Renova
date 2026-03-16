@@ -16,7 +16,7 @@ const Start = () => {
   return (
     <>
       {/* NAVBAR */}
-      <Navbar style={{ backgroundColor: "#0080AA", padding: "0 40px" }}>
+      <Navbar style={{ backgroundColor: "#0080AA", padding: "0 40px" }} className="user-flow-navbar">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
           <NavbarBrand tag={Link} to="/" style={{ color: "white", display: "flex", alignItems: "center" }}>
             <img src={logo} alt="logo" style={{ height: 40, width: 40, marginRight: 10 }} />

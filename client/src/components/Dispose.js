@@ -15,13 +15,14 @@ const Dispose = () => {
 
   return (
     <div
+      className="user-flow-page"
       style={{
         fontFamily: "Arial, sans-serif",
         background: "linear-gradient(180deg, #fff9f2 0%, #ffffff 100%)",
       }}
     >
       {/* NAVBAR */}
-      <Navbar style={{ backgroundColor: "#0080AA" }}>
+      <Navbar style={{ backgroundColor: "#0080AA" }} className="user-flow-navbar">
         <NavbarBrand tag={Link} to="/start" style={{ color: "white" }}>
           <img
             src={logo}

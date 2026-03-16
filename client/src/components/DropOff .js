@@ -98,9 +98,9 @@ const DropOff = () => {
   };
 
   return (
-    <div style={styles.page}>
+    <div className="user-flow-page" style={styles.page}>
       {/* NAVBAR */}
-      <Navbar style={styles.navbar}>
+      <Navbar style={styles.navbar} className="user-flow-navbar">
         <NavbarBrand tag={Link} to="/" style={{ color: "white" }}>
           <img src={logo} alt="logo" style={{ height: 40, marginRight: 10 }} />
           ReNova

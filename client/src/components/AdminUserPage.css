@@ -281,18 +281,88 @@
 }
 
 .au-save-btn {
-  margin-top: 14px;
-  background: #1f79ff;
-  color: #fff;
-  border: none;
-  border-radius: 7px;
-  padding: 8px 14px;
-  font-size: 12px;
+  padding: 8px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #0080AA;
+  background: transparent;
+  border: 1px solid #0080AA;
+  border-radius: 6px;
   cursor: pointer;
 }
 
 .au-save-btn:hover {
-  filter: brightness(0.95);
+  background: rgba(0, 128, 170, 0.08);
+}
+
+.au-save-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Display mode (read-only) */
+.au-display-fields {
+  margin-top: 16px;
+}
+
+.au-display-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-top: 1px solid #f0f0f0;
+  font-size: 13px;
+}
+
+.au-display-row:first-of-type {
+  border-top: none;
+}
+
+.au-display-label {
+  color: #6f6f6f;
+  font-weight: 500;
+}
+
+.au-display-value {
+  color: #222;
+  text-align: right;
+}
+
+.au-edit-btn {
+  margin-top: 18px;
+  padding: 8px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #0080AA;
+  background: transparent;
+  border: 1px solid #0080AA;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.au-edit-btn:hover {
+  background: rgba(0, 128, 170, 0.08);
+}
+
+.au-edit-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.au-cancel-btn {
+  padding: 8px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #0080AA;
+  background: transparent;
+  border: 1px solid #0080AA;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.au-cancel-btn:hover {
+  background: rgba(0, 128, 170, 0.08);
 }
 
 /* Responsive */
@@ -384,4 +454,35 @@
 
 [data-admin-theme="dark"] .au-save-msg {
   color: #7dd3e8 !important;
+}
+
+[data-admin-theme="dark"] .au-display-row {
+  border-top-color: #3a3e42;
+}
+
+[data-admin-theme="dark"] .au-display-label {
+  color: #9aa0a6;
+}
+
+[data-admin-theme="dark"] .au-display-value {
+  color: #e8eaed;
+}
+
+[data-admin-theme="dark"] .au-edit-btn {
+  color: #7dd3e8;
+  border-color: #7dd3e8;
+}
+
+[data-admin-theme="dark"] .au-edit-btn:hover {
+  background: rgba(125, 211, 232, 0.12);
+}
+
+[data-admin-theme="dark"] .au-cancel-btn {
+  color: #e8eaed;
+  background: #3a3e42;
+  border-color: #3a3e42;
+}
+
+[data-admin-theme="dark"] .au-cancel-btn:hover {
+  background: #4a4e52;
 }

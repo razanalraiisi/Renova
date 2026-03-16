@@ -8,8 +8,10 @@
 .admin-board {
   background: #ffffff;
   border: 1px solid #d7dbe0;
-  border-radius: 8px;
-  padding: 16px;
+  border-radius: 12px;
+  padding: 20px 24px 24px;
+  box-sizing: border-box;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
 .admin-title {
@@ -22,10 +24,14 @@
 .side-card {
   border: 1px solid var(--admin-border);
   background: var(--admin-card);
-  border-radius: 4px;
+  border-radius: 8px;
   padding: 14px 12px;
   margin-bottom: 14px;
   text-align: center;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.side-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 128, 170, 0.08);
 }
 
 .side-card h6 {
@@ -52,17 +58,25 @@
   white-space: nowrap;
 }
 
+.mini-btn {
+  transition: background-color 0.2s ease, transform 0.15s ease;
+}
 .mini-btn:hover {
   background-color: var(--admin-blue-dark) !important;
+  transform: translateY(-1px);
 }
 
 .stat-card {
   border: 1px solid var(--admin-border);
   background: var(--admin-card);
-  border-radius: 4px;
+  border-radius: 8px;
   padding: 12px;
   height: 140px;
   position: relative;
+  transition: box-shadow 0.2s ease;
+}
+.stat-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 128, 170, 0.08);
 }
 
 .stat-card-title {
@@ -96,10 +110,11 @@
 
 .center-graph-box {
   border: 1px solid #d7dbe0;
-  border-radius: 8px;
+  border-radius: 10px;
   background: white;
-  padding: 14px;
+  padding: 18px;
   min-height: 360px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .carousel-dots {
@@ -133,14 +148,17 @@
 .graphs-card {
   border: 1px solid var(--admin-border);
   background: #ffffff;
-  border-radius: 6px;
+  border-radius: 8px;
   padding: 12px 14px;
   height: 140px;
-
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  transition: box-shadow 0.2s ease;
+}
+.graphs-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 128, 170, 0.08);
 }
 
 /* LEFT: bar + line icons */
@@ -222,11 +240,12 @@
   flex: 1;
 }
 
-/* Left & right side columns spacing */
+/* Left & right side columns: spacing + cap width so they don't stretch on ultrawide */
 .side-column {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  max-width: 260px;
 }
 
 /* Center column spacing */

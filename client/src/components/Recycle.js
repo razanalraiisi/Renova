@@ -8,10 +8,9 @@ const Recycle = () => {
   const navigate = useNavigate();
 
   return (
-    <div style={{ fontFamily: "Arial, sans-serif", background: "#f5fbff" }}>
-      
+    <div className="user-flow-page" style={{ fontFamily: "Arial, sans-serif", background: "#f5fbff" }}>
       {/* NAVBAR */}
-      <Navbar style={{ backgroundColor: "#0080AA" }}>
+      <Navbar style={{ backgroundColor: "#0080AA" }} className="user-flow-navbar">
         <NavbarBrand tag={Link} to="/start" style={{ color: "white" }}>
           <img
             src={logo}

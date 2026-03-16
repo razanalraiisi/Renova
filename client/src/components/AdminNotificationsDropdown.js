@@ -4,8 +4,7 @@ import { Button } from "reactstrap";
 import {
   clearAllNotifications,
   markNotificationRead,
-  seedNotificationsIfEmpty,
-  // fetchAdminNotifications, // optional later
+  fetchAdminNotifications,
 } from "../features/adminSlice";
 import { useNavigate } from "react-router-dom";
 import "./AdminNotificationsDropdown.css";
@@ -19,11 +18,14 @@ const AdminNotificationsDropdown = () => {
   const notifications = useSelector((s) => s.admin?.notifications) || [];
   const [open, setOpen] = useState(false);
 
-  // Seed dummy items so UI works before backend
   useEffect(() => {
-    dispatch(seedNotificationsIfEmpty());
-    // later: dispatch(fetchAdminNotifications());
+    dispatch(fetchAdminNotifications());
   }, [dispatch]);
+
+  // Refetch when dropdown opens so new requests show up
+  useEffect(() => {
+    if (open) dispatch(fetchAdminNotifications());
+  }, [open, dispatch]);
 
   const unreadCount = useMemo(
     () => notifications.filter((n) => !n.isRead).length,

@@ -5,7 +5,7 @@
   background: #1a1d21 !important;
 }
 
-[data-admin-theme="dark"] .admin-layout-container {
+[data-admin-theme="dark"] .admin-layout-main {
   background: #1a1d21;
 }
 
@@ -190,5 +190,58 @@
 /* Admin dashboard graphs page */
 [data-admin-theme="dark"] .graphs-page-title,
 [data-admin-theme="dark"] .admin-board .row {
+  color: #e8eaed;
+}
+
+[data-admin-theme="dark"] .adminPanelPlain,
+[data-admin-theme="dark"] .graphsPageHeader,
+[data-admin-theme="dark"] .graphCard {
+  background: #25282c !important;
+  border-color: #3a3e42;
+}
+
+[data-admin-theme="dark"] .dashTitle,
+[data-admin-theme="dark"] .graphsSubtitle,
+[data-admin-theme="dark"] .graphsLoading {
+  color: #e8eaed !important;
+}
+
+[data-admin-theme="dark"] .graphsBackBtn {
+  color: #7dd3e8;
+  border-color: #7dd3e8;
+}
+
+/* Admin E-Waste Library (devices) */
+[data-admin-theme="dark"] .ewaste-container.admin {
+  background: #1a1d21 !important;
+}
+
+[data-admin-theme="dark"] .ewaste-container.admin h1,
+[data-admin-theme="dark"] .ewaste-container.admin .subtitle,
+[data-admin-theme="dark"] .ewaste-container.admin h3 {
+  color: #e8eaed !important;
+}
+
+[data-admin-theme="dark"] .ewaste-container.admin form,
+[data-admin-theme="dark"] .ewaste-container.admin .admin-form {
+  background: #25282c !important;
+  border-color: #3a3e42;
+}
+
+[data-admin-theme="dark"] .ewaste-container.admin input,
+[data-admin-theme="dark"] .ewaste-container.admin select,
+[data-admin-theme="dark"] .ewaste-container.admin textarea {
+  background: #2d3136 !important;
+  border-color: #3a3e42;
+  color: #e8eaed;
+}
+
+[data-admin-theme="dark"] .device-card {
+  background: #25282c !important;
+  border-color: #3a3e42;
+}
+
+[data-admin-theme="dark"] .device-card h4,
+[data-admin-theme="dark"] .device-card .category-label {
   color: #e8eaed;
 }

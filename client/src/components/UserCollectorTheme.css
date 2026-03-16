@@ -136,3 +136,152 @@
 [data-theme="dark"] .MuiDialogContentText-root {
   color: #e8eaed !important;
 }
+
+/* ---------- Global app background when user/collector dark theme ---------- */
+[data-theme="dark"] .appBG {
+  background: #1a1d21 !important;
+}
+
+/* ---------- Start page (action-page) ---------- */
+[data-theme="dark"] .action-page {
+  background: #1a1d21 !important;
+}
+
+[data-theme="dark"] .welcome-message,
+[data-theme="dark"] .main-heading {
+  color: #7dd3e8 !important;
+}
+
+[data-theme="dark"] .action-card {
+  background: #2d3136 !important;
+  border: 1px solid #3a3e42;
+}
+
+[data-theme="dark"] .action-card.recycle { background: linear-gradient(135deg, #1e3d32, #2d3136) !important; }
+[data-theme="dark"] .action-card.upcycle { background: linear-gradient(135deg, #1e2d3d, #2d3136) !important; }
+[data-theme="dark"] .action-card.dispose { background: linear-gradient(135deg, #3d3520, #2d3136) !important; }
+[data-theme="dark"] .action-card.decide { background: #2d3136 !important; border-color: #3a3e42; }
+
+[data-theme="dark"] .action-card h3 {
+  color: #e8eaed !important;
+}
+
+/* ---------- User flow pages (Recycle, Dispose, Upcycle, PickupRequest, DropOff, DecideForMe) ---------- */
+[data-theme="dark"] .user-flow-page {
+  background: #1a1d21 !important;
+}
+
+[data-theme="dark"] .user-flow-navbar {
+  background-color: #0d5a6e !important;
+}
+
+[data-theme="dark"] .user-flow-page h1,
+[data-theme="dark"] .user-flow-page h2 {
+  color: #e8eaed !important;
+}
+
+[data-theme="dark"] .user-flow-page p,
+[data-theme="dark"] .user-flow-page section {
+  color: #b0b4b8;
+}
+
+[data-theme="dark"] .user-flow-page label {
+  color: #b0b4b8 !important;
+}
+
+[data-theme="dark"] .user-flow-page input:not([type="file"]),
+[data-theme="dark"] .user-flow-page select,
+[data-theme="dark"] .user-flow-page textarea {
+  background: #2d3136 !important;
+  border-color: #3a3e42 !important;
+  color: #e8eaed;
+}
+
+[data-theme="dark"] .user-flow-page .formContainer,
+[data-theme="dark"] .user-flow-page [style*="border"] {
+  background: #25282c !important;
+  border-color: #3a3e42 !important;
+}
+
+[data-theme="dark"] .user-flow-page button[type="submit"],
+[data-theme="dark"] .user-flow-page .save-btn {
+  background-color: #0d5a6e !important;
+}
+
+[data-theme="dark"] .user-flow-page a {
+  color: #7dd3e8;
+}
+
+/* ---------- Collector dashboard ---------- */
+[data-theme="dark"] .collector-dash-page {
+  background: #1a1d21;
+}
+
+[data-theme="dark"] .collector-dash-body {
+  background: #1a1d21 !important;
+}
+
+[data-theme="dark"] .collector-dash-body h2,
+[data-theme="dark"] .collector-dash-body h5 {
+  color: #e8eaed !important;
+}
+
+[data-theme="dark"] .collector-dash-body p {
+  color: #9aa0a6;
+}
+
+[data-theme="dark"] .collector-dash-page .MuiCard-root,
+[data-theme="dark"] .collector-dash-page [style*="background: 'white'"],
+[data-theme="dark"] .collector-dash-page [style*="background: white"] {
+  background: #25282c !important;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3) !important;
+}
+
+[data-theme="dark"] .collector-dash-page .MuiTypography-root {
+  color: #e8eaed !important;
+}
+
+/* ---------- E-Waste Library ---------- */
+[data-theme="dark"] .ewaste-container {
+  background: #1a1d21 !important;
+}
+
+[data-theme="dark"] .ewaste-container h1,
+[data-theme="dark"] .ewaste-container .subtitle {
+  color: #e8eaed !important;
+}
+
+[data-theme="dark"] .ewaste-container .search-box {
+  background: #2d3136 !important;
+  border-color: #3a3e42 !important;
+  color: #e8eaed;
+}
+
+[data-theme="dark"] .ewaste-container .filters-wrapper {
+  color: #e8eaed;
+}
+
+[data-theme="dark"] .ewaste-container .category-icon-button {
+  color: #e8eaed !important;
+}
+
+/* ---------- Collector Nav (when dark) ---------- */
+[data-theme="dark"] .collector-nav,
+[data-theme="dark"] [class*="CollectorNav"] {
+  background-color: #0d5a6e !important;
+}
+
+/* ---------- Request history (CollectorRequestsHistory, UserRequestHistory) - MUI Box ---------- */
+[data-theme="dark"] .MuiBox-root {
+  background: #25282c !important;
+  color: #e8eaed;
+}
+
+[data-theme="dark"] .MuiTypography-root {
+  color: #e8eaed !important;
+}
+
+[data-theme="dark"] .MuiMenuItem-root {
+  background: #25282c !important;
+  color: #e8eaed;
+}

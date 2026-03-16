@@ -6,10 +6,12 @@ import {
   getUsers,
   getCollectors,
   deactivateCollector,
+  reactivateCollector,
   getDashboardStats,
   getAdminProfile,
   updateAdminProfile,
   getCollectorRequestsHistory,
+  getAdminNotifications,
 } from "../controllers/authController.js";
 import {
   getDevices,
@@ -25,9 +27,11 @@ const router = express.Router();
 router.get("/stats", getDashboardStats);
 router.get("/chart-data", getChartData);
 router.get("/pendingCollectors", getPendingCollectors);
+router.get("/notifications", getAdminNotifications);
 router.get("/users", getUsers);
 router.get("/collectors", getCollectors);
 router.put("/collectors/:id/deactivate", deactivateCollector);
+router.put("/collectors/:id/reactivate", reactivateCollector);
 router.put("/approveCollector/:id", approveCollector);
 router.post("/rejectCollector/:id", rejectCollector);
 

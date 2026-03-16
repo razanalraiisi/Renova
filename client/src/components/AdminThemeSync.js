@@ -2,10 +2,11 @@ import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
 const USER_ROUTES = [
-  "/UserDash", "/start", "/dispose", "/recycle", "/upcycle",
+  "/UserDash", "/start", "/dispose", "/recycle", "/upcycle", "/decideForMe",
   "/NewRecycleRequest", "/PickupRequest", "/DropOff",
   "/CollectorRequestsHistory", "/UserRequestHistory",
   "/EWasteLibrary", "/omanmap", "/library",
+  "/AboutUs", "/FAQ", "/support", "/terms", "/privacy",
 ];
 const COLLECTOR_ROUTES = ["/CollectorDash", "/CollectorProfile"];
 

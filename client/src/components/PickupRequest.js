@@ -129,7 +129,7 @@ const PickupRequest = () => {
   const user = JSON.parse(localStorage.getItem("user"));
 
   return (
-    <div style={styles.page}>
+    <div className="user-flow-page" style={styles.page}>
 
       <Navbar style={styles.navbar}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>

@@ -46,6 +46,7 @@ export default function AdminManageCollectors() {
   const [activeId, setActiveId] = useState(null);
 
   const [successOpen, setSuccessOpen] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const [deactivating, setDeactivating] = useState(false);
   const [expandedId, setExpandedId] = useState(null);
 
@@ -100,6 +101,7 @@ export default function AdminManageCollectors() {
 
   const save = async () => {
     if (!activeId) return;
+    setConfirmOpen(false);
     setDeactivating(true);
     try {
       const res = await fetch(`${API_URL}/${activeId}/deactivate`, {
@@ -119,6 +121,10 @@ export default function AdminManageCollectors() {
     } finally {
       setDeactivating(false);
     }
+  };
+
+  const onConfirmDeactivate = () => {
+    setConfirmOpen(true);
   };
 
   return (
@@ -245,11 +251,28 @@ export default function AdminManageCollectors() {
           </div>
 
           <div className="modalActions">
-            <button className="btnSave" type="button" onClick={save} disabled={deactivating}>
-              {deactivating ? "Saving…" : "Save Changes"}
+            <button className="btnSave" type="button" onClick={onConfirmDeactivate} disabled={deactivating}>
+              {deactivating ? "Saving…" : "Deactivate"}
             </button>
             <button className="btnCloseGray" type="button" onClick={() => setOpen(false)}>
               Close
+            </button>
+          </div>
+        </div>
+      </BasicModal>
+
+      {/* Confirm deactivation */}
+      <BasicModal open={confirmOpen} onClose={() => setConfirmOpen(false)} width={440}>
+        <div className="modalBodyLarge" style={{ padding: "8px 0 6px" }}>
+          <p style={{ fontSize: 15, color: "#333", marginBottom: 24, lineHeight: 1.5 }}>
+            Are you sure you want to deactivate this collector?
+          </p>
+          <div className="modalActions">
+            <button className="btnSave" type="button" onClick={save} disabled={deactivating}>
+              {deactivating ? "Saving…" : "Yes, I'm sure"}
+            </button>
+            <button className="btnCloseGray" type="button" onClick={() => setConfirmOpen(false)}>
+              Cancel
             </button>
           </div>
         </div>

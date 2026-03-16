@@ -1,14 +1,14 @@
 import React from "react";
-import { Container } from "reactstrap";
 import AdminTopbar from "./AdminTopbar";
+import "./AdminLayout.css";
 
 const AdminLayout = ({ children }) => {
   return (
-    <div className="admin-layout-root" style={{ minHeight: "100vh", background: "#f2f3f5" }}>
+    <div className="admin-layout-root">
       <AdminTopbar />
-      <Container fluid className="admin-layout-container" style={{ padding: "18px 18px 40px" }}>
-        {children}
-      </Container>
+      <main className="admin-layout-main">
+        <div className="admin-layout-content">{children}</div>
+      </main>
     </div>
   );
 };

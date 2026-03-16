@@ -55,7 +55,8 @@ const userSchema = new mongoose.Schema({
     default: function () {
       return this.role !== "collector"; // users/admins = true, collectors = false
     }
-  }
+  },
+  deactivatedAt: { type: Date }, // set when collector is deactivated; cleared on reactivate
 }, { timestamps: true });  // ⭐ adds createdAt + updatedAt automatically
 
 const User = mongoose.model("Users", userSchema);

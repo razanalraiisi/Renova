@@ -2,36 +2,25 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
 // (keep your fetchAdminStats thunk here if you already added it)
 
+const API_BASE = "http://localhost:5000/admin";
+
 export const fetchAdminNotifications = createAsyncThunk(
   "admin/fetchNotifications",
-  async () => {
-    // later: GET /admin/notifications
-    return [
-      {
-        id: "n1",
-        title: "Collector Registration Request",
-        message: "Collector Name: Oman environmental services holding Company",
-        timeAgo: "5 hr ago",
-        linkTo: "/admin/collectors",
-        isRead: false,
-      },
-      {
-        id: "n2",
-        title: "Collector Registration Request",
-        message: "Collector Name: Recycling Services LLC",
-        timeAgo: "1 day ago",
-        linkTo: "/admin/collectors",
-        isRead: false,
-      },
-      {
-        id: "n3",
-        title: "Collector Registration Request",
-        message: "Collector Name: Be'ah plastic recycling service",
-        timeAgo: "2 days ago",
-        linkTo: "/admin/collectors",
-        isRead: false,
-      },
-    ];
+  async (_, { getState, rejectWithValue }) => {
+    try {
+      const res = await fetch(`${API_BASE}/notifications`);
+      if (!res.ok) throw new Error("Failed to fetch notifications");
+      const data = await res.json();
+      const existing = getState()?.admin?.notifications || [];
+      const readIds = new Set(existing.filter((n) => n.isRead).map((n) => n.id));
+      return (Array.isArray(data) ? data : []).map((n) => ({
+        ...n,
+        id: String(n.id),
+        isRead: readIds.has(String(n.id)),
+      }));
+    } catch (err) {
+      return rejectWithValue(err.message || "Failed to load notifications");
+    }
   }
 );
 
@@ -58,34 +47,7 @@ const adminSlice = createSlice({
       if (n) n.isRead = true;
     },
     seedNotificationsIfEmpty: (state) => {
-      if (state.notifications.length === 0) {
-        state.notifications = [
-          {
-            id: "n1",
-            title: "Collector Registration Request",
-            message: "Collector Name: Oman environmental services holding Company",
-            timeAgo: "5 hr ago",
-            linkTo: "/admin/collectors",
-            isRead: false,
-          },
-          {
-            id: "n2",
-            title: "Collector Registration Request",
-            message: "Collector Name: Recycling Services LLC",
-            timeAgo: "1 day ago",
-            linkTo: "/admin/collectors",
-            isRead: false,
-          },
-          {
-            id: "n3",
-            title: "Collector Registration Request",
-            message: "Collector Name: Be'ah plastic recycling service",
-            timeAgo: "2 days ago",
-            linkTo: "/admin/collectors",
-            isRead: false,
-          },
-        ];
-      }
+      // No-op: notifications come from API. Kept for backwards compatibility.
     },
   },
   extraReducers: (builder) => {

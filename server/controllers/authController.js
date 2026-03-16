@@ -179,6 +179,45 @@ export const getPendingCollectors = async (req, res) => {
     res.status(500).json({ message: "Server error." });
   }
 };
+
+// Helper: format createdAt as "X min ago" / "Y hr ago" / "Z days ago"
+function timeAgo(date) {
+  if (!date) return "";
+  const d = new Date(date);
+  const now = new Date();
+  const diffMs = now - d;
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHrs = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+  if (diffMins < 1) return "Just now";
+  if (diffMins < 60) return `${diffMins} min ago`;
+  if (diffHrs < 24) return `${diffHrs} hr ago`;
+  if (diffDays === 1) return "1 day ago";
+  if (diffDays < 7) return `${diffDays} days ago`;
+  return d.toLocaleDateString();
+}
+
+// Admin notifications: new collector registration requests (pending only)
+export const getAdminNotifications = async (req, res) => {
+  try {
+    const collectors = await User
+      .find({ role: "collector", isApproved: false })
+      .sort({ createdAt: -1 })
+      .select("_id companyName createdAt")
+      .lean();
+    const notifications = collectors.map((c) => ({
+      id: String(c._id),
+      title: "Collector Registration Request",
+      message: `Company: ${c.companyName || "Unnamed"}`,
+      timeAgo: timeAgo(c.createdAt),
+      linkTo: "/admin/collectors-requests",
+    }));
+    res.json(notifications);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error." });
+  }
+};
  
  
 // Approve collector
@@ -489,6 +528,7 @@ export const deactivateCollector = async (req, res) => {
     if (collector.role !== "collector") return res.status(400).json({ message: "Not a collector" });
 
     collector.isApproved = false;
+    collector.deactivatedAt = new Date();
     await collector.save();
 
     const reasonText = reason && String(reason).trim() ? reason : "No reason provided.";
@@ -555,13 +595,14 @@ export const getAdminProfile = async (req, res) => {
 
 export const updateAdminProfile = async (req, res) => {
   try {
-    const { name, email, mobile, location } = req.body;
+    const { name, email, mobile, location, avatarUrl } = req.body;
     const admin = await User.findById(req.user._id);
     if (!admin) return res.status(404).json({ message: "Admin not found." });
     if (name !== undefined) admin.uname = name;
     if (email !== undefined) admin.email = email;
     if (mobile !== undefined) admin.phone = mobile;
     if (location !== undefined) admin.locationName = location;
+    if (avatarUrl !== undefined) admin.pic = avatarUrl;
     await admin.save();
     const updated = await User.findById(admin._id).select("-password").lean();
     res.json({
@@ -581,27 +622,83 @@ export const updateAdminProfile = async (req, res) => {
 };
 
 // --------------------
-// Admin: all collector registration requests (history: pending + approved)
+// Admin: all collector registration requests (history: pending + approved + deactivated)
 // --------------------
 export const getCollectorRequestsHistory = async (req, res) => {
   try {
     const collectors = await User.find({ role: "collector" })
       .sort({ createdAt: -1 })
-      .select("companyName email phone address collectorType openHr collectorId isApproved createdAt")
+      .select("companyName email phone address collectorType openHr collectorId isApproved deactivatedAt createdAt")
       .lean();
-    const list = collectors.map((c) => ({
-      _id: c._id,
-      companyName: c.companyName,
-      email: c.email,
-      phone: c.phone,
-      address: c.address,
-      collectorType: c.collectorType,
-      openHr: c.openHr,
-      collectorId: c.collectorId,
-      status: c.isApproved ? "approved" : "pending",
-      createdAt: c.createdAt,
-    }));
+    const list = collectors.map((c) => {
+      let status = "pending";
+      if (c.isApproved) status = "approved";
+      else if (c.deactivatedAt) status = "deactivated";
+      return {
+        _id: c._id,
+        companyName: c.companyName,
+        email: c.email,
+        phone: c.phone,
+        address: c.address,
+        collectorType: c.collectorType,
+        openHr: c.openHr,
+        collectorId: c.collectorId,
+        status,
+        createdAt: c.createdAt,
+      };
+    });
     res.json(list);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error." });
+  }
+};
+
+// --------------------
+// Admin: reactivate a deactivated collector (like approving again)
+// --------------------
+export const reactivateCollector = async (req, res) => {
+  try {
+    const collector = await User.findById(req.params.id);
+    if (!collector) return res.status(404).json({ message: "Collector not found" });
+    if (collector.role !== "collector") return res.status(400).json({ message: "Not a collector" });
+
+    collector.isApproved = true;
+    collector.deactivatedAt = undefined;
+    await collector.save();
+
+    const html = `
+    <div style="font-family: Arial; padding: 20px; max-width: 600px; margin: auto; border-radius: 10px; background: #ffffff;">
+      <div style="text-align: center;">
+        <img src="https://i.imgur.com/lF0sKzC.png" width="70" style="margin-bottom: 10px;" />
+        <h2 style="color: #008000;">Collector Account Reactivated</h2>
+      </div>
+
+      <p>Dear <strong>${collector.companyName || "Collector"}</strong>,</p>
+      <p>Your ReNova collector account has been <strong>reactivated</strong> by our admin team. You can log in and use the platform again.</p>
+
+      <p><strong>Account details:</strong></p>
+      <ul>
+        <li><strong>Collector ID:</strong> ${collector.collectorId || "—"}</li>
+        <li><strong>Status:</strong> Active</li>
+      </ul>
+
+      <div style="text-align: center; margin-top: 20px;">
+        <a href="http://localhost:3000/login"
+          style="padding: 12px 20px; color: white; text-decoration: none; background-color: #0080AA; border-radius: 6px;">
+          Log in
+        </a>
+      </div>
+
+      <p style="margin-top: 30px; color: #777; font-size: 12px; text-align: center;">
+        © 2025 ReNova Team. All rights reserved.
+      </p>
+    </div>
+    `;
+
+    await sendEmail(collector.email, "Your ReNova Collector Account Has Been Reactivated", html);
+
+    res.json({ message: "Collector reactivated and email sent." });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error." });

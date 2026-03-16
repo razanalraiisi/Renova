@@ -107,9 +107,9 @@ const DecideForMe = () => {
   };
 
   return (
-    <div style={styles.page}>
+    <div className="user-flow-page" style={styles.page}>
       {/* NAVBAR */}
-      <Navbar style={{ backgroundColor: "#0080AA" }}>
+      <Navbar style={{ backgroundColor: "#0080AA" }} className="user-flow-navbar">
         <NavbarBrand tag={Link} to="/start" style={{ color: "white" }}>
           <img src={logo} alt="logo" style={{ height: 40, marginRight: 10 }} />
           ReNova
