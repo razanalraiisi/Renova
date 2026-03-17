@@ -7,7 +7,7 @@ import { updateUser, resetUser, resetState } from "../features/UserSlice.js";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as Yup from "yup";
-import { Box, Card, CardContent, Typography, Divider, Snackbar, Alert } from "@mui/material";
+import { Box, Card, CardContent, Typography, Divider, Snackbar, Alert, Dialog, DialogTitle, DialogContent, DialogActions, Button } from "@mui/material";
 import logo from "../assets/logo.png";
 import "./Components.css";
 
@@ -22,6 +22,8 @@ const UserDash = () => {
   const [requests, setRequests] = useState([]);
   const [loadingRequests, setLoadingRequests] = useState(true);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
+  const [cancelTargetId, setCancelTargetId] = useState(null);
 
   // Notification state
   const [notifOpen, setNotifOpen] = useState(false);
@@ -32,8 +34,10 @@ const UserDash = () => {
 
   const defaultValues = { uname: user?.uname || "", phone: user?.phone || "" };
   const schema = Yup.object().shape({
-    uname: Yup.string().required("Full Name is required").min(3),
-    phone: Yup.string().required("Phone is required").matches(/^[0-9]+$/).min(7),
+    uname: Yup.string().required("Full Name is required"),
+    phone: Yup.string()
+      .required("Phone is required")
+      .matches(/^[279]\d{7}$/, "Phone must be exactly 8 digits and start with 2, 7, or 9"),
   });
 
   const { register, handleSubmit, formState: { errors }, setValue } = useForm({
@@ -86,14 +90,21 @@ const UserDash = () => {
 
   useEffect(() => {
     fetchRequests();
-    const interval = setInterval(fetchRequests, 10000);
-    return () => clearInterval(interval);
   }, [user]);
 
-  const handleCancel = async (id) => {
+  const handleCancel = (id) => {
+    setCancelTargetId(id);
+    setCancelConfirmOpen(true);
+  };
+
+  const confirmCancel = async () => {
+    const id = cancelTargetId;
+    setCancelConfirmOpen(false);
+    setCancelTargetId(null);
+
     const token = localStorage.getItem("token") || sessionStorage.getItem("token");
     if (!token) {
-      alert("Authentication required.");
+      setSnackbar({ open: true, message: "Authentication required.", severity: "error" });
       return;
     }
 
@@ -133,7 +144,12 @@ const UserDash = () => {
 
   const onSubmit = async (data) => {
     if (!user?._id) return;
-    await dispatch(updateUser({ ...data, _id: user._id }));
+    const payload = {
+      ...data,
+      uname: user?.uname || data.uname,
+      _id: user._id,
+    };
+    await dispatch(updateUser(payload));
     fetchRequests();
   };
 
@@ -289,7 +305,8 @@ const UserDash = () => {
               <div className="section-title">Profile Information</div>
               <div className="form-group">
                 <label>Full Name</label>
-                <input {...register("uname")} />
+                <input type="text" value={user?.uname || ""} disabled />
+                <input type="hidden" {...register("uname")} />
                 {errors.uname && <p className="error">{errors.uname.message}</p>}
               </div>
               <div className="form-group">
@@ -301,7 +318,7 @@ const UserDash = () => {
                 <input {...register("phone")} />
                 {errors.phone && <p className="error">{errors.phone.message}</p>}
               </div>
-              <button type="submit">{isLoading ? "Saving..." : "Save Changes"}</button>
+              <button type="submit" className="save-btn">{isLoading ? "Saving..." : "Save Changes"}</button>
             </form>
           )}
 
@@ -353,7 +370,7 @@ const UserDash = () => {
                 filteredRequests.map((req) => (
                   <div key={req._id} style={{ display: "flex", alignItems: "center", borderBottom: "1px solid #ddd", padding: "20px 0", gap: "20px" }}>
                     <img src={req.image ? `http://localhost:5000/uploads/${req.image}` : "https://via.placeholder.com/100"}
-                      style={{ width: 100, height: 100, objectFit: "cover" }} />
+                      style={{ width: 100, height: 100, objectFit: "contain", backgroundColor: "#f7f7f7", borderRadius: 8 }} />
                     <div style={{ flex: 1 }}>
                       <h4 style={{ margin: 0 }}>{req.device}</h4>
                       <div style={{ fontSize: 13, color: "#555", fontWeight: "bold" }}>Type: <span style={{ color: '#1976D2' }}>{req.requestType}</span></div>
@@ -381,6 +398,17 @@ const UserDash = () => {
           )}
         </div>
       </div>
+
+      <Dialog open={cancelConfirmOpen} onClose={() => setCancelConfirmOpen(false)}>
+        <DialogTitle>Cancel Request</DialogTitle>
+        <DialogContent>
+          <Typography>Are you sure you want to cancel this request?</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setCancelConfirmOpen(false)} variant="outlined">No</Button>
+          <Button onClick={confirmCancel} variant="contained" color="error">Yes, cancel</Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Snackbar */}
       <Snackbar open={snackbar.open} autoHideDuration={4000} onClose={() => setSnackbar({ ...snackbar, open: false })} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>

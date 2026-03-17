@@ -139,7 +139,7 @@ const CollectorDash = () => {
             <Button
               variant="text"
               sx={{ textTransform: 'none', fontWeight: 500, color: '#1976D2' }}
-              onClick={() => navigate('/NewRecycleRequest')}
+              onClick={() => navigate('/CollectorNewRecycleRequest')}
             >
               View all
             </Button>

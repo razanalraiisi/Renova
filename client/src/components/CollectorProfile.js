@@ -55,7 +55,6 @@ const CollectorProfile = () => {
   });
   const [theme, setTheme] = useState(() => localStorage.getItem("collectorTheme") || "Light");
 
-  // Apply collector theme when theme state changes
   useEffect(() => {
     const root = document.documentElement;
     const apply = (value) => root.setAttribute("data-theme", value);
@@ -104,7 +103,6 @@ const CollectorProfile = () => {
     { value: "hazardous_specialist", label: "Specialized Hazardous Waste Collector" },
   ];
 
-  // Load collector data
   useEffect(() => {
     if (user && user.role === "collector") {
       const acceptedCategories = allCategories.map((name) => ({
@@ -131,7 +129,6 @@ const CollectorProfile = () => {
     }
   }, [user]);
 
-  // Warn before refresh
   useEffect(() => {
     const handleBeforeUnload = (e) => {
       if (hasChanges) {
@@ -186,7 +183,40 @@ const CollectorProfile = () => {
     setData((prev) => ({ ...prev, acceptedCategories: items }));
   };
 
+
+  const validate = () => {
+    const { collectorType, workingHours, phone } = data.basicInfo;
+    const address = data.location.address;
+
+    if (!collectorType || !workingHours || !phone || !address) {
+      return "All fields must be filled.";
+    }
+
+
+    const phoneRegex = /^[279][0-9]{7}$/;
+    if (!phoneRegex.test(phone)) {
+      return "Phone must be 8 digits, start with 2, 7, or 9, and contain only numbers.";
+    }
+
+    const selectedCategories = data.acceptedCategories.filter((c) => c.checked);
+    if (selectedCategories.length === 0) {
+      return "Select at least one category.";
+    }
+
+    return null;
+  };
+
   const handleSave = async () => {
+    const error = validate();
+    if (error) {
+      setSnackbar({
+        open: true,
+        message: error,
+        severity: "error",
+      });
+      return;
+    }
+
     const updatedData = {
       _id: data._id,
       companyName: data.companyName,
