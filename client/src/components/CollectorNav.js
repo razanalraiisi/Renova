@@ -119,7 +119,7 @@ const CollectorNavbar = () => {
                           className="notif-view"
                           onClick={() => {
                             setNotifOpen(false);
-                            navigate("/NewRecycleRequest");
+                            navigate("/CollectorNewRecycleRequest");
                           }}
                         >
                           view
