@@ -21,44 +21,44 @@ const RequestHistory = () => {
   const [openId, setOpenId] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [requests, setRequests] = useState([]);
+  const [message, setMessage] = useState({ text: '', type: '' });
+
+  const fetchRequests = async () => {
+    try {
+      const collector =
+        JSON.parse(localStorage.getItem("user")) ||
+        JSON.parse(sessionStorage.getItem("user"));
+
+      if (!collector || !collector._id) return;
+
+      const token =
+        localStorage.getItem("token") ||
+        sessionStorage.getItem("token");
+
+      const res = await fetch(
+        `http://localhost:5000/api/pickups/history/${collector._id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const data = await res.json();
+
+      if (Array.isArray(data)) {
+        setRequests(data);
+      } else {
+        setRequests([]);
+      }
+
+    } catch (error) {
+      console.error("Error fetching requests:", error);
+    }
+  };
 
   useEffect(() => {
-    const fetchRequests = async () => {
-      try {
-
-        const collector =
-          JSON.parse(localStorage.getItem("user")) ||
-          JSON.parse(sessionStorage.getItem("user"));
-
-        if (!collector || !collector._id) return;
-
-        const token =
-          localStorage.getItem("token") ||
-          sessionStorage.getItem("token");
-
-        const res = await fetch(
-          `http://localhost:5000/api/pickups/history/${collector._id}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        const data = await res.json();
-
-        if (Array.isArray(data)) {
-          setRequests(data);
-        } else {
-          setRequests([]);
-        }
-
-      } catch (error) {
-        console.error("Error fetching requests:", error);
-      }
-    };
-
     fetchRequests();
   }, []);
 
@@ -67,6 +67,40 @@ const RequestHistory = () => {
     (r.status || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
     (r.email || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const updateStatus = async (id, newStatus) => {
+    try {
+      const token =
+        localStorage.getItem("token") || sessionStorage.getItem("token");
+      if (!token) {
+        setMessage({ text: "Login required to update status.", type: "error" });
+        return;
+      }
+
+      const res = await fetch(`http://localhost:5000/api/pickups/${newStatus}/${id}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        setMessage({ text: err.message || "Failed to update status.", type: "error" });
+        return;
+      }
+
+      const updated = await res.json();
+      setRequests((prev) => prev.map((r) => (r._id === updated._id ? updated : r)));
+      setMessage({ text: `Status updated to ${updated.status}.`, type: "success" });
+    } catch (error) {
+      console.error("Error updating status:", error);
+      setMessage({ text: "Error updating status.", type: "error" });
+    }
+  };
+
+
 
   /* DOWNLOAD FUNCTION (NEW) */
   const downloadCSV = () => {
@@ -131,8 +165,24 @@ const RequestHistory = () => {
             alignItems: 'center',
             gap: 2,
             mb: 2,
+            flexWrap: 'wrap'
           }}
         >
+          {message.text && (
+            <Box
+              sx={{
+                width: '100%',
+                p: 1,
+                borderRadius: 1,
+                backgroundColor: message.type === 'success' ? '#d4edda' : '#f8d7da',
+                color: message.type === 'success' ? '#155724' : '#721c24',
+                mb: 1,
+                fontSize: 13,
+              }}
+            >
+              {message.text}
+            </Box>
+          )}
 
           <IconButton onClick={() => navigate('/CollectorDash')}>
             <ArrowBackIcon />
@@ -285,9 +335,21 @@ const RequestHistory = () => {
                     </Box>
 
 
-                    <div className={`history-status ${statusClass}`}>
-                      <span>{r.status}</span>
-                      <span className="status-dot" />
+                    <div>
+                      <div className={`history-status ${statusClass}`}>
+                        <span>{r.status}</span>
+                        <span className="status-dot" />
+                      </div>
+                      {r.status === "Accepted" && (
+                        <Button
+                          variant="contained"
+                          size="small"
+                          sx={{ mt: 1, backgroundColor: '#1976D2', fontWeight: 600 }}
+                          onClick={() => updateStatus(r._id, 'complete')}
+                        >
+                          Mark Completed
+                        </Button>
+                      )}
                     </div>
 
                   </CardContent>

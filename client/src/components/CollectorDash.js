@@ -14,6 +14,10 @@ import {
   Divider,
   Snackbar,
   Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions
 } from '@mui/material';
 import CollectorNav from './CollectorNav';
 import { desktopOS, valueFormatter, months, deviceCounts, pieColors, widgetData } from './DummyData';
@@ -26,6 +30,10 @@ const CollectorDash = () => {
   const loggedUser = useSelector((state) => state.users.user);
   const [openId, setOpenId] = useState(null);
   const [requests, setRequests] = useState([]);
+
+  // ✅ NEW STATES (same as NewRecycleRequest)
+  const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
+  const [cancelTargetId, setCancelTargetId] = useState(null);
 
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -239,40 +247,14 @@ const CollectorDash = () => {
                       Accept
                     </Button>
 
+                    {/* ✅ UPDATED REJECT BUTTON */}
                     <Button
                       size="small"
                       variant="contained"
                       color="error"
-                      onClick={async () => {
-                        const reason = prompt('Enter reason for rejection:');
-                        if (!reason) return;
-
-                        const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-                        if (!token) {
-                          setSnackbar({
-                            open: true,
-                            message: "Authentication required.",
-                            severity: 'error'
-                          });
-                          return;
-                        }
-
-                        await fetch(`http://localhost:5000/api/pickups/reject/${r._id}`, {
-                          method: "PUT",
-                          headers: {
-                            "Content-Type": "application/json",
-                            Authorization: `Bearer ${token}`
-                          },
-                          body: JSON.stringify({ reason })
-                        });
-
-                        setRequests(prev => prev.filter(req => req._id !== r._id));
-
-                        setSnackbar({
-                          open: true,
-                          message: `Request "${r.device}" rejected.`,
-                          severity: 'error'
-                        });
+                      onClick={() => {
+                        setCancelTargetId(r._id);
+                        setCancelConfirmOpen(true);
                       }}
                     >
                       Reject
@@ -284,6 +266,73 @@ const CollectorDash = () => {
             )) : <Typography sx={{ textAlign: 'center', mt: 3 }}>No requests found</Typography>}
           </Box>
         </Box>
+
+        {/* ✅ NEW DIALOG (same as NewRecycleRequest) */}
+        <Dialog
+          open={cancelConfirmOpen}
+          onClose={() => setCancelConfirmOpen(false)}
+        >
+          <DialogTitle>Reject Request</DialogTitle>
+          <DialogContent>
+            <Typography>Are you sure you want to reject this request?</Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setCancelConfirmOpen(false)}>No</Button>
+            <Button
+              onClick={async () => {
+                const id = cancelTargetId;
+                setCancelConfirmOpen(false);
+                setCancelTargetId(null);
+
+                const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+                if (!token) {
+                  setSnackbar({
+                    open: true,
+                    message: "Authentication required.",
+                    severity: 'error'
+                  });
+                  return;
+                }
+
+                try {
+                  const res = await fetch(`http://localhost:5000/api/pickups/cancel/${id}`, {
+                    method: "PUT",
+                    headers: { Authorization: `Bearer ${token}` }
+                  });
+
+                  if (!res.ok) {
+                    const err = await res.json();
+                    setSnackbar({
+                      open: true,
+                      message: err.message || "Failed to reject request.",
+                      severity: 'error'
+                    });
+                    return;
+                  }
+
+                  setRequests(prev => prev.filter(req => req._id !== id));
+
+                  setSnackbar({
+                    open: true,
+                    message: `Request rejecting successfully!`,
+                    severity: 'success'
+                  });
+                } catch (error) {
+                  console.error("Cancel error:", error);
+                  setSnackbar({
+                    open: true,
+                    message: "Error rejecting request.",
+                    severity: 'error'
+                  });
+                }
+              }}
+              variant="contained"
+              color="error"
+            >
+              Yes, reject
+            </Button>
+          </DialogActions>
+        </Dialog>
 
         <Snackbar
           open={snackbar.open}

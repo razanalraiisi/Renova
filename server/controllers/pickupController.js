@@ -182,3 +182,28 @@ export const cancelPickupRequest = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+/**
+ * Complete a pickup request
+ */
+export const completePickupRequest = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const request = await PickupRequest.findById(id);
+    if (!request) {
+      return res.status(404).json({ message: "Request not found" });
+    }
+
+    if (request.status !== "Accepted") {
+      return res.status(400).json({ message: "Only accepted requests can be marked as completed." });
+    }
+
+    request.status = "Completed";
+    await request.save();
+
+    res.json(request);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

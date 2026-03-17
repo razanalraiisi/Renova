@@ -183,7 +183,7 @@ const UserRequestHistory = () => {
                       <span className="status-dot" />
                     </div>
 
-                    {r.status.toLowerCase() === "pending" && openId === r.id && (
+                    {(r.status.toLowerCase() === "pending" || r.status.toLowerCase() === "accepted") && openId === r.id && (
                       <Button
                         variant="outlined"
                         color="error"
