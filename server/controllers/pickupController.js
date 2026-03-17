@@ -91,9 +91,9 @@ export const getAllPickupRequests = async (req, res) => {
   }
 };
 
-/**
- * Accept a pickup request
- */
+
+
+// controllers/pickupController.js
 export const acceptPickupRequest = async (req, res) => {
   try {
     const { id } = req.params;
@@ -101,7 +101,11 @@ export const acceptPickupRequest = async (req, res) => {
 
     const request = await PickupRequest.findByIdAndUpdate(
       id,
-      { status: "Accepted", collectorId },
+      { 
+        status: "Accepted", 
+        collectorId, 
+        acceptedAt: new Date() // <-- ADD THIS LINE
+      },
       { new: true }
     );
 
