@@ -42,7 +42,7 @@ import TermsConditions from './components/TermsConditions.js';
 import PrivacyPolicy from './components/PrivacyPolicy.js';
 import AdminUserPage from './components/AdminUserPage.js';
 import AdminMyRequests from './components/AdminMyRequests.js';
-
+import DecisionResult from './components/DecisionResult.js';
 // Admin – Reports
 import RecyclesReport from "./components/RecyclesReport";
 import DisposalsReport from "./components/DisposalsReport";
@@ -89,7 +89,7 @@ function App() {
             <Route path="/upcycle" element={<Upcycle />} />
             <Route path="/dispose" element={<Dispose />} />
             <Route path="/decideForMe" element={<DecideForMe />} />
-
+            <Route path="/decision-result" element={<DecisionResult />} />
             {/* Collector pages automatically wrapped */}
             <Route path="/CollectorDash" element={withCollectorNav(CollectorDash)()} />
             <Route path="/CollectorProfile" element={withCollectorNav(CollectorProfile)()} />
@@ -106,6 +106,7 @@ function App() {
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/PickupRequest" element={<PickupRequest />} />
             <Route path="/DropOff" element={<DropOff />} />
+        
             <Route path="/admin/dashboard/graphs" element={<AdminDashboardGraphs />} />
 
             {/* Dashboard routes */}

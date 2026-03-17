@@ -16,7 +16,6 @@ import authRoutes from './routes/authRoutes.js';
 import adminRoutes from "./routes/adminRoutes.js";
 import pickupRoutes from "./routes/pickupRoutes.js";
 
-
 // =======================
 // Environment
 // =======================
@@ -34,11 +33,35 @@ app.use("/uploads", express.static("uploads"));
 console.log("✓ AUTH ROUTES LOADED");
 
 app.use("/api/pickups", pickupRoutes);
+
 // =======================
 // Routes
 // =======================
 app.use('/', authRoutes);
 app.use("/admin", adminRoutes);
+
+// =======================
+// AI Prediction Endpoint (JUST ADDED)
+// =======================
+import multer from "multer";
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
+
+app.post("/predict", upload.single("image"), (req, res) => {
+  const category = req.body.category;
+  const file = req.file;
+
+  if (!category || !file) {
+    return res.status(400).json({ error: "Category and image are required." });
+  }
+
+  // ===== Placeholder AI logic =====
+  let recommendation = "Recycle";
+  if (category === "broken item") recommendation = "Dispose";
+  else if (category === "creative project") recommendation = "Upcycle";
+
+  res.json({ recommendation });
+});
 
 // =======================
 // Database Connection
