@@ -18,11 +18,17 @@ const UserDash = () => {
   const { user, isSuccess, message, isLoading } = useSelector((state) => state.users);
 
   const [activeTab, setActiveTab] = useState("profile");
+  const [theme, setTheme] = useState(() => localStorage.getItem("userTheme") || "Light");
   const [requests, setRequests] = useState([]);
   const [loadingRequests, setLoadingRequests] = useState(true);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+
+  // Notification state
   const [notifOpen, setNotifOpen] = useState(false);
   const [openId, setOpenId] = useState(null);
+
+  // Search state
+  const [searchTerm, setSearchTerm] = useState("");
 
   const defaultValues = { uname: user?.uname || "", phone: user?.phone || "" };
   const schema = Yup.object().shape({
@@ -63,7 +69,6 @@ const UserDash = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
-
       let newRequests = [];
       if (Array.isArray(data)) newRequests = data;
       else if (data.requests && Array.isArray(data.requests)) newRequests = data.requests;
@@ -87,6 +92,10 @@ const UserDash = () => {
 
   const handleCancel = async (id) => {
     const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+    if (!token) {
+      alert("Authentication required.");
+      return;
+    }
 
     try {
       const res = await fetch(`http://localhost:5000/api/pickups/cancel/${id}`, {
@@ -102,6 +111,7 @@ const UserDash = () => {
         setSnackbar({ open: true, message: error.message || "Failed to cancel request.", severity: "error" });
       }
     } catch (err) {
+      console.error("Cancel error:", err);
       setSnackbar({ open: true, message: "Server error.", severity: "error" });
     }
   };
@@ -115,11 +125,26 @@ const UserDash = () => {
     navigate("/");
   };
 
+  const handleThemeChange = (e) => {
+    const value = e.target.value;
+    setTheme(value);
+    localStorage.setItem("userTheme", value);
+  };
+
   const onSubmit = async (data) => {
     if (!user?._id) return;
     await dispatch(updateUser({ ...data, _id: user._id }));
     fetchRequests();
   };
+
+  const navItems = [
+    { name: "Dispose", path: "/dispose" },
+    { name: "Recycle", path: "/recycle" },
+    { name: "Upcycle", path: "/upcycle" },
+    { name: "E-Waste Library", path: "/library" },
+    { name: "FAQs", path: "/faqs" },
+    { name: "About Us", path: "/about" },
+  ];
 
   const getStatusColor = (status) => {
     if (status === "Pending") return "#9e9e9e";
@@ -129,15 +154,31 @@ const UserDash = () => {
     return "#9e9e9e";
   };
 
+  // Filtered requests based on search
+  const filteredRequests = requests.filter(req =>
+    req.device.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    req.requestType.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="dashboard-page">
-
       {/* NAVBAR */}
       <Navbar className="top-navbar">
         <div className="nav-container">
           <NavbarBrand tag={Link} to="/start" className="brand">
             <img src={logo} alt="logo" className="logo" /> ReNova
           </NavbarBrand>
+          <div className="nav-links">
+            {navItems.map((item) => (
+              <Link
+                key={item.name}
+                to={item.path}
+                className={location.pathname === item.path ? "nav-link active-link" : "nav-link"}
+              >
+                {item.name}
+              </Link>
+            ))}
+          </div>
 
           {/* Notification Bell */}
           <div style={{ position: "relative" }}>
@@ -162,8 +203,8 @@ const UserDash = () => {
                 position: "absolute",
                 right: 0,
                 top: 28,
-                width: 360,
-                maxHeight: 450,
+                width: 350,
+                maxHeight: 400,
                 overflowY: "auto",
                 bgcolor: "background.paper",
                 boxShadow: 3,
@@ -174,24 +215,19 @@ const UserDash = () => {
                 {loadingRequests ? <Typography sx={{ p: 2 }}>Loading...</Typography> :
                   requests.length === 0 ? <Typography sx={{ p: 2 }}>No notifications</Typography> :
                     requests.map((r) => (
-                      <Card key={r._id} sx={{ mb: 1, borderRadius: 2, borderLeft: `5px solid ${getStatusColor(r.status)}` }}>
+                      <Card key={r._id} sx={{ mb: 1, borderRadius: 2 }}>
                         <CardContent sx={{ display: 'flex', gap: 1 }}>
                           <img src={r.image ? `http://localhost:5000/uploads/${r.image}` : "https://via.placeholder.com/50"}
                             style={{ width: 50, height: 50, objectFit: "cover", borderRadius: 6 }} />
                           <Box sx={{ flex: 1 }}>
                             <Typography fontWeight={600}>{r.device}</Typography>
-                            <Typography fontSize={12} sx={{ color: '#555', fontWeight: 'bold' }}>
-                              Type: <span style={{ color: '#1976D2' }}>{r.requestType}</span>
-                            </Typography>
-
                             {openId === r._id ? (
                               <>
                                 <Divider sx={{ my: 0.5 }} />
+                                <Typography fontSize={12}>Type: {r.requestType}</Typography>
                                 <Typography fontSize={12}>Request Date: {new Date(r.createdAt).toLocaleDateString()}</Typography>
                                 {r.status === "Accepted" && r.acceptedAt && (
-                                  <Typography fontSize={12} sx={{ color: '#28a745', fontWeight: 'bold' }}>
-                                    Accepted Date: {new Date(r.acceptedAt).toLocaleDateString()}
-                                  </Typography>
+                                  <Typography fontSize={12}>Accepted Date: {new Date(r.acceptedAt).toLocaleDateString()}</Typography>
                                 )}
                                 <Typography fontSize={12}>Condition: {r.condition}</Typography>
                                 <Typography fontSize={12}>Status: {r.status}</Typography>
@@ -199,11 +235,10 @@ const UserDash = () => {
                               </>
                             ) : (
                               <>
-                                <Typography fontSize={12}>Request Date: {new Date(r.createdAt).toLocaleDateString()}</Typography>
+                                <Typography fontSize={12}>Type: {r.requestType}</Typography>
+                                <Typography fontSize={12}>Date: {new Date(r.createdAt).toLocaleDateString()}</Typography>
                                 {r.status === "Accepted" && r.acceptedAt && (
-                                  <Typography fontSize={12} sx={{ color: '#28a745', fontWeight: 'bold' }}>
-                                    Accepted Date: {new Date(r.acceptedAt).toLocaleDateString()}
-                                  </Typography>
+                                  <Typography fontSize={12}>Accepted Date: {new Date(r.acceptedAt).toLocaleDateString()}</Typography>
                                 )}
                                 <Typography fontSize={12}>Status: {r.status}</Typography>
                                 <Typography sx={{ mt: 0.5, color: '#1976D2', cursor: 'pointer', fontSize: 12 }} onClick={() => setOpenId(r._id)}>More info</Typography>
@@ -272,13 +307,50 @@ const UserDash = () => {
 
           {activeTab === "requests" && (
             <>
-              <div className="section-title">My Requests</div>
+              <div className="section-title" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                My Requests
+                {/* SEARCH BAR WITH CLEAR BUTTON */}
+                <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                  <input
+                    type="text"
+                    placeholder="Search requests..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    style={{
+                      padding: "6px 10px",
+                      borderRadius: 6,
+                      border: "1px solid #ccc",
+                      fontSize: 14,
+                      width: 180
+                    }}
+                  />
+                  {searchTerm && (
+                    <button
+                      onClick={() => setSearchTerm("")}
+                      style={{
+                        border: "none",
+                        background: "#ccc",
+                        borderRadius: "50%",
+                        width: 20,
+                        height: 20,
+                        cursor: "pointer",
+                        fontWeight: "bold",
+                        lineHeight: "16px",
+                        padding: 0
+                      }}
+                    >
+                      ×
+                    </button>
+                  )}
+                </div>
+              </div>
+
               {loadingRequests ? (
                 <p>Loading requests...</p>
-              ) : requests.length === 0 ? (
+              ) : filteredRequests.length === 0 ? (
                 <p>You don’t have any requests yet.</p>
               ) : (
-                requests.map((req) => (
+                filteredRequests.map((req) => (
                   <div key={req._id} style={{ display: "flex", alignItems: "center", borderBottom: "1px solid #ddd", padding: "20px 0", gap: "20px" }}>
                     <img src={req.image ? `http://localhost:5000/uploads/${req.image}` : "https://via.placeholder.com/100"}
                       style={{ width: 100, height: 100, objectFit: "cover" }} />
