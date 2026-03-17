@@ -28,6 +28,8 @@ const RegisterCollector = () => {
   const [openHr, setOpenHr] = useState("8:00 AM - 6:00 PM");
   const [locationConsent, setLocationConsent] = useState(false);
   const [coords, setCoords] = useState(null);
+  const [locationLoading, setLocationLoading] = useState(false);
+  const [toast, setToast] = useState({ open: false, message: "", severity: "success" });
 
   const [collectorTypeError, setCollectorTypeError] = useState("");
   const [categoriesError, setCategoriesError] = useState("");
@@ -44,11 +46,16 @@ const RegisterCollector = () => {
   });
 
   const getCurrentLocation = () => {
-    console.log("Getting location...");
+    setLocationError("");
+    setLocationLoading(true);
+
     if (!navigator.geolocation) {
-      console.log("Geolocation not supported");
-      return alert("Geolocation not supported");
+      setLocationLoading(false);
+      setToast({ open: true, message: "Geolocation is not supported by your browser.", severity: "error" });
+      setLocationError("Geolocation not supported by your browser.");
+      return;
     }
+
     navigator.geolocation.getCurrentPosition(
       (position) => {
         console.log("Location success:", position.coords);
@@ -56,10 +63,23 @@ const RegisterCollector = () => {
           lat: position.coords.latitude,
           lng: position.coords.longitude,
         });
+        setLocationError("");
+        setLocationLoading(false);
       },
       (error) => {
         console.log("Location error:", error);
-        alert("Unable to retrieve location");
+        setCoords(null);
+        setLocationLoading(false);
+
+        if (error.code === error.PERMISSION_DENIED) {
+          setLocationError("Permission denied. Enable location access and try again.");
+        } else if (error.code === error.POSITION_UNAVAILABLE) {
+          setLocationError("Location unavailable. Please try again.");
+        } else if (error.code === error.TIMEOUT) {
+          setLocationError("Location request timed out. Please try again.");
+        } else {
+          setLocationError("Unable to retrieve location.");
+        }
       }
     );
   };
@@ -90,10 +110,16 @@ const RegisterCollector = () => {
     if (!locationConsent) {
       setLocationError("Consent required for location");
       ok = false;
-    } else if (!coords) {
-      setLocationError("Location not detected");
+    } else if (locationLoading) {
+      setLocationError("Detecting location, please wait...");
       ok = false;
-    } else setLocationError("");
+    } else if (!coords) {
+      setLocationError("Location not detected. Please enable location sharing and try again.");
+      getCurrentLocation();
+      ok = false;
+    } else {
+      setLocationError("");
+    }
 
     if (!ok) return;
 
@@ -118,11 +144,17 @@ const RegisterCollector = () => {
   useEffect(() => {
     if (isSuccess) {
       dispatch(resetState());
-      alert("Collector registration submitted. Please wait for admin approval.");
-      navigate("/login");
+      setToast({ open: true, message: "Collector registration submitted. Please wait for admin approval.", severity: "success" });
+      setTimeout(() => navigate("/login"), 1400);
     }
-    if (isError) alert(message || "Registration failed");
+    if (isError) setToast({ open: true, message: message || "Registration failed", severity: "error" });
   }, [isSuccess, isError, message, navigate, dispatch]);
+
+  useEffect(() => {
+    if (!toast.open) return;
+    const timer = setTimeout(() => setToast((prev) => ({ ...prev, open: false })), 3000);
+    return () => clearTimeout(timer);
+  }, [toast.open]);
 
   return (
     <>
@@ -171,6 +203,35 @@ const RegisterCollector = () => {
           </Button>
         </div>
       </Navbar>
+
+      {toast.open && (
+        <div
+          style={{
+            position: "fixed",
+            top: 90,
+            right: 20,
+            zIndex: 9999,
+            backgroundColor: toast.severity === "success" ? "#38a169" : "#e53e3e",
+            color: "white",
+            padding: "8px 12px",
+            borderRadius: 6,
+            boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+            minWidth: 180,
+            maxWidth: 260,
+            fontSize: 13,
+            fontWeight: 600,
+            lineHeight: 1.3,
+          }}
+        >
+          {toast.message}
+          <span
+            onClick={() => setToast({ ...toast, open: false })}
+            style={{ marginLeft: 8, cursor: "pointer", fontWeight: 800 }}
+          >
+            ×
+          </span>
+        </div>
+      )}
 
       {/* FORM */}
       <Container
@@ -464,13 +525,22 @@ const RegisterCollector = () => {
                       type="checkbox"
                       checked={locationConsent}
                       onChange={(e) => {
-                        setLocationConsent(e.target.checked);
-                        if (e.target.checked) getCurrentLocation();
-                        else setCoords(null);
+                        const checked = e.target.checked;
+                        setLocationConsent(checked);
+                        if (checked) getCurrentLocation();
+                        else {
+                          setCoords(null);
+                          setLocationError("");
+                        }
                       }}
                       style={{ marginRight: 8 }}
                     />
                     I consent to share my current location to appear on the map.
+                    {locationLoading && (
+                      <span style={{ color: "#006D90", fontSize: "14px", marginLeft: 10 }}>
+                        Detecting location...
+                      </span>
+                    )}
                     {locationError && (
                       <div style={{ color: "red", fontSize: "14px", marginTop: "5px" }}>
                         {locationError}
