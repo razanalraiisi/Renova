@@ -8,6 +8,7 @@ import {
   acceptPickupRequest, 
   rejectPickupRequest,
   cancelPickupRequest,
+  completePickupRequest,
   getCollectorHistory
 } from "../controllers/pickupController.js";
 import { protect } from "../middleware/authMiddleware.js";
@@ -36,5 +37,6 @@ router.get("/all/:collectorId", getAllPickupRequests);
 router.get("/history/:collectorId", getCollectorHistory);
 router.put("/accept/:id", protect, acceptPickupRequest);
 router.put("/reject/:id", protect, rejectPickupRequest);
+router.put("/complete/:id", protect, completePickupRequest);
 
 export default router;
