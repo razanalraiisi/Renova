@@ -217,12 +217,14 @@ const UserDash = () => {
                                 <Divider sx={{ my: 0.5 }} />
                                 <Typography fontSize={12}>Request Date: {new Date(r.createdAt).toLocaleDateString()}</Typography>
                                 <Typography fontSize={12}>Condition: {r.condition}</Typography>
+                                <Typography fontSize={12}>Type: {r.requestType}</Typography>
                                 <Typography fontSize={12}>Status: {r.status}</Typography>
                                 <Typography sx={{ mt: 0.5, color: '#1976D2', cursor: 'pointer', fontSize: 12 }} onClick={() => setOpenId(null)}>Less info</Typography>
                               </>
                             ) : (
                               <>
                                 <Typography fontSize={12}>Date: {new Date(r.createdAt).toLocaleDateString()}</Typography>
+                                <Typography fontSize={12}>Type: {r.requestType}</Typography>
                                 <Typography fontSize={12}>Status: {r.status}</Typography>
                                 <Typography sx={{ mt: 0.5, color: '#1976D2', cursor: 'pointer', fontSize: 12 }} onClick={() => setOpenId(r._id)}>More info</Typography>
                               </>
@@ -303,6 +305,7 @@ const UserDash = () => {
                     <div style={{ flex: 1 }}>
                       <h4 style={{ margin: 0 }}>{req.device}</h4>
                       <div style={{ fontSize: 13, color: "#666" }}>Date: {new Date(req.createdAt).toLocaleDateString()}</div>
+                      <div style={{ fontSize: 13, color: "#666" }}>Type: {req.requestType}</div>
                       <div style={{ fontSize: 13, color: "#666" }}>Time: {new Date(req.createdAt).toLocaleTimeString()}</div>
                     </div>
                     <div style={{ textAlign: "right", minWidth: 120 }}>
