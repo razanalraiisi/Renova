@@ -141,6 +141,24 @@
   font-style: italic;
 }
 
+.save-btn {
+  background: linear-gradient(135deg, #00a8ff, #005f9e);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.save-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.28);
+}
+
 /* ================= ADMIN FAQ ================= */
 
 .admin-faq-container {
@@ -1581,4 +1599,35 @@
   10% { opacity: 1; bottom: 30px; }
   90% { opacity: 1; }
   100% { opacity: 0; }
+}
+
+.history-status{
+  display: inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size:13px;
+  font-weight:600;
+  background-color: rgba(0,0,0,0.03);
+}
+
+.status-dot{
+  width:10px;
+  height:10px;
+  border-radius:50%;
+}
+
+
+.history-status.accepted .status-dot{
+  background:#4CAF50;
+}
+
+.history-status.rejected .status-dot{
+  background:#E53935;
+}
+
+.history-status.pending .status-dot{
+  background:#FFB300;
 }

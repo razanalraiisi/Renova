@@ -11,11 +11,6 @@ import {
 } from "reactstrap";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import {
-  clearAllNotifications,
-  markNotificationRead,
-  seedNotificationsIfEmpty,
-} from "../features/adminSlice"; 
 import logo from "../assets/logo.png"; 
 import { FaUserCircle } from "react-icons/fa"; 
 import "./Components.css";
@@ -24,28 +19,31 @@ import { FaBell } from "react-icons/fa";
 const CollectorNavbar = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const notifications = useSelector((s) => s.admin?.notifications) || [];
   const [notifOpen, setNotifOpen] = useState(false);
   const [requestsDropdownOpen, setRequestsDropdownOpen] = useState(false);
+  const [requests, setRequests] = useState([]);
 
   useEffect(() => {
-    dispatch(seedNotificationsIfEmpty());
-  }, [dispatch]);
+    const fetchRequests = async () => {
+      try {
+        const collector = JSON.parse(localStorage.getItem("user")) || JSON.parse(sessionStorage.getItem("user"));
+        if (!collector?._id) return;
 
-  const unreadCount = useMemo(
-    () => notifications.filter((n) => !n.isRead).length,
-    [notifications]
-  );
+        const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+        const res = await fetch(`http://localhost:5000/api/pickups/all/${collector._id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+        setRequests(data);
+      } catch (error) {
+        console.error("Error fetching requests:", error);
+      }
+    };
 
-  const handleView = (n) => {
-    dispatch(markNotificationRead(n.id));
-    setNotifOpen(false);
-    if (n.linkTo) navigate(n.linkTo);
-  };
+    fetchRequests();
+  }, []);
 
-  const handleClearAll = () => {
-    dispatch(clearAllNotifications());
-  };
+  const unreadCount = requests.length;
 
   return (
   <Navbar className="collector-navbar d-flex align-items-center">
@@ -73,7 +71,7 @@ const CollectorNavbar = () => {
             <DropdownItem onClick={() => navigate("/CollectorRequestsHistory")}>
               History Requests
             </DropdownItem>
-            <DropdownItem onClick={() => navigate("/NewRecycleRequest")}>
+            <DropdownItem onClick={() => navigate("/CollectorNewRecycleRequest")}>
               New Requests
             </DropdownItem>
           </DropdownMenu>
@@ -98,36 +96,31 @@ const CollectorNavbar = () => {
             <div className="notif-panel">
               <div className="notif-header">
                 <div className="notif-title">
-                  Notifications{" "}
+                  New Requests{" "}
                   <span className="notif-count-pill">
-                    {notifications.length}
+                    {requests.length}
                   </span>
                 </div>
-                <Button
-                  color="link"
-                  className="notif-clear"
-                  onClick={handleClearAll}
-                  disabled={notifications.length === 0}
-                >
-                  Clear All
-                </Button>
               </div>
 
               <div className="notif-list">
-                {notifications.length === 0 ? (
-                  <div className="notif-empty">No notifications</div>
+                {requests.length === 0 ? (
+                  <div className="notif-empty">No new requests</div>
                 ) : (
-                  notifications.map((n) => (
-                    <div key={n.id} className="notif-item">
+                  requests.map((r) => (
+                    <div key={r._id} className="notif-item">
                       <div className="notif-item-top">
-                        <div className="notif-item-title">{n.title}</div>
-                        <div className="notif-time">{n.timeAgo}</div>
+                        <div className="notif-item-title">New Pickup Request for {r.device}</div>
+                        <div className="notif-time">{new Date(r.createdAt).toLocaleDateString()}</div>
                       </div>
-                      <div className="notif-message">{n.message}</div>
+                      <div className="notif-message">Condition: {r.condition}</div>
                       <div className="notif-actions">
                         <button
                           className="notif-view"
-                          onClick={() => handleView(n)}
+                          onClick={() => {
+                            setNotifOpen(false);
+                            navigate("/CollectorNewRecycleRequest");
+                          }}
                         >
                           view
                         </button>

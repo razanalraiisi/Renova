@@ -1,4 +1,4 @@
-import './App.css';
+import './App.css'; 
 import './components/AdminTheme.css';
 import './components/UserCollectorTheme.css';
 import Login from './components/Login.js';
@@ -42,7 +42,7 @@ import TermsConditions from './components/TermsConditions.js';
 import PrivacyPolicy from './components/PrivacyPolicy.js';
 import AdminUserPage from './components/AdminUserPage.js';
 import AdminMyRequests from './components/AdminMyRequests.js';
-
+import DecisionResult from './components/DecisionResult.js';
 // Admin – Reports
 import RecyclesReport from "./components/RecyclesReport";
 import DisposalsReport from "./components/DisposalsReport";
@@ -50,9 +50,22 @@ import CollectorsReport from "./components/CollectorsReport";
 import UsersReport from "./components/UsersReport";
 import DisposalsRecyclesUpcyclesReport from "./components/DisposalsRecyclesUpcyclesReport";
 import AdminThemeSync from "./components/AdminThemeSync.js";
+import CollectorNav from './components/CollectorNav.js'; 
 
 function App() {
   const email = useSelector((state) => state.users?.user?.email);
+
+  // Automatic collector layout wrapper
+  const withCollectorNav = (Component) => {
+    return () => (
+      <>
+        <CollectorNav />
+        <div style={{ paddingTop: '70px' }}>
+          <Component />
+        </div>
+      </>
+    );
+  };
 
   return (
     <Container fluid className="appBG">
@@ -68,7 +81,6 @@ function App() {
             <Route path="/ForgetPassword" element={<ForgetPassword />} />
             <Route path="/ResetPassword" element={<ResetPassword />} />
             <Route path="/VerifyOtp" element={<VerifyOtp />} />
-            <Route path="/NewRecycleRequest" element={<NewRecycleRequest />} />
             <Route path="/AboutUs" element={<AboutUs />} />
             <Route path="/FAQ" element={<FAQ />} />
             <Route path="/AdminFAQ" element={<AdminFAQ />} />
@@ -77,9 +89,15 @@ function App() {
             <Route path="/upcycle" element={<Upcycle />} />
             <Route path="/dispose" element={<Dispose />} />
             <Route path="/decideForMe" element={<DecideForMe />} />
-            <Route path="/CollectorRequestsHistory" element={<CollectorRequestsHistory />} />
+            <Route path="/decision-result" element={<DecisionResult />} />
+            {/* Collector pages automatically wrapped */}
+            <Route path="/CollectorDash" element={withCollectorNav(CollectorDash)()} />
+            <Route path="/CollectorProfile" element={withCollectorNav(CollectorProfile)()} />
+            <Route path="/CollectorRequestsHistory" element={withCollectorNav(CollectorRequestsHistory)()} />
+            <Route path="/CollectorNewRecycleRequest" element={withCollectorNav(NewRecycleRequest)()} />
+
+            {/* Other user routes */}
             <Route path="/UserRequestHistory" element={<UserRequestHistory />} />
-            <Route path="/CollectorProfile" element={<CollectorProfile />} />
             <Route path="/EWasteLibrary" element={<EWasteLibrary />} />
             <Route path="/admin/devices" element={<AdminEWasteLibrary />} />
             <Route path="/omanmap" element={<OmanMap />} />
@@ -88,10 +106,11 @@ function App() {
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/PickupRequest" element={<PickupRequest />} />
             <Route path="/DropOff" element={<DropOff />} />
+        
             <Route path="/admin/dashboard/graphs" element={<AdminDashboardGraphs />} />
+
             {/* Dashboard routes */}
             <Route path="/UserDash" element={<UserDash />} />
-            <Route path="/CollectorDash" element={<CollectorDash />} />
 
             {/* Admin requests page */}
             <Route path="/AdminCollectorRequests" element={<AdminCollectorRequests />} />
@@ -122,8 +141,6 @@ function App() {
             <Route path="/admin/reports/users" element={<UsersReport />} />
             <Route path="/admin/profile" element={<AdminUserPage />} />
             <Route path="/admin/my-requests" element={<AdminMyRequests />} />
-
-
 
           </Routes>
         </Row>

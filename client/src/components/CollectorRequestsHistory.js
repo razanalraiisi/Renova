@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FcViewDetails, FcBusinessContact } from "react-icons/fc";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -14,20 +14,137 @@ import {
 
 import { Input } from "reactstrap";
 import './Components.css';
-import { requestHistoryData } from './DummyData';
 import { MdSimCardDownload } from "react-icons/md";
 
 const RequestHistory = () => {
   const navigate = useNavigate();
   const [openId, setOpenId] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [requests, setRequests] = useState([]);
+  const [message, setMessage] = useState({ text: '', type: '' });
 
-  
-  const filteredRequests = requestHistoryData.filter((r) =>
-    r.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    r.status.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    r.email.toLowerCase().includes(searchTerm.toLowerCase())
+  const fetchRequests = async () => {
+    try {
+      const collector =
+        JSON.parse(localStorage.getItem("user")) ||
+        JSON.parse(sessionStorage.getItem("user"));
+
+      if (!collector || !collector._id) return;
+
+      const token =
+        localStorage.getItem("token") ||
+        sessionStorage.getItem("token");
+
+      const res = await fetch(
+        `http://localhost:5000/api/pickups/history/${collector._id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const data = await res.json();
+
+      if (Array.isArray(data)) {
+        setRequests(data);
+      } else {
+        setRequests([]);
+      }
+
+    } catch (error) {
+      console.error("Error fetching requests:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchRequests();
+  }, []);
+
+  const filteredRequests = requests.filter((r) =>
+    (r.device || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (r.status || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (r.email || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const updateStatus = async (id, newStatus) => {
+    try {
+      const token =
+        localStorage.getItem("token") || sessionStorage.getItem("token");
+      if (!token) {
+        setMessage({ text: "Login required to update status.", type: "error" });
+        return;
+      }
+
+      const res = await fetch(`http://localhost:5000/api/pickups/${newStatus}/${id}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        setMessage({ text: err.message || "Failed to update status.", type: "error" });
+        return;
+      }
+
+      const updated = await res.json();
+      setRequests((prev) => prev.map((r) => (r._id === updated._id ? updated : r)));
+      setMessage({ text: `Status updated to ${updated.status}.`, type: "success" });
+    } catch (error) {
+      console.error("Error updating status:", error);
+      setMessage({ text: "Error updating status.", type: "error" });
+    }
+  };
+
+
+
+  /* DOWNLOAD FUNCTION (NEW) */
+  const downloadCSV = () => {
+
+    if (filteredRequests.length === 0) return;
+
+    const headers = [
+      "Request ID",
+      "Device",
+      "Condition",
+      "Status",
+      "Name",
+      "Email",
+      "Phone",
+      "Request Date"
+    ];
+
+    const rows = filteredRequests.map(r => [
+      r._id,
+      r.device,
+      r.condition,
+      r.status,
+      r.name,
+      r.email,
+      r.phone,
+      new Date(r.createdAt).toLocaleDateString()
+    ]);
+
+    let csvContent =
+      "data:text/csv;charset=utf-8," +
+      [headers, ...rows]
+        .map(e => e.join(","))
+        .join("\n");
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "collector_request_history.csv");
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <Box sx={{ display: 'flex', justifyContent: 'center', p: 3, mt: 6 }}>
@@ -41,15 +158,32 @@ const RequestHistory = () => {
           boxShadow: '0 8px 20px rgba(0,0,0,0.08)',
         }}
       >
-        
+
         <Box
           sx={{
             display: 'flex',
             alignItems: 'center',
             gap: 2,
             mb: 2,
+            flexWrap: 'wrap'
           }}
         >
+          {message.text && (
+            <Box
+              sx={{
+                width: '100%',
+                p: 1,
+                borderRadius: 1,
+                backgroundColor: message.type === 'success' ? '#d4edda' : '#f8d7da',
+                color: message.type === 'success' ? '#155724' : '#721c24',
+                mb: 1,
+                fontSize: 13,
+              }}
+            >
+              {message.text}
+            </Box>
+          )}
+
           <IconButton onClick={() => navigate('/CollectorDash')}>
             <ArrowBackIcon />
           </IconButton>
@@ -58,7 +192,6 @@ const RequestHistory = () => {
             Request History
           </Typography>
 
-          
           <div className="faq-search-wrapper" style={{ margin: 0 }}>
             <Input
               type="text"
@@ -69,87 +202,168 @@ const RequestHistory = () => {
             />
           </div>
 
-          
-          <Button variant="outlined" size="small" sx={{ ml: 'auto' }}>
-            <MdSimCardDownload
-            size={21} />Download
+          <Button
+            variant="outlined"
+            size="small"
+            sx={{ ml: 'auto' }}
+            onClick={downloadCSV}
+          >
+            <MdSimCardDownload size={21} />
+            Download
           </Button>
+
         </Box>
 
-        
+
         <Box sx={{ maxHeight: 420, overflowY: 'auto', pr: 1 }}>
+
           {filteredRequests.length > 0 ? (
-            filteredRequests.map((r) => (
-              <Card key={r.id} sx={{ mb: 2, borderRadius: 3 }}>
-                <CardContent sx={{ display: 'flex', gap: 2 }}>
-                  
-                  <img src={r.image} alt={r.title} width={100} />
+            filteredRequests.map((r) => {
 
-                  <Box sx={{ flex: 1 }}>
-                    <Typography fontWeight={600}>{r.title}</Typography>
+              const statusClass = String(r.status || "")
+                .toLowerCase()
+                .trim();
 
-                    {openId === r.id ? (
-                      <>
-                        <Divider sx={{ my: 1 }} />
+              return (
+                <Card key={r._id} sx={{ mb: 2, borderRadius: 3 }}>
+                  <CardContent sx={{ display: 'flex', gap: 2 }}>
 
-                        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
-                          <Box>
-                            <Typography fontWeight={600}>
-                              <FcViewDetails /> Request Details
-                            </Typography>
-                            <Typography fontSize={14}>Request ID: {r.id}</Typography>
-                            <Typography fontSize={14}>Request Date: {r.requestDate}</Typography>
-                            <Typography fontSize={14}>Condition: {r.condition}</Typography>
-                            <Typography fontSize={14}>Electronic Category: {r.category}</Typography>
-                            <Typography fontSize={14}>Collection Method: {r.method}</Typography>
+                    <img
+                      src={`http://localhost:5000/uploads/${r.image}`}
+                      alt={r.device}
+                      width={100}
+                    />
+
+                    <Box sx={{ flex: 1 }}>
+                      <Typography fontWeight={600}>
+                        {r.device}
+                      </Typography>
+
+                      {openId === r._id ? (
+                        <>
+                          <Divider sx={{ my: 1 }} />
+
+                          <Box
+                            sx={{
+                              display: 'grid',
+                              gridTemplateColumns: '1fr 1fr',
+                              gap: 3,
+                            }}
+                          >
+
+                            <Box>
+                              <Typography fontWeight={600}>
+                                <FcViewDetails /> Request Details
+                              </Typography>
+
+                              <Typography fontSize={14}>
+                                Request ID: {r._id}
+                              </Typography>
+
+                              <Typography fontSize={14}>
+                                Request Date: {new Date(
+                                  r.createdAt
+                                ).toLocaleDateString()}
+                              </Typography>
+
+                              <Typography fontSize={14}>
+                                Condition: {r.condition}
+                              </Typography>
+
+                              <Typography fontSize={14}>
+                                Collection Method: Pickup
+                              </Typography>
+                            </Box>
+
+                            <Box>
+                              <Typography fontWeight={600}>
+                                <FcBusinessContact /> User Details
+                              </Typography>
+
+                              <Typography fontSize={14}>
+                                Name: {r.name}
+                              </Typography>
+
+                              <Typography fontSize={14}>
+                                Phone: {r.phone}
+                              </Typography>
+
+                              <Typography fontSize={14}>
+                                Email: {r.email}
+                              </Typography>
+                            </Box>
+
                           </Box>
 
-                          <Box>
-                            <Typography fontWeight={600}>
-                              <FcBusinessContact /> User Details
-                            </Typography>
-                            <Typography fontSize={14}>User Id: {r.userId}</Typography>
-                            <Typography fontSize={14}>Phone: {r.phone}</Typography>
-                            <Typography fontSize={14}>Email: {r.email}</Typography>
-                          </Box>
-                        </Box>
+                          <Typography
+                            sx={{
+                              mt: 1,
+                              color: '#1976D2',
+                              cursor: 'pointer',
+                              fontSize: 14,
+                            }}
+                            onClick={() => setOpenId(null)}
+                          >
+                            Less information
+                          </Typography>
+                        </>
+                      ) : (
+                        <>
+                          <Typography fontSize={14}>
+                            Request Date: {new Date(
+                              r.createdAt
+                            ).toLocaleDateString()}
+                          </Typography>
 
-                        <Typography
-                          sx={{ mt: 1, color: '#1976D2', cursor: 'pointer', fontSize: 14 }}
-                          onClick={() => setOpenId(null)}
+                          <Typography fontSize={14}>
+                            Condition: {r.condition}
+                          </Typography>
+
+                          <Typography
+                            sx={{
+                              mt: 1,
+                              color: '#1976D2',
+                              cursor: 'pointer',
+                              fontSize: 14,
+                            }}
+                            onClick={() => setOpenId(r._id)}
+                          >
+                            More information
+                          </Typography>
+                        </>
+                      )}
+                    </Box>
+
+
+                    <div>
+                      <div className={`history-status ${statusClass}`}>
+                        <span>{r.status}</span>
+                        <span className="status-dot" />
+                      </div>
+                      {r.status === "Accepted" && (
+                        <Button
+                          variant="contained"
+                          size="small"
+                          sx={{ mt: 1, backgroundColor: '#1976D2', fontWeight: 600 }}
+                          onClick={() => updateStatus(r._id, 'complete')}
                         >
-                          Less information
-                        </Typography>
-                      </>
-                    ) : (
-                      <>
-                        <Typography fontSize={14}>Request Date: {r.requestDate}</Typography>
-                        <Typography fontSize={14}>Condition: {r.condition}</Typography>
+                          Mark Completed
+                        </Button>
+                      )}
+                    </div>
 
-                        <Typography
-                          sx={{ mt: 1, color: '#1976D2', cursor: 'pointer', fontSize: 14 }}
-                          onClick={() => setOpenId(r.id)}
-                        >
-                          More information
-                        </Typography>
-                      </>
-                    )}
-                  </Box>
-
-                  
-                  <div className={`history-status ${r.status.toLowerCase()}`}>
-                    <span>{r.status}</span>
-                    <span className="status-dot" />
-                  </div>
-
-                </CardContent>
-              </Card>
-            ))
+                  </CardContent>
+                </Card>
+              );
+            })
           ) : (
-            <Typography sx={{ textAlign: 'center', mt: 3, color: '#777' }}>
+            <Typography
+              sx={{ textAlign: 'center', mt: 3, color: '#777' }}
+            >
               No matching requests found.
             </Typography>
           )}
+
         </Box>
       </Box>
     </Box>

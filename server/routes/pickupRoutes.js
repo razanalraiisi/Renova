@@ -1,6 +1,17 @@
+// routes/pickupRoutes.js
 import express from "express";
-import { createPickupRequest, getAllPickupRequests } from "../controllers/pickupController.js";
 import multer from "multer";
+import { 
+  createPickupRequest, 
+  getUserPickupRequests, 
+  getAllPickupRequests, 
+  acceptPickupRequest, 
+  rejectPickupRequest,
+  cancelPickupRequest,
+  completePickupRequest,
+  getCollectorHistory
+} from "../controllers/pickupController.js";
+import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -16,7 +27,16 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-router.post("/create", upload.single("image"), createPickupRequest);
-router.get("/all", getAllPickupRequests);
+/* USER ROUTES */
+router.post("/create", protect, upload.single("image"), createPickupRequest);
+router.get("/user/requests", protect, getUserPickupRequests);
+router.put("/cancel/:id", protect, cancelPickupRequest);
+
+/* COLLECTOR / ADMIN ROUTES */
+router.get("/all/:collectorId", getAllPickupRequests);
+router.get("/history/:collectorId", getCollectorHistory);
+router.put("/accept/:id", protect, acceptPickupRequest);
+router.put("/reject/:id", protect, rejectPickupRequest);
+router.put("/complete/:id", protect, completePickupRequest);
 
 export default router;

@@ -3,13 +3,13 @@ import { Navbar, NavbarBrand } from "reactstrap";
 import { Link, useNavigate } from "react-router-dom";
 import { FaArrowLeft } from "react-icons/fa";
 import logo from "../assets/logo.png";
+import { getAIRecommendation } from "./aiService.js";
 
 const DecideForMe = () => {
   const navigate = useNavigate();
   const [condition, setCondition] = useState("");
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState(null);
-  const [result, setResult] = useState("");
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
@@ -18,15 +18,23 @@ const DecideForMe = () => {
     setPreview(URL.createObjectURL(file));
   };
 
-  const handleDecision = () => {
+  const handleDecision = async () => {
     if (!condition || !image) {
       alert("Please select device condition and upload an image.");
       return;
     }
 
-    if (condition === "working") setResult("✅ Recommended: UPCYCLE");
-    else if (condition === "damaged") setResult("♻️ Recommended: RECYCLE");
-    else setResult("⚠️ Recommended: DISPOSE");
+    // ===== Call AI service =====
+    const aiResult = await getAIRecommendation(image, condition);
+
+    // ===== Navigate to result page with AI data =====
+    navigate("/decision-result", {
+      state: {
+        recommendation: aiResult,
+        imagePreview: preview,
+        condition: condition,
+      },
+    });
   };
 
   const styles = {
@@ -37,7 +45,6 @@ const DecideForMe = () => {
       flexDirection: "column",
       backgroundColor: "#fff",
     },
-
     backWrapper: {
       maxWidth: "1200px",
       margin: "10px 0 0 0",
@@ -51,7 +58,6 @@ const DecideForMe = () => {
       cursor: "pointer",
       fontSize: "22px",
     },
-
     main: {
       flex: 1,
       display: "flex",
@@ -99,11 +105,6 @@ const DecideForMe = () => {
       fontWeight: "bold",
       marginTop: "10px",
     },
-    result: {
-      marginTop: "20px",
-      fontWeight: "bold",
-      fontSize: "1.1rem",
-    },
   };
 
   return (
@@ -118,10 +119,7 @@ const DecideForMe = () => {
 
       {/* ⬅️ BACK ARROW */}
       <div style={styles.backWrapper}>
-        <FaArrowLeft
-          style={styles.backIcon}
-          onClick={() => navigate("/start")}
-        />
+        <FaArrowLeft style={styles.backIcon} onClick={() => navigate("/start")} />
       </div>
 
       {/* MAIN */}
@@ -152,8 +150,6 @@ const DecideForMe = () => {
           <button style={styles.button} onClick={handleDecision}>
             Upload
           </button>
-
-          {result && <p style={styles.result}>{result}</p>}
         </div>
       </main>
     </div>
