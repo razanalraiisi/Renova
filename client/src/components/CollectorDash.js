@@ -63,7 +63,7 @@ const CollectorDash = () => {
   }, []);
 
   return (
-    <div className="collector-dash-page"><CollectorNavbar />
+    <div className="collector-dash-page"><CollectorNav />
       <div className="collector-dash-body" style={{ padding: '40px', minHeight: '100vh', background: '#f5f7fa' }}>
         <h2 style={{ marginBottom: '5px' }}>Collector Dashboard</h2>
         <p style={{ color: '#555' }}>
