@@ -33,7 +33,7 @@ const PickupRequest = () => {
   ];
 
   const schema = Yup.object().shape({
-    phone: Yup.string().required("Phone is required").matches(/^[0-9]+$/, "Phone must be numbers only").min(7),
+    phone: Yup.string().required("Phone is required").matches(/^[279]\d{7}$/, "Phone must be exactly 8 digits and start with 2, 7, or 9"),
     address: Yup.string().required("Address is required"),
     deviceCategory: Yup.string().required("Category is required"),
     device: Yup.string().required("Device is required"),
@@ -157,7 +157,15 @@ const PickupRequest = () => {
           {errors.condition && <div style={{ color: "red", fontSize: 12 }}>{errors.condition.message}</div>}
 
           <label>Upload Picture</label>
-          <input type="file" accept="image/*" onChange={(e) => setImage(e.target.files[0])} style={{ width: "100%", marginBottom: 10 }} />
+          <input type="file" accept="image/*" onChange={(e) => {
+  const file = e.target.files[0];
+
+  if (file && !file.type.startsWith("image/")) {
+    alert("Only image files are allowed");
+    e.target.value = ""; 
+    return;
+  }setImage(file);
+}}style={{ width: "100%", marginBottom: 10 }} />
 
           <button type="submit" style={{ backgroundColor: "#0078a8", color: "#fff", border: "none", padding: 10, borderRadius: 20, fontWeight: "bold", width: "100%" }}>Request Pickup</button>
         </form>
