@@ -33,7 +33,7 @@ const UserDash = () => {
   // Notification state
   const [notifOpen, setNotifOpen] = useState(false);
   const [openId, setOpenId] = useState(null);
-
+  const [seenNotifications, setSeenNotifications] = useState([]);
   // Search state
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -226,77 +226,116 @@ const UserDash = () => {
           </div>
 
           {/* Notification Bell */}
-          <div style={{ position: "relative" }}>
-            <FaBell
-              style={{ fontSize: 22, color: "#fff", cursor: "pointer" }}
-              onClick={() => setNotifOpen(!notifOpen)}
-            />
-            {requests.length > 0 && (
-              <span style={{
-                position: "absolute",
-                top: -5,
-                right: -5,
-                width: 12,
-                height: 12,
-                borderRadius: "50%",
-                backgroundColor: "#dc3545",
-              }} />
-            )}
+<div style={{ position: "relative" }}>
+  <FaBell
+    style={{ fontSize: 22, color: "#fff", cursor: "pointer" }}
+    onClick={() => setNotifOpen(!notifOpen)}
+  />
 
-            {notifOpen && (
-              <Box sx={{
-                position: "absolute",
-                right: 0,
-                top: 28,
-                width: 350,
-                maxHeight: 400,
-                overflowY: "auto",
-                bgcolor: "background.paper",
-                boxShadow: 3,
-                borderRadius: 2,
-                zIndex: 9999,
-                p: 1
-              }}>
-                {loadingRequests ? <Typography sx={{ p: 2 }}>Loading...</Typography> :
-                  requests.length === 0 ? <Typography sx={{ p: 2 }}>No notifications</Typography> :
-                    requests.map((r) => (
-                      <Card key={r._id} sx={{ mb: 1, borderRadius: 2 }}>
-                        <CardContent sx={{ display: 'flex', gap: 1 }}>
-                          <img src={r.image ? `http://localhost:5000/uploads/${r.image}` : "https://via.placeholder.com/50"}
-                            style={{ width: 50, height: 50, objectFit: "cover", borderRadius: 6 }} />
-                          <Box sx={{ flex: 1 }}>
-                            <Typography fontWeight={600}>{r.device}</Typography>
-                            {openId === r._id ? (
-                              <>
-                                <Divider sx={{ my: 0.5 }} />
-                                <Typography fontSize={12}>Type: {r.requestType}</Typography>
-                                <Typography fontSize={12}>Request Date: {new Date(r.createdAt).toLocaleDateString()}</Typography>
-                                {r.status === "Accepted" && r.acceptedAt && (
-                                  <Typography fontSize={12}>Accepted Date: {new Date(r.acceptedAt).toLocaleDateString()}</Typography>
-                                )}
-                                <Typography fontSize={12}>Condition: {r.condition}</Typography>
-                                <Typography fontSize={12}>Status: {r.status}</Typography>
-                                <Typography sx={{ mt: 0.5, color: '#1976D2', cursor: 'pointer', fontSize: 12 }} onClick={() => setOpenId(null)}>Less info</Typography>
-                              </>
-                            ) : (
-                              <>
-                                <Typography fontSize={12}>Type: {r.requestType}</Typography>
-                                <Typography fontSize={12}>Date: {new Date(r.createdAt).toLocaleDateString()}</Typography>
-                                {r.status === "Accepted" && r.acceptedAt && (
-                                  <Typography fontSize={12}>Accepted Date: {new Date(r.acceptedAt).toLocaleDateString()}</Typography>
-                                )}
-                                <Typography fontSize={12}>Status: {r.status}</Typography>
-                                <Typography sx={{ mt: 0.5, color: '#1976D2', cursor: 'pointer', fontSize: 12 }} onClick={() => setOpenId(r._id)}>More info</Typography>
-                              </>
-                            )}
-                          </Box>
-                        </CardContent>
-                      </Card>
-                    ))
-                }
-              </Box>
-            )}
-          </div>
+  {/* ✅ UPDATED RED DOT */}
+  {requests.filter(r => !seenNotifications.includes(r._id)).length > 0 && (
+    <span style={{
+      position: "absolute",
+      top: -5,
+      right: -5,
+      width: 12,
+      height: 12,
+      borderRadius: "50%",
+      backgroundColor: "#dc3545",
+    }} />
+  )}
+
+  {notifOpen && (
+    <Box sx={{
+      position: "absolute",
+      right: 0,
+      top: 28,
+      width: 350,
+      maxHeight: 400,
+      overflowY: "auto",
+      bgcolor: "background.paper",
+      boxShadow: 3,
+      borderRadius: 2,
+      zIndex: 9999,
+      p: 1
+    }}>
+      {loadingRequests ? (
+        <Typography sx={{ p: 2 }}>Loading...</Typography>
+      ) : requests.filter(r => !seenNotifications.includes(r._id)).length === 0 ? (
+        <Typography sx={{ p: 2 }}>No notifications</Typography>
+      ) : (
+        requests
+          .filter(r => !seenNotifications.includes(r._id))
+          .map((r) => (
+            <Card key={r._id} sx={{ mb: 1, borderRadius: 2 }}>
+              <CardContent sx={{ display: 'flex', gap: 1 }}>
+                <img
+                  src={r.image ? `http://localhost:5000/uploads/${r.image}` : "https://via.placeholder.com/50"}
+                  style={{ width: 50, height: 50, objectFit: "cover", borderRadius: 6 }}
+                />
+
+                <Box sx={{ flex: 1 }}>
+                  <Typography fontWeight={600}>{r.device}</Typography>
+
+                  {openId === r._id ? (
+                    <>
+                      <Divider sx={{ my: 0.5 }} />
+                      <Typography fontSize={12}>Type: {r.requestType}</Typography>
+                      <Typography fontSize={12}>
+                        Request Date: {new Date(r.createdAt).toLocaleDateString()}
+                      </Typography>
+
+                      {r.status === "Accepted" && r.acceptedAt && (
+                        <Typography fontSize={12}>
+                          Accepted Date: {new Date(r.acceptedAt).toLocaleDateString()}
+                        </Typography>
+                      )}
+
+                      <Typography fontSize={12}>Condition: {r.condition}</Typography>
+                      <Typography fontSize={12}>Status: {r.status}</Typography>
+
+                      <Typography
+                        sx={{ mt: 0.5, color: '#1976D2', cursor: 'pointer', fontSize: 12 }}
+                        onClick={() => setOpenId(null)}
+                      >
+                        Less info
+                      </Typography>
+                    </>
+                  ) : (
+                    <>
+                      <Typography fontSize={12}>Type: {r.requestType}</Typography>
+                      <Typography fontSize={12}>
+                        Date: {new Date(r.createdAt).toLocaleDateString()}
+                      </Typography>
+
+                      {r.status === "Accepted" && r.acceptedAt && (
+                        <Typography fontSize={12}>
+                          Accepted Date: {new Date(r.acceptedAt).toLocaleDateString()}
+                        </Typography>
+                      )}
+
+                      <Typography fontSize={12}>Status: {r.status}</Typography>
+
+                      {/* ✅ ONLY CHANGE HERE */}
+                      <Typography
+                        sx={{ mt: 0.5, color: '#1976D2', cursor: 'pointer', fontSize: 12 }}
+                        onClick={() => {
+                          setOpenId(r._id);
+                          setSeenNotifications(prev => [...prev, r._id]);
+                        }}
+                      >
+                        More info
+                      </Typography>
+                    </>
+                  )}
+                </Box>
+              </CardContent>
+            </Card>
+          ))
+      )}
+    </Box>
+  )}
+</div>
 
           {/* Theme toggle (Light / Dark) */}
           <button
