@@ -15,7 +15,6 @@ import {
 } from "react-icons/fa";
 import { useSelector } from "react-redux";
 import logo from "../assets/logo.png";
-
 import "./AdminUserPage.css";
 
 const API_BASE = "http://localhost:5000/admin";
@@ -31,12 +30,19 @@ const AdminUserPage = () => {
     mobile: "",
     location: "",
   });
+
   const [avatarUrl, setAvatarUrl] = useState("");
   const [profileLoading, setProfileLoading] = useState(true);
-  const [saveStatus, setSaveStatus] = useState(null); // "success" | "error" | null
+  const [saveStatus, setSaveStatus] = useState(null);
   const [mobileError, setMobileError] = useState(null);
+
+
+  const [nameError, setNameError] = useState(null);
+  const [locationError, setLocationError] = useState(null);
+  const [avatarError, setAvatarError] = useState(null);
+
   const [isEditing, setIsEditing] = useState(false);
-  const [editSnapshot, setEditSnapshot] = useState(null); // revert on Cancel
+  const [editSnapshot, setEditSnapshot] = useState(null);
 
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [showSettingsCard, setShowSettingsCard] = useState(true);
@@ -44,12 +50,21 @@ const AdminUserPage = () => {
 
   const getToken = () => localStorage.getItem("token") || sessionStorage.getItem("token");
 
-  // Apply theme (Light / Dark / System) to document
+  // ================= VALIDATIONS =================
+  const isValidName = (name) => /^[a-zA-Z\s]+$/.test(name);
+  const isValidURL = (url) => {
+    try {
+      new URL(url);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+
   useEffect(() => {
     const root = document.documentElement;
-    const apply = (value) => {
-      root.setAttribute("data-admin-theme", value);
-    };
+    const apply = (value) => root.setAttribute("data-admin-theme", value);
     if (theme === "System") {
       const media = window.matchMedia("(prefers-color-scheme: dark)");
       const applySystem = () => apply(media.matches ? "dark" : "light");
@@ -78,6 +93,7 @@ const AdminUserPage = () => {
       setProfileLoading(false);
       return;
     }
+
     fetch(`${API_BASE}/profile`, {
       headers: { Authorization: `Bearer ${token}` },
     })
@@ -100,13 +116,14 @@ const AdminUserPage = () => {
         });
       })
       .finally(() => setProfileLoading(false));
-  }, [storedUser.uname, storedUser.name, storedUser.email, storedUser.phone]);
+  }, [storedUser]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     sessionStorage.removeItem("token");
     navigate("/");
   };
+
 
   const navItems = useMemo(
     () => [
@@ -142,9 +159,9 @@ const AdminUserPage = () => {
 
   const isActiveMenu = (path) => path && location.pathname === path;
 
-  // Mobile: 8 digits, must start with 7 or 9
+  // ================= MOBILE VALIDATION =================
   const validateMobile = (value) => {
-    if (!value || value.trim() === "") return null;
+    if (!value) return "Mobile is required.";
     const digits = value.replace(/\D/g, "");
     if (digits.length !== 8) return "Number must be 8 digits.";
     if (!/^[79]/.test(digits)) return "Number must start with 7 or 9.";
@@ -152,36 +169,21 @@ const AdminUserPage = () => {
   };
 
   const handleMobileChange = (e) => {
-    const value = e.target.value.replace(/\D/g, "").slice(0, 8); // digits only, max 8
+    const value = e.target.value.replace(/\D/g, "").slice(0, 8);
     setProfile((p) => ({ ...p, mobile: value }));
     setMobileError(validateMobile(value));
   };
 
   const startEditing = () => {
-    setEditSnapshot({
-      name: profile.name,
-      email: profile.email,
-      mobile: profile.mobile,
-      location: profile.location,
-      avatarUrl,
-    });
+    setEditSnapshot({ ...profile, avatarUrl });
     setIsEditing(true);
-    setSaveStatus(null);
-    setMobileError(null);
   };
 
   const cancelEditing = () => {
     if (editSnapshot) {
-      setProfile({
-        name: editSnapshot.name,
-        email: editSnapshot.email,
-        mobile: editSnapshot.mobile,
-        location: editSnapshot.location,
-      });
-      setAvatarUrl(editSnapshot.avatarUrl ?? "");
+      setProfile(editSnapshot);
+      setAvatarUrl(editSnapshot.avatarUrl || "");
     }
-    setMobileError(null);
-    setSaveStatus(null);
     setIsEditing(false);
   };
 
@@ -191,14 +193,32 @@ const AdminUserPage = () => {
       setSaveStatus("error");
       return;
     }
-    const err = validateMobile(profile.mobile);
-    if (err) {
-      setMobileError(err);
-      setSaveStatus(null);
+
+    const name = profile.name.trim();
+    const location = profile.location.trim();
+    const mobile = profile.mobile.trim();
+
+    if (!name || !isValidName(name)) {
+      setNameError("Name must contain only letters.");
       return;
     }
-    setMobileError(null);
-    setSaveStatus(null);
+
+    if (!location || location.length < 3) {
+      setLocationError("Location must be at least 3 characters.");
+      return;
+    }
+
+    const mobileErr = validateMobile(mobile);
+    if (mobileErr) {
+      setMobileError(mobileErr);
+      return;
+    }
+
+    if (avatarUrl && !isValidURL(avatarUrl)) {
+      setAvatarError("Invalid URL.");
+      return;
+    }
+
     fetch(`${API_BASE}/profile`, {
       method: "PUT",
       headers: {
@@ -206,30 +226,19 @@ const AdminUserPage = () => {
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
-        name: profile.name,
-        mobile: profile.mobile,
-        location: profile.location,
+        name,
+        mobile,
+        location,
         avatarUrl: avatarUrl || undefined,
       }),
     })
       .then((res) => (res.ok ? res.json() : Promise.reject(res)))
-      .then((data) => {
-        if (data.profile) {
-          setProfile({
-            name: data.profile.name ?? profile.name,
-            email: data.profile.email ?? profile.email,
-            mobile: data.profile.mobile ?? profile.mobile,
-            location: data.profile.location ?? profile.location,
-          });
-          setAvatarUrl(data.profile.avatarUrl ?? "");
-          setEditSnapshot(null);
-        }
+      .then(() => {
         setSaveStatus("success");
         setIsEditing(false);
       })
       .catch(() => setSaveStatus("error"));
   };
-
   return (
     <div className="au-page">
       {/* TOP NAVBAR */}
@@ -331,7 +340,7 @@ const AdminUserPage = () => {
                 </div>
               </div>
 
-              {/* SETTINGS SMALL CARD (like your prototype) */}
+
               {showSettingsCard && (
                 <div className="au-card au-settings-card">
                   <div className="au-settings-header">
@@ -429,8 +438,10 @@ const AdminUserPage = () => {
                       <input
                         className="au-input"
                         value={profile.name}
-                        onChange={(e) => setProfile((p) => ({ ...p, name: e.target.value }))}
+                        readOnly
+                        disabled
                         placeholder="Admin name"
+                        title="Name cannot be changed"
                       />
                     </div>
                     <div className="au-field">

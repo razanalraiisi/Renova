@@ -183,16 +183,29 @@ const CollectorProfile = () => {
     setData((prev) => ({ ...prev, acceptedCategories: items }));
   };
 
-
   const validate = () => {
-    const { collectorType, workingHours, phone } = data.basicInfo;
-    const address = data.location.address;
+    const collectorType = data.basicInfo.collectorType.trim();
+    const workingHours = data.basicInfo.workingHours.trim();
+    const phone = data.basicInfo.phone.trim();
+    const address = data.location.address.trim();
 
+    // Required fields + default collector type
     if (!collectorType || !workingHours || !phone || !address) {
       return "All fields must be filled.";
     }
 
+    // Working hours format
+    const workingHoursRegex = /^(\d{1,2}(AM|PM)-\d{1,2}(AM|PM)|\d{2}:\d{2}\s*-\s*\d{2}:\d{2})$/i;
+    if (!workingHoursRegex.test(workingHours)) {
+      return "Working hours must be in format like 8AM-5PM or 08:00 - 17:00.";
+    }
 
+    // Address validation
+    if (address.length < 5) {
+      return "Address must be at least 5 characters.";
+    }
+
+    // Phone validation
     const phoneRegex = /^[279][0-9]{7}$/;
     if (!phoneRegex.test(phone)) {
       return "Phone must be 8 digits, start with 2, 7, or 9, and contain only numbers.";
@@ -219,11 +232,11 @@ const CollectorProfile = () => {
 
     const updatedData = {
       _id: data._id,
-      companyName: data.companyName,
-      collectorType: data.basicInfo.collectorType,
-      openHr: data.basicInfo.workingHours,
-      phone: data.basicInfo.phone,
-      address: data.location.address,
+      companyName: data.companyName.trim(),
+      collectorType: data.basicInfo.collectorType.trim(),
+      openHr: data.basicInfo.workingHours.trim(),
+      phone: data.basicInfo.phone.trim(),
+      address: data.location.address.trim(),
       acceptedCategories: data.acceptedCategories
         .filter((c) => c.checked)
         .map((c) => c.name),
