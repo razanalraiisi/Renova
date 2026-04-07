@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Navbar, NavbarBrand } from "reactstrap";
-import { FaArrowLeft, FaUser, FaClipboardList, FaSignOutAlt, FaBell } from "react-icons/fa";
+import { FaArrowLeft, FaUser, FaClipboardList, FaSignOutAlt, FaBell, FaMoon, FaSun } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import { updateUser, resetUser, resetState } from "../features/UserSlice.js";
 import { useForm } from "react-hook-form";
@@ -19,6 +19,11 @@ const UserDash = () => {
 
   const [activeTab, setActiveTab] = useState("profile");
   const [theme, setTheme] = useState(() => localStorage.getItem("userTheme") || "Light");
+  const isDarkEffective =
+    theme === "Dark" ||
+    (theme === "System" &&
+      window.matchMedia &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches);
   const [requests, setRequests] = useState([]);
   const [loadingRequests, setLoadingRequests] = useState(true);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
@@ -44,6 +49,23 @@ const UserDash = () => {
     defaultValues,
     resolver: yupResolver(schema),
   });
+
+  // Apply theme immediately on this page (AdminThemeSync only updates on route change).
+  useEffect(() => {
+    const root = document.documentElement;
+    const apply = (value) => root.setAttribute("data-theme", value);
+
+    if (theme === "System") {
+      const media = window.matchMedia("(prefers-color-scheme: dark)");
+      const applySystem = () => apply(media.matches ? "dark" : "light");
+      applySystem();
+      media.addEventListener("change", applySystem);
+      return () => media.removeEventListener("change", applySystem);
+    }
+
+    apply(theme.toLowerCase());
+    return undefined;
+  }, [theme]);
 
   useEffect(() => {
     if (user && user._id) {
@@ -140,6 +162,13 @@ const UserDash = () => {
     const value = e.target.value;
     setTheme(value);
     localStorage.setItem("userTheme", value);
+  };
+
+  const toggleTheme = () => {
+    const next = isDarkEffective ? "Light" : "Dark";
+    setTheme(next);
+    localStorage.setItem("userTheme", next);
+    setNotifOpen(false); // avoid overlapping with the notification dropdown
   };
 
   const onSubmit = async (data) => {
@@ -268,6 +297,27 @@ const UserDash = () => {
               </Box>
             )}
           </div>
+
+          {/* Theme toggle (Light / Dark) */}
+          <button
+            type="button"
+            onClick={toggleTheme}
+            title="Toggle dark mode"
+            style={{
+              marginLeft: 12,
+              background: "transparent",
+              border: "none",
+              color: "#fff",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 20,
+              padding: 0,
+            }}
+          >
+            {isDarkEffective ? <FaSun /> : <FaMoon />}
+          </button>
         </div>
       </Navbar>
 
