@@ -37,7 +37,7 @@ const PickupRequest = () => {
     address: Yup.string().required("Address is required"),
     deviceCategory: Yup.string().required("Category is required"),
     device: Yup.string().required("Device is required"),
-    condition: Yup.string().required("Condition is required").max(100),
+    condition: Yup.string().required("Condition is required").max(20),
   });
 
   const { register, handleSubmit, formState: { errors }, reset, setValue } = useForm({
