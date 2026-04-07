@@ -99,7 +99,14 @@ function App() {
             {/* Other user routes */}
             <Route path="/UserRequestHistory" element={<UserRequestHistory />} />
             <Route path="/EWasteLibrary" element={<EWasteLibrary />} />
-            <Route path="/admin/devices" element={<AdminEWasteLibrary />} />
+            <Route
+              path="/admin/devices"
+              element={
+                <AdminLayout>
+                  <AdminEWasteLibrary />
+                </AdminLayout>
+              }
+            />
             <Route path="/omanmap" element={<OmanMap />} />
             <Route path="/support" element={<Support />} />
             <Route path="/terms" element={<TermsConditions />} />
@@ -107,7 +114,14 @@ function App() {
             <Route path="/PickupRequest" element={<PickupRequest />} />
             <Route path="/DropOff" element={<DropOff />} />
         
-            <Route path="/admin/dashboard/graphs" element={<AdminDashboardGraphs />} />
+            <Route
+              path="/admin/dashboard/graphs"
+              element={
+                <AdminLayout>
+                  <AdminDashboardGraphs />
+                </AdminLayout>
+              }
+            />
 
             {/* Dashboard routes */}
             <Route path="/UserDash" element={<UserDash />} />
@@ -132,15 +146,78 @@ function App() {
                 </AdminLayout>
               }
             />
-            <Route path="/admin/collectors-requests" element={<AdminCollectorRequests />} />
-            <Route path="/admin/manage-collectors" element={<AdminManageCollectors />} />
-            <Route path="/admin/reports/recycles" element={<RecyclesReport />} />
-            <Route path="/admin/reports/disposals" element={<DisposalsReport />} />
-            <Route path="/admin/reports/disposals-recycles-upcycles" element={<DisposalsRecyclesUpcyclesReport />} />
-            <Route path="/admin/reports/collectors" element={<CollectorsReport />} />
-            <Route path="/admin/reports/users" element={<UsersReport />} />
-            <Route path="/admin/profile" element={<AdminUserPage />} />
-            <Route path="/admin/my-requests" element={<AdminMyRequests />} />
+            <Route
+              path="/admin/collectors-requests"
+              element={
+                <AdminLayout>
+                  <AdminCollectorRequests />
+                </AdminLayout>
+              }
+            />
+            <Route
+              path="/admin/manage-collectors"
+              element={
+                <AdminLayout>
+                  <AdminManageCollectors />
+                </AdminLayout>
+              }
+            />
+            <Route
+              path="/admin/reports/recycles"
+              element={
+                <AdminLayout>
+                  <RecyclesReport />
+                </AdminLayout>
+              }
+            />
+            <Route
+              path="/admin/reports/disposals"
+              element={
+                <AdminLayout>
+                  <DisposalsReport />
+                </AdminLayout>
+              }
+            />
+            <Route
+              path="/admin/reports/disposals-recycles-upcycles"
+              element={
+                <AdminLayout>
+                  <DisposalsRecyclesUpcyclesReport />
+                </AdminLayout>
+              }
+            />
+            <Route
+              path="/admin/reports/collectors"
+              element={
+                <AdminLayout>
+                  <CollectorsReport />
+                </AdminLayout>
+              }
+            />
+            <Route
+              path="/admin/reports/users"
+              element={
+                <AdminLayout>
+                  <UsersReport />
+                </AdminLayout>
+              }
+            />
+            <Route
+              path="/admin/profile"
+              element={
+                <AdminLayout>
+                  <AdminUserPage />
+                </AdminLayout>
+              }
+            />
+            <Route
+              path="/admin/my-requests"
+              element={
+                <AdminLayout>
+                  <AdminMyRequests />
+                </AdminLayout>
+              }
+            />
 
           </Routes>
         </Row>

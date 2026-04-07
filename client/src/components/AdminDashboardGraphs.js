@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import AdminTopbar from "./AdminTopbar";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -130,8 +129,6 @@ export default function AdminDashboardGraphs() {
 
   return (
     <div className="adminPage">
-      <AdminTopbar />
-
       <div className="adminBody">
         <div className="adminPanelPlain">
           <div className="graphsPageHeader">

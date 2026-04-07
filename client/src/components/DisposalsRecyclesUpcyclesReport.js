@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import AdminTopbar from "./AdminTopbar";
 import "./AdminPages.css";
 import "./AdminReports.css";
 
@@ -110,7 +109,6 @@ export default function DisposalsRecyclesUpcyclesReport() {
 
   return (
     <div className="adminPage">
-      <AdminTopbar />
       <div className="adminBody">
         <button
           type="button"

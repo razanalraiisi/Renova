@@ -1,5 +1,4 @@
 import React, { useMemo, useState } from "react";
-import AdminTopbar from "./AdminTopbar";
 import "./AdminPages.css";
 import "./AdminReports.css";
 
@@ -26,8 +25,6 @@ export default function AdminReportsLayout({ title, children, onDownload, showFi
 
   return (
     <div className="adminPage">
-      <AdminTopbar />
-
       <div className="adminBody">
         <div className="adminCardWrap">
           {/* Top row: Title + search + download */}

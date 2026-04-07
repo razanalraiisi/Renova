@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import AdminTopbar from "./AdminTopbar";
 import BasicModal from "./BasicModal";
 import "./AdminPages.css";
 
@@ -129,8 +128,6 @@ export default function AdminManageCollectors() {
 
   return (
     <div className="adminPage">
-      <AdminTopbar />
-
       <div className="adminBody">
         <button
           type="button"
