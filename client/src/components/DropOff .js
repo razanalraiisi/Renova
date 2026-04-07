@@ -9,7 +9,7 @@ import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
 import logo from "../assets/logo.png";
 
-// 🔥 FIX MARKER ICON (IMPORTANT)
+// FIX MARKER ICON
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconUrl: markerIcon,
@@ -28,9 +28,9 @@ const DropOff = () => {
     address: "",
   });
 
+  const [errors, setErrors] = useState({});
   const [selectedCenter, setSelectedCenter] = useState(null);
 
-  // 📍 Your centers
   const centers = [
     {
       id: 1,
@@ -46,13 +46,54 @@ const DropOff = () => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  const handlePhoneChange = (e) => {
+    const value = e.target.value.replace(/\D/g, ""); // only numbers
+    setForm({ ...form, phone: value });
+  };
+
+  const validate = () => {
+    let newErrors = {};
+
+    if (!form.name.trim()) {
+      newErrors.name = "Name is required";
+    }
+
+    if (!form.phone.trim()) {
+      newErrors.phone = "Phone is required";
+    } else if (!/^[279][0-9]{7}$/.test(form.phone)) {
+      newErrors.phone =
+        "Enter valid Omani number (8 digits, starts with 2, 7, or 9)";
+    }
+
+    if (!form.item.trim()) {
+      newErrors.item = "Item is required";
+    }
+
+    if (!form.condition.trim()) {
+      newErrors.condition = "Condition is required";
+    }
+
+    if (!form.address.trim()) {
+      newErrors.address = "Please select location from map";
+    }
+
+    if (!form.dateTime) {
+      newErrors.dateTime = "Date & Time is required";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    if (!validate()) return;
+
     alert("Drop-Off scheduled!");
     console.log(form);
   };
 
-  // ✅ CLICK MARKER → AUTO FILL ADDRESS
   const handleMarkerClick = (center) => {
     setSelectedCenter(center);
     setForm((prev) => ({
@@ -73,25 +114,25 @@ const DropOff = () => {
       color: "white",
     },
     backWrapper: {
-  width: "100%",
-  padding: "20px 30px 0",
-  display: "flex",
-  justifyContent: "flex-start", 
-},
+      width: "100%",
+      padding: "20px 30px 0",
+      display: "flex",
+      justifyContent: "flex-start",
+    },
     backIcon: {
       color: "#0080AA",
       cursor: "pointer",
       fontSize: "22px",
     },
     mainWrapper: {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "stretch",
-  padding: "40px 20px",
-  gap: "30px",
-  maxWidth: "1200px",
-  margin: "0 auto",
-},
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "stretch",
+      padding: "40px 20px",
+      gap: "30px",
+      maxWidth: "1200px",
+      margin: "0 auto",
+    },
     formContainer: {
       border: "1px solid #ccc",
       borderRadius: "6px",
@@ -101,9 +142,14 @@ const DropOff = () => {
     input: {
       width: "100%",
       padding: "10px",
-      marginBottom: "15px",
+      marginBottom: "5px",
       border: "1px solid #ccc",
       borderRadius: "4px",
+    },
+    error: {
+      color: "red",
+      fontSize: "13px",
+      marginBottom: "10px",
     },
     button: {
       backgroundColor: "#00a0d0",
@@ -115,13 +161,13 @@ const DropOff = () => {
       fontWeight: "bold",
       cursor: "pointer",
     },
-   mapContainer: {
-  flex: 1,
-  height: "600px",
-  minWidth: "500px",   
-  borderRadius: "10px",
-  overflow: "hidden",
-},
+    mapContainer: {
+      flex: 1,
+      height: "600px",
+      minWidth: "500px",
+      borderRadius: "10px",
+      overflow: "hidden",
+    },
     selectedInfo: {
       marginTop: "10px",
       padding: "10px",
@@ -132,7 +178,6 @@ const DropOff = () => {
 
   return (
     <div style={styles.page}>
-      {/* NAVBAR */}
       <Navbar style={styles.navbar}>
         <NavbarBrand tag={Link} to="/" style={{ color: "white" }}>
           <img src={logo} alt="logo" style={{ height: 40, marginRight: 10 }} />
@@ -140,12 +185,8 @@ const DropOff = () => {
         </NavbarBrand>
       </Navbar>
 
-      {/* BACK BUTTON */}
       <div style={styles.backWrapper}>
-        <FaArrowLeft
-          onClick={() => navigate("/start")}
-          style={styles.backIcon}
-        />
+        <FaArrowLeft onClick={() => navigate("/start")} style={styles.backIcon} />
       </div>
 
       <div style={styles.mainWrapper}>
@@ -154,9 +195,22 @@ const DropOff = () => {
           <h3>Schedule Drop Off</h3>
 
           <input name="name" placeholder="Name" style={styles.input} onChange={handleChange} />
-          <input name="phone" placeholder="Phone" style={styles.input} onChange={handleChange} />
+          {errors.name && <p style={styles.error}>{errors.name}</p>}
+
+          <input
+            name="phone"
+            placeholder="Phone"
+            style={styles.input}
+            value={form.phone}
+            onChange={handlePhoneChange}
+          />
+          {errors.phone && <p style={styles.error}>{errors.phone}</p>}
+
           <input name="item" placeholder="Item" style={styles.input} onChange={handleChange} />
+          {errors.item && <p style={styles.error}>{errors.item}</p>}
+
           <input name="condition" placeholder="Condition" style={styles.input} onChange={handleChange} />
+          {errors.condition && <p style={styles.error}>{errors.condition}</p>}
 
           <input
             name="address"
@@ -165,8 +219,10 @@ const DropOff = () => {
             style={styles.input}
             readOnly
           />
+          {errors.address && <p style={styles.error}>{errors.address}</p>}
 
           <input type="datetime-local" name="dateTime" style={styles.input} onChange={handleChange} />
+          {errors.dateTime && <p style={styles.error}>{errors.dateTime}</p>}
 
           <button type="submit" style={styles.button}>
             Confirm Drop-Off
@@ -185,10 +241,10 @@ const DropOff = () => {
         {/* MAP */}
         <div style={styles.mapContainer}>
           <MapContainer
-  center={[23.5859, 58.4059]}
-  zoom={11}
-  style={{ height: "100%", width: "100%" }}
->
+            center={[23.5859, 58.4059]}
+            zoom={11}
+            style={{ height: "100%", width: "100%" }}
+          >
             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
             {centers.map((center) => (
