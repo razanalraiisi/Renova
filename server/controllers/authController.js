@@ -149,8 +149,14 @@ export const login = async (req, res) => {
  
    
     if (user.role === "collector" && user.isApproved === false) {
+      if (user.deactivatedAt) {
+        return res.status(403).json({
+          message:
+            "Your collector account has been deactivated. Please contact support if you believe this is an error.",
+        });
+      }
       return res.status(403).json({
-        message: "Your collector account is pending admin approval."
+        message: "Your collector account is pending admin approval.",
       });
     }
  
@@ -170,10 +176,12 @@ export const login = async (req, res) => {
 // Get all pending collectors
 export const getPendingCollectors = async (req, res) => {
   try {
-    const collectors = await User
-      .find({ role: "collector", isApproved: false })
-      .sort({ createdAt: -1 });  
- 
+    const collectors = await User.find({
+      role: "collector",
+      isApproved: false,
+      deactivatedAt: null,
+    }).sort({ createdAt: -1 });
+
     res.json(collectors);
   } catch (err) {
     res.status(500).json({ message: "Server error." });
@@ -200,8 +208,11 @@ function timeAgo(date) {
 // Admin notifications: new collector registration requests (pending only)
 export const getAdminNotifications = async (req, res) => {
   try {
-    const collectors = await User
-      .find({ role: "collector", isApproved: false })
+    const collectors = await User.find({
+      role: "collector",
+      isApproved: false,
+      deactivatedAt: null,
+    })
       .sort({ createdAt: -1 })
       .select("_id companyName createdAt")
       .lean();
@@ -500,14 +511,19 @@ export const getDashboardStats = async (req, res) => {
 };
 
 // --------------------
-// Admin: get all approved collectors (for Manage Collectors page)
-// Reads from MongoDB "users" collection, role: "collector", isApproved: true
+// Admin: approved + deactivated collectors (manage / report — same list)
+// Excludes pending registration (isApproved false, no deactivatedAt)
 // --------------------
 export const getCollectors = async (req, res) => {
   try {
-    const collectors = await User.find({ role: "collector", isApproved: true })
+    const collectors = await User.find({
+      role: "collector",
+      $or: [{ isApproved: true }, { deactivatedAt: { $exists: true, $ne: null } }],
+    })
       .sort({ createdAt: -1 })
-      .select("companyName address phone email collectorId collectorType openHr createdAt")
+      .select(
+        "companyName address phone email collectorId collectorType openHr createdAt isApproved deactivatedAt"
+      )
       .lean();
     res.json(collectors);
   } catch (err) {
@@ -526,6 +542,9 @@ export const deactivateCollector = async (req, res) => {
     const collector = await User.findById(req.params.id);
     if (!collector) return res.status(404).json({ message: "Collector not found" });
     if (collector.role !== "collector") return res.status(400).json({ message: "Not a collector" });
+    if (collector.deactivatedAt) {
+      return res.status(400).json({ message: "Collector is already deactivated." });
+    }
 
     collector.isApproved = false;
     collector.deactivatedAt = new Date();
@@ -662,6 +681,9 @@ export const reactivateCollector = async (req, res) => {
     const collector = await User.findById(req.params.id);
     if (!collector) return res.status(404).json({ message: "Collector not found" });
     if (collector.role !== "collector") return res.status(400).json({ message: "Not a collector" });
+    if (!collector.deactivatedAt) {
+      return res.status(400).json({ message: "Collector is not deactivated." });
+    }
 
     collector.isApproved = true;
     collector.deactivatedAt = undefined;
@@ -714,7 +736,9 @@ export const getUsers = async (req, res) => {
   try {
     const users = await User.find({ role: "user" })
       .sort({ createdAt: -1 })
-      .select("uname email phone userId createdAt")
+      .select(
+        "uname email phone pic userId userIdNumber locationName createdAt updatedAt"
+      )
       .lean();
     res.json(users);
   } catch (err) {

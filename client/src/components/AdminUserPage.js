@@ -1,10 +1,8 @@
 import React, { useMemo, useState, useEffect } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
-import { Navbar, NavbarBrand } from "reactstrap";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   FaBell,
   FaCog,
-  FaMoon,
   FaUserCircle,
   FaUserShield,
   FaClipboardList,
@@ -14,7 +12,8 @@ import {
   FaTimes,
 } from "react-icons/fa";
 import { useSelector } from "react-redux";
-import logo from "../assets/logo.png";
+import AdminTopbar from "./AdminTopbar";
+import { ADMIN_THEME_CHANGED, dispatchAdminThemeChange } from "../utils/adminThemeEvents";
 import "./AdminUserPage.css";
 
 const API_BASE = "http://localhost:5000/admin";
@@ -28,7 +27,6 @@ const AdminUserPage = () => {
     name: "",
     email: "",
     mobile: "",
-    location: "",
   });
 
   const [avatarUrl, setAvatarUrl] = useState("");
@@ -38,7 +36,6 @@ const AdminUserPage = () => {
 
 
   const [nameError, setNameError] = useState(null);
-  const [locationError, setLocationError] = useState(null);
   const [avatarError, setAvatarError] = useState(null);
 
   const [isEditing, setIsEditing] = useState(false);
@@ -75,10 +72,19 @@ const AdminUserPage = () => {
     apply(theme.toLowerCase());
   }, [theme]);
 
+  useEffect(() => {
+    const onTheme = (e) => {
+      if (e.detail != null) setTheme(e.detail);
+    };
+    window.addEventListener(ADMIN_THEME_CHANGED, onTheme);
+    return () => window.removeEventListener(ADMIN_THEME_CHANGED, onTheme);
+  }, []);
+
   const handleThemeChange = (e) => {
     const value = e.target.value;
     setTheme(value);
     localStorage.setItem("adminTheme", value);
+    dispatchAdminThemeChange(value);
   };
 
   useEffect(() => {
@@ -88,7 +94,6 @@ const AdminUserPage = () => {
         name: storedUser.uname || storedUser.name || "",
         email: storedUser.email || "",
         mobile: storedUser.phone || "",
-        location: "",
       });
       setProfileLoading(false);
       return;
@@ -103,7 +108,6 @@ const AdminUserPage = () => {
           name: data.name || "",
           email: data.email || "",
           mobile: data.mobile || "",
-          location: data.location || "",
         });
         setAvatarUrl(data.avatarUrl || "");
       })
@@ -112,7 +116,6 @@ const AdminUserPage = () => {
           name: storedUser.uname || storedUser.name || "",
           email: storedUser.email || "",
           mobile: storedUser.phone || "",
-          location: "",
         });
       })
       .finally(() => setProfileLoading(false));
@@ -125,22 +128,12 @@ const AdminUserPage = () => {
   };
 
 
-  const navItems = useMemo(
-    () => [
-      { name: "Dashboard", path: "/admin/dashboard" },
-      { name: "Collectors", path: "/admin/manage-collectors" },
-      { name: "Requests", path: "/admin/collectors-requests" },
-      { name: "Reports", path: "/admin/dashboard/graphs" },
-    ],
-    []
-  );
-
   const menuItems = useMemo(
     () => [
       { key: "profile", label: "My Profile", icon: <FaUserShield />, path: "/admin/profile" },
       {
         key: "settings",
-        label: "Settings",
+        label: "Theme Settings",
         icon: <FaCog />,
         onClick: () => setShowSettingsCard((v) => !v),
       },
@@ -195,16 +188,10 @@ const AdminUserPage = () => {
     }
 
     const name = profile.name.trim();
-    const location = profile.location.trim();
     const mobile = profile.mobile.trim();
 
     if (!name || !isValidName(name)) {
       setNameError("Name must contain only letters.");
-      return;
-    }
-
-    if (!location || location.length < 3) {
-      setLocationError("Location must be at least 3 characters.");
       return;
     }
 
@@ -228,7 +215,6 @@ const AdminUserPage = () => {
       body: JSON.stringify({
         name,
         mobile,
-        location,
         avatarUrl: avatarUrl || undefined,
       }),
     })
@@ -241,41 +227,7 @@ const AdminUserPage = () => {
   };
   return (
     <div className="au-page">
-      {/* TOP NAVBAR */}
-      <Navbar className="au-navbar">
-        <div className="au-nav-inner">
-          <NavbarBrand tag={Link} to="/admin/dashboard" className="au-brand">
-            <img src={logo} alt="logo" className="au-logo" />
-            ReNova
-          </NavbarBrand>
-
-          <div className="au-nav-links">
-            {navItems.map((item) => (
-              <Link
-                key={item.name}
-                to={item.path}
-                className={`au-nav-link ${location.pathname === item.path ? "active" : ""}`}
-              >
-                {item.name}
-              </Link>
-            ))}
-          </div>
-
-          <div className="au-nav-icons">
-            <FaBell title="Notifications" />
-            <FaCog title="Settings" onClick={() => setShowSettingsCard((v) => !v)} style={{ cursor: "pointer" }} />
-            <FaMoon
-              title="Toggle dark mode"
-              onClick={() => {
-                const next = theme === "Dark" ? "Light" : "Dark";
-                setTheme(next);
-                localStorage.setItem("adminTheme", next);
-              }}
-              style={{ cursor: "pointer" }}
-            />
-          </div>
-        </div>
-      </Navbar>
+      <AdminTopbar />
 
       {/* BODY */}
       <div className="au-body">
@@ -344,7 +296,7 @@ const AdminUserPage = () => {
               {showSettingsCard && (
                 <div className="au-card au-settings-card">
                   <div className="au-settings-header">
-                    <div className="au-settings-title">Settings</div>
+                    <div className="au-settings-title">Theme Settings</div>
                     <FaTimes
                       className="au-settings-close"
                       onClick={() => setShowSettingsCard(false)}
@@ -395,10 +347,6 @@ const AdminUserPage = () => {
                     <div className="au-display-row">
                       <span className="au-display-label">Mobile</span>
                       <span className="au-display-value">{profile.mobile || "—"}</span>
-                    </div>
-                    <div className="au-display-row">
-                      <span className="au-display-label">Location</span>
-                      <span className="au-display-value">{profile.location || "—"}</span>
                     </div>
                   </div>
                   <button type="button" className="au-edit-btn" onClick={startEditing}>
@@ -471,15 +419,6 @@ const AdminUserPage = () => {
                           {mobileError}
                         </div>
                       )}
-                    </div>
-                    <div className="au-field">
-                      <div className="au-field-label">Location</div>
-                      <input
-                        className="au-input"
-                        value={profile.location}
-                        onChange={(e) => setProfile((p) => ({ ...p, location: e.target.value }))}
-                        placeholder="USA"
-                      />
                     </div>
                   </div>
                   <div className="au-edit-actions">

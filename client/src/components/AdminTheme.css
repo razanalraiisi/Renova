@@ -82,6 +82,15 @@
   color: #e8eaed;
 }
 
+[data-admin-theme="dark"] .reportsBackBtn {
+  color: #7dd3e8;
+  border-color: #7dd3e8;
+}
+
+[data-admin-theme="dark"] .reportsBackBtn:hover {
+  background: rgba(125, 211, 232, 0.12);
+}
+
 [data-admin-theme="dark"] .searchBox {
   background: #2d3136;
 }
@@ -93,6 +102,14 @@
 [data-admin-theme="dark"] .reportCard {
   background: #25282c !important;
   border-color: #3a3e42;
+}
+
+[data-admin-theme="dark"] .user-report-details {
+  border-top-color: #3a3e42 !important;
+}
+
+[data-admin-theme="dark"] button.viewMoreBtn {
+  color: #7dd3e8;
 }
 
 [data-admin-theme="dark"] .expandRow {
@@ -133,6 +150,15 @@
 [data-admin-theme="dark"] .manageCard {
   background: #25282c !important;
   border-color: #3a3e42;
+}
+
+[data-admin-theme="dark"] .btnReactivate {
+  background: #2e7d32;
+  color: #fff;
+}
+
+[data-admin-theme="dark"] .btnReactivate:hover:not(:disabled) {
+  background: #1b5e20;
 }
 
 [data-admin-theme="dark"] .requestLeft,

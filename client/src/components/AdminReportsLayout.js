@@ -3,7 +3,23 @@ import AdminTopbar from "./AdminTopbar";
 import "./AdminPages.css";
 import "./AdminReports.css";
 
-export default function AdminReportsLayout({ title, children, onDownload, showFilter: showFilterProp = true, searchValue, onSearchChange, searchPlaceholder }) {
+export default function AdminReportsLayout({
+  title,
+  children,
+  onDownload,
+  showFilter: showFilterProp = true,
+  searchValue,
+  onSearchChange,
+  searchPlaceholder,
+  onViewMore,
+  viewMoreLabel = "View more",
+  viewMoreDisabled = false,
+  /** Stretch main card to viewport height; list area scrolls inside */
+  fillViewport = false,
+  /** Renders a small Back control above the title row (e.g. dashboard) */
+  onBack,
+  backLabel = "← Back",
+}) {
   // UI-only options (dummy)
   const items = useMemo(() => ["Dish washer", "Air Conditioner", "Laptop"], []);
   const users = useMemo(() => ["Faisal Al Wahabi", "Amal Al Abri", "Sulaiman Al Salmi"], []);
@@ -25,22 +41,32 @@ export default function AdminReportsLayout({ title, children, onDownload, showFi
   };
 
   return (
-    <div className="adminPage">
+    <div className={`adminPage${fillViewport ? " adminReportsPageFill" : ""}`}>
       <AdminTopbar />
 
-      <div className="adminBody">
-        <div className="adminCardWrap">
+      <div className={`adminBody${fillViewport ? " adminReportsBodyFill" : ""}`}>
+        <div className={`adminCardWrap${fillViewport ? " adminCardWrapFill" : ""}`}>
+          {onBack != null && (
+            <div className="reportsBackRow">
+              <button type="button" className="reportsBackBtn" onClick={onBack}>
+                {backLabel}
+              </button>
+            </div>
+          )}
           {/* Top row: Title + search + download */}
           <div className="reportsHeader">
             <h3 className="reportsTitle">{title}</h3>
 
             <div className="reportsActions">
               {onSearchChange != null && (
-                <div className="searchBox">
-                  🔍 <input
-                    placeholder={searchPlaceholder ?? "search"}
+                <div className="searchBox reportsHeaderSearch">
+                  🔍{" "}
+                  <input
+                    type="search"
+                    placeholder={searchPlaceholder ?? "Search"}
                     value={searchValue ?? ""}
                     onChange={(e) => onSearchChange(e.target.value)}
+                    aria-label={searchPlaceholder ?? "Search"}
                   />
                 </div>
               )}
@@ -55,7 +81,10 @@ export default function AdminReportsLayout({ title, children, onDownload, showFi
           </div>
 
           {/* Main layout: filter + list (or list only when showFilter is false) */}
-          <div className="reportsMain" style={!showFilterProp ? { gridTemplateColumns: "1fr" } : undefined}>
+          <div
+            className={`reportsMain${fillViewport ? " reportsMainFill" : ""}`}
+            style={!showFilterProp ? { gridTemplateColumns: "1fr" } : undefined}
+          >
             {showFilterProp && (
               <div className="filterCol">
                 <div className="filterTopRow">
@@ -131,12 +160,21 @@ export default function AdminReportsLayout({ title, children, onDownload, showFi
             )}
 
             {/* RIGHT LIST */}
-            <div className="reportsRightCol">
-              <div className="reportsContent">{children}</div>
+            <div className={`reportsRightCol${fillViewport ? " reportsRightColFill" : ""}`}>
+              <div className={`reportsContent${fillViewport ? " reportsContentFill" : ""}`}>{children}</div>
             </div>
           </div>
 
-          <div className="viewMore">View More</div>
+          {onViewMore != null && (
+            <button
+              type="button"
+              className="viewMore viewMoreBtn"
+              onClick={onViewMore}
+              disabled={viewMoreDisabled}
+            >
+              {viewMoreLabel}
+            </button>
+          )}
         </div>
       </div>
     </div>

@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import AdminNotificationsDropdown from "./AdminNotificationsDropdown";
-import { useNavigate } from "react-router-dom";
-import { FaUserCircle } from "react-icons/fa";
+import { useNavigate, useLocation } from "react-router-dom";
+import { FaUserCircle, FaMoon, FaSun } from "react-icons/fa";
+import { ADMIN_THEME_CHANGED, dispatchAdminThemeChange } from "../utils/adminThemeEvents";
 
 
 import {
@@ -17,6 +18,45 @@ import {
 
 const AdminTopbar = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const isProfilePage = location.pathname === "/admin/profile";
+
+  const [adminTheme, setAdminTheme] = useState(
+    () => localStorage.getItem("adminTheme") || "Light"
+  );
+  const [, setSystemPrefTick] = useState(0);
+
+  useEffect(() => {
+    const onThemeEvent = (e) => {
+      const v = e.detail ?? (localStorage.getItem("adminTheme") || "Light");
+      setAdminTheme(v);
+    };
+    window.addEventListener(ADMIN_THEME_CHANGED, onThemeEvent);
+    return () => window.removeEventListener(ADMIN_THEME_CHANGED, onThemeEvent);
+  }, []);
+
+  useEffect(() => {
+    if (!isProfilePage || adminTheme !== "System") return undefined;
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
+    const bump = () => setSystemPrefTick((x) => x + 1);
+    media.addEventListener("change", bump);
+    return () => media.removeEventListener("change", bump);
+  }, [isProfilePage, adminTheme]);
+
+  const adminThemeDarkEffective =
+    adminTheme === "Dark" ||
+    (adminTheme === "System" &&
+      typeof window !== "undefined" &&
+      window.matchMedia &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches);
+
+  const toggleAdminLightDark = () => {
+    const t = localStorage.getItem("adminTheme") || "Light";
+    const next = t === "Dark" ? "Light" : "Dark";
+    localStorage.setItem("adminTheme", next);
+    setAdminTheme(next);
+    dispatchAdminThemeChange(next);
+  };
 
   const goAdminHome = () => navigate("/admin/dashboard"); // ✅ your admin home route
 
@@ -78,10 +118,6 @@ const AdminTopbar = () => {
           </DropdownToggle>
 
           <DropdownMenu end>
-            <DropdownItem onClick={() => navigate("/admin/manage-collectors")}>
-              Manage Collectors
-            </DropdownItem>
-
             <DropdownItem onClick={() => navigate("/admin/collectors-requests")}>
               Collector Requests
             </DropdownItem>
@@ -98,7 +134,7 @@ const AdminTopbar = () => {
               Disposals Report
             </DropdownItem>
 
-            <DropdownItem onClick={() => navigate("/admin/reports/collectors")}>
+            <DropdownItem onClick={() => navigate("/admin/manage-collectors")}>
               Collectors Report
             </DropdownItem>
 
@@ -108,7 +144,7 @@ const AdminTopbar = () => {
 
             <DropdownItem divider />
 
-            <DropdownItem onClick={() => navigate("/admin/settings")}>
+            <DropdownItem onClick={() => navigate("/admin/profile")}>
               Settings
             </DropdownItem>
           </DropdownMenu>
@@ -120,20 +156,50 @@ const AdminTopbar = () => {
           <AdminNotificationsDropdown />
         </NavItem>
 
-        <NavItem>
-          <FaUserCircle
-            onClick={() => navigate("/admin/profile")}
-            title="My Profile"
-            style={{
-              color: "white",
-              fontSize: 24,
-              cursor: "pointer",
-              transition: "0.2s ease",
-            }}
-            className="admin-user-icon"
-          />
-        </NavItem>
+        {isProfilePage && (
+          <NavItem style={{ marginRight: 14 }}>
+            <button
+              type="button"
+              title={adminThemeDarkEffective ? "Switch to light mode" : "Switch to dark mode"}
+              onClick={toggleAdminLightDark}
+              style={{
+                background: "rgba(255,255,255,0.18)",
+                border: "none",
+                borderRadius: 8,
+                color: "#fff",
+                width: 36,
+                height: 36,
+                display: "grid",
+                placeItems: "center",
+                cursor: "pointer",
+                padding: 0,
+              }}
+              aria-label={adminThemeDarkEffective ? "Switch to light mode" : "Switch to dark mode"}
+            >
+              {adminThemeDarkEffective ? (
+                <FaSun style={{ fontSize: 18 }} />
+              ) : (
+                <FaMoon style={{ fontSize: 18 }} />
+              )}
+            </button>
+          </NavItem>
+        )}
 
+        {!isProfilePage && (
+          <NavItem>
+            <FaUserCircle
+              onClick={() => navigate("/admin/profile")}
+              title="My Profile"
+              style={{
+                color: "white",
+                fontSize: 24,
+                cursor: "pointer",
+                transition: "0.2s ease",
+              }}
+              className="admin-user-icon"
+            />
+          </NavItem>
+        )}
 
       </Nav>
     </Navbar>

@@ -4,7 +4,7 @@ import './components/UserCollectorTheme.css';
 import Login from './components/Login.js';
 import Register from './components/Register.js';
 import Home from './components/Home.js';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Container, Row } from 'reactstrap';
 import { useSelector } from 'react-redux';
 import Header from './components/Header.js';
@@ -46,7 +46,6 @@ import DecisionResult from './components/DecisionResult.js';
 // Admin – Reports
 import RecyclesReport from "./components/RecyclesReport";
 import DisposalsReport from "./components/DisposalsReport";
-import CollectorsReport from "./components/CollectorsReport";
 import UsersReport from "./components/UsersReport";
 import DisposalsRecyclesUpcyclesReport from "./components/DisposalsRecyclesUpcyclesReport";
 import AdminThemeSync from "./components/AdminThemeSync.js";
@@ -137,7 +136,10 @@ function App() {
             <Route path="/admin/reports/recycles" element={<RecyclesReport />} />
             <Route path="/admin/reports/disposals" element={<DisposalsReport />} />
             <Route path="/admin/reports/disposals-recycles-upcycles" element={<DisposalsRecyclesUpcyclesReport />} />
-            <Route path="/admin/reports/collectors" element={<CollectorsReport />} />
+            <Route
+              path="/admin/reports/collectors"
+              element={<Navigate to="/admin/manage-collectors" replace />}
+            />
             <Route path="/admin/reports/users" element={<UsersReport />} />
             <Route path="/admin/profile" element={<AdminUserPage />} />
             <Route path="/admin/my-requests" element={<AdminMyRequests />} />
