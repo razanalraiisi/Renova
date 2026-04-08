@@ -15,6 +15,7 @@ import dotenv from 'dotenv';
 import authRoutes from './routes/authRoutes.js';
 import adminRoutes from "./routes/adminRoutes.js";
 import pickupRoutes from "./routes/pickupRoutes.js";
+import dropOffRoutes from "./routes/dropOffRoutes.js";
 
 // =======================
 // Environment
@@ -33,6 +34,7 @@ app.use("/uploads", express.static("uploads"));
 console.log("✓ AUTH ROUTES LOADED");
 
 app.use("/api/pickups", pickupRoutes);
+app.use("/api/dropoffs", dropOffRoutes);
 
 // =======================
 // Routes

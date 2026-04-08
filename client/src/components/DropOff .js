@@ -22,7 +22,8 @@ const DropOff = () => {
   const [form, setForm] = useState({
     name: "",
     phone: "",
-    item: "",
+    deviceCategory: "",
+    device: "",
     condition: "",
     dateTime: "",
     address: "",
@@ -30,6 +31,12 @@ const DropOff = () => {
 
   const [errors, setErrors] = useState({});
   const [selectedCenter, setSelectedCenter] = useState(null);
+
+  const allCategories = [
+    "Small Electronics","Large Electronics","Home Appliances (Small)","Home Appliances (Large)","IT & Office Equipment",
+    "Kitchen & Cooking Appliances","Entertainment Devices","Personal Care Electronics","Tools & Outdoor Equipment",
+    "Lighting Equipment","Medical & Fitness Devices","Batteries & Accessories"
+  ];
 
   const centers = [
     {
@@ -65,8 +72,12 @@ const DropOff = () => {
         "Enter valid Omani number (8 digits, starts with 2, 7, or 9)";
     }
 
-    if (!form.item.trim()) {
-      newErrors.item = "Item is required";
+    if (!form.deviceCategory.trim()) {
+      newErrors.deviceCategory = "Category is required";
+    }
+
+    if (!form.device.trim()) {
+      newErrors.device = "Device is required";
     }
 
     if (!form.condition.trim()) {
@@ -85,13 +96,47 @@ const DropOff = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!validate()) return;
 
-    alert("Drop-Off scheduled!");
-    console.log(form);
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+    if (!token) {
+      alert("You must be logged in to submit a request.");
+      return;
+    }
+
+    try {
+      const response = await fetch("http://localhost:5000/api/dropoffs/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(form),
+      });
+      const result = await response.json();
+      if (response.ok) {
+        alert("Drop-Off request submitted successfully!");
+        // Reset form or navigate
+        setForm({
+          name: "",
+          phone: "",
+          deviceCategory: "",
+          device: "",
+          condition: "",
+          dateTime: "",
+          address: "",
+        });
+        setSelectedCenter(null);
+      } else {
+        alert(result.message || "Error submitting request");
+      }
+    } catch (error) {
+      console.error("Submit error:", error);
+      alert("Server error");
+    }
   };
 
   const handleMarkerClick = (center) => {
@@ -206,8 +251,14 @@ const DropOff = () => {
           />
           {errors.phone && <p style={styles.error}>{errors.phone}</p>}
 
-          <input name="item" placeholder="Item" style={styles.input} onChange={handleChange} />
-          {errors.item && <p style={styles.error}>{errors.item}</p>}
+          <select name="deviceCategory" style={styles.input} onChange={handleChange} value={form.deviceCategory}>
+            <option value="">Select Category</option>
+            {allCategories.map((cat, idx) => <option key={idx} value={cat}>{cat}</option>)}
+          </select>
+          {errors.deviceCategory && <p style={styles.error}>{errors.deviceCategory}</p>}
+
+          <input name="device" placeholder="Device" style={styles.input} onChange={handleChange} />
+          {errors.device && <p style={styles.error}>{errors.device}</p>}
 
           <input name="condition" placeholder="Condition" style={styles.input} onChange={handleChange} />
           {errors.condition && <p style={styles.error}>{errors.condition}</p>}
