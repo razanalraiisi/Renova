@@ -91,7 +91,7 @@ const OmanMap = () => {
               )}
               <div className="buttons-container">
                 <button className="primary-btn" onClick={() => navigate('/PickupRequest')}>Request Pick Up</button>
-                <button className="primary-btn" onClick={() => navigate('/DropOff')}>Schedule Drop Off</button>
+                <button className="primary-btn" onClick={() => navigate('/DropOff', { state: { category: "DropOff" } })}>Schedule Drop Off</button>
               </div>
             </>
           ) : (

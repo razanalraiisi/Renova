@@ -1,18 +1,35 @@
 // routes/dropOffRoutes.js
 import express from "express";
+import multer from "multer";
 import { 
   createDropOffRequest, 
+  getUserDropOffRequests,
   acceptDropOffRequest, 
   rejectDropOffRequest, 
   completeDropOffRequest,
+  cancelDropOffRequest,
   getAllDropOffRequests
 } from "../controllers/dropOffController.js";
 import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
+/* STORAGE FOR IMAGES */
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/");
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + "-" + file.originalname);
+  }
+});
+
+const upload = multer({ storage });
+
 /* USER ROUTES */
-router.post("/create", protect, createDropOffRequest);
+router.post("/create", protect, upload.single("image"), createDropOffRequest);
+router.get("/user/requests", protect, getUserDropOffRequests);
+router.put("/cancel/:id", protect, cancelDropOffRequest);
 
 /* COLLECTOR ROUTES */
 router.get("/all/:collectorId", protect, getAllDropOffRequests);

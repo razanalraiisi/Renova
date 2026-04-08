@@ -92,7 +92,7 @@ const DecisionResult = () => {
                 </button>
                 <button
                   style={styles.cardButton}
-                  onClick={() => navigate("/DropOff")}
+                  onClick={() => navigate("/DropOff", { state: { category: recommendation || "DropOff" } })}
                 >
                   Drop Off
                 </button>
