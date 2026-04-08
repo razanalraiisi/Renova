@@ -19,8 +19,7 @@ import {
   DialogContent,
   DialogActions
 } from '@mui/material';
-import CollectorNav from './CollectorNav';
-import { desktopOS, valueFormatter, months, deviceCounts, pieColors, widgetData } from './DummyData';
+import { months, pieColors } from './DummyData';
 
 const cardWidth = 600;
 const cardHeight = 400;
@@ -30,6 +29,13 @@ const CollectorDash = () => {
   const loggedUser = useSelector((state) => state.users.user);
   const [openId, setOpenId] = useState(null);
   const [requests, setRequests] = useState([]);
+  const [historyCounts, setHistoryCounts] = useState({
+    recycled: 0,
+    upcycled: 0,
+    todayPickups: 0,
+  });
+  const [monthCounts, setMonthCounts] = useState(Array(months.length).fill(0));
+  const [categoryCounts, setCategoryCounts] = useState([]);
 
   // ✅ NEW STATES (same as NewRecycleRequest)
   const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
@@ -48,35 +54,102 @@ const CollectorDash = () => {
 
       const token = localStorage.getItem("token") || sessionStorage.getItem("token");
       
-      // Fetch pickup requests
-      const pickupRes = await fetch(`http://localhost:5000/api/pickups/all/${collector._id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const pickupData = await pickupRes.json();
+      const [pickupRes, dropOffRes] = await Promise.all([
+        fetch(`http://localhost:5000/api/pickups/all/${collector._id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        fetch(`http://localhost:5000/api/dropoffs/all/${collector._id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+      ]);
+
+      const [pickupData, dropOffData] = await Promise.all([pickupRes.json(), dropOffRes.json()]);
       
-      // Fetch drop-off requests
-      const dropOffRes = await fetch(`http://localhost:5000/api/dropoffs/all/${collector._id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const dropOffData = await dropOffRes.json();
-      
-      // Combine and sort by createdAt descending
       const allRequests = [...(Array.isArray(pickupData) ? pickupData : []), ...(Array.isArray(dropOffData) ? dropOffData : [])]
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       
-      console.log("Fetched requests:", allRequests);
       setRequests(allRequests);
     } catch (error) {
       console.error("Error fetching requests:", error);
     }
   };
 
+  const countHistory = (pickupHistory, dropOffHistory) => {
+    const historyRequests = [...(Array.isArray(pickupHistory) ? pickupHistory : []), ...(Array.isArray(dropOffHistory) ? dropOffHistory : [])];
+    const recycled = historyRequests.filter(r => String(r.category || "").toLowerCase() === "recycle").length;
+    const upcycled = historyRequests.filter(r => String(r.category || "").toLowerCase() === "upcycle").length;
+
+    const today = new Date();
+    const currentYear = today.getFullYear();
+    const isToday = (dateString) => {
+      const date = new Date(dateString);
+      return date.getFullYear() === currentYear && date.getMonth() === today.getMonth() && date.getDate() === today.getDate();
+    };
+
+    const todayPickups = (Array.isArray(pickupHistory) ? pickupHistory : []).filter((request) => {
+      return request.status === "Accepted" && isToday(request.createdAt);
+    }).length;
+
+    const counts = Array(months.length).fill(0);
+    const categoryMap = {};
+
+    historyRequests.forEach((request) => {
+      const date = new Date(request.createdAt);
+      if (!isNaN(date) && date.getFullYear() === currentYear) {
+        counts[date.getMonth()] += 1;
+      }
+
+      const category = String(request.deviceCategory || request.category || "Other").trim() || "Other";
+      categoryMap[category] = (categoryMap[category] || 0) + 1;
+    });
+
+    const categoryData = Object.entries(categoryMap)
+      .map(([label, value], index) => ({ id: index, label, value }))
+      .sort((a, b) => b.value - a.value);
+
+    setHistoryCounts({ recycled, upcycled, todayPickups });
+    setMonthCounts(counts);
+    setCategoryCounts(categoryData);
+  };
+
+  const fetchHistory = async () => {
+    try {
+      const collector = JSON.parse(localStorage.getItem("user")) || JSON.parse(sessionStorage.getItem("user"));
+      if (!collector?._id) return;
+
+      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+      const [pickupRes, dropOffRes] = await Promise.all([
+        fetch(`http://localhost:5000/api/pickups/history/${collector._id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        fetch(`http://localhost:5000/api/dropoffs/history/${collector._id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+      ]);
+
+      const [pickupHistory, dropOffHistory] = await Promise.all([pickupRes.json(), dropOffRes.json()]);
+      countHistory(pickupHistory, dropOffHistory);
+    } catch (error) {
+      console.error("Error fetching collector history:", error);
+    }
+  };
+
   useEffect(() => {
     fetchRequests();
+    fetchHistory();
+    const interval = setInterval(() => {
+      fetchRequests();
+      fetchHistory();
+    }, 15000);
+
+    return () => clearInterval(interval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const total = categoryCounts.reduce((sum, item) => sum + item.value, 0);
+
   return (
-    <div className="collector-dash-page"><CollectorNav />
+    <div className="collector-dash-page">
       <div className="collector-dash-body" style={{ padding: '40px', minHeight: '100vh', background: '#f5f7fa' }}>
         <h2 style={{ marginBottom: '5px' }}>Collector Dashboard</h2>
         <p style={{ color: '#555' }}>
@@ -97,10 +170,15 @@ const CollectorDash = () => {
             alignItems: 'center',
             justifyContent: 'center',
           }}>
-            <h5 style={{ marginBottom: '25px' }}>Recycled/Upcycled Electronics by Category</h5>
+            <h5 style={{ marginBottom: '25px' }}>Electronics by Device Category</h5>
             <PieChart
               colors={pieColors}
-              series={[{ data: desktopOS, highlightScope: { fade: 'global', highlight: 'item' }, faded: { innerRadius: 30, additionalRadius: -30, color: '#E3F2FD' }, valueFormatter }]}
+              series={[{ 
+                data: categoryCounts, 
+                highlightScope: { fade: 'global', highlight: 'item' }, 
+                faded: { innerRadius: 30, additionalRadius: -30, color: '#E3F2FD' }, 
+                valueFormatter: (params) => `${params.value} (${((params.value / total) * 100).toFixed(1)}%)`
+              }]}
               height={220}
               width={220}
               legend={{ show: false }}
@@ -119,10 +197,10 @@ const CollectorDash = () => {
             flexDirection: 'column',
             justifyContent: 'center',
           }}>
-            <h5 style={{ marginBottom: '10px' }}>Your Highest Recycling/Upcycling Months</h5>
+            <h5 style={{ marginBottom: '10px' }}>Electronics Processed Per Month</h5>
             <BarChart
               xAxis={[{ scaleType: 'band', data: months, label: 'Months' }]}
-              series={[{ data: deviceCounts, label: 'Number of Electronics', color: '#90CAF9' }]}
+              series={[{ data: monthCounts, label: 'Electronics', color: '#90CAF9' }]}
               height={220}
               width={460}
             />
@@ -130,7 +208,11 @@ const CollectorDash = () => {
         </Box>
 
         <div style={{ display: 'flex', justifyContent: 'center', gap: '50px', marginTop: '30px', flexWrap: 'wrap' }}>
-          {widgetData.map((widget, index) => (
+          {[
+            { number: historyCounts.recycled, label: 'Electronics Recycled' },
+            { number: historyCounts.upcycled, label: 'Electronics Upcycled' },
+            { number: historyCounts.todayPickups, label: 'Upcoming Pickups Today' }
+          ].map((widget, index) => (
             <div key={index} style={{
               width: '140px',
               padding: '15px',
@@ -253,6 +335,7 @@ const CollectorDash = () => {
                         });
 
                         setRequests(prev => prev.filter(req => req._id !== r._id));
+                        await fetchHistory();
 
                         setSnackbar({
                           open: true,
@@ -338,6 +421,7 @@ const CollectorDash = () => {
                   }
 
                   setRequests(prev => prev.filter(req => req._id !== request._id));
+                  await fetchHistory();
 
                   setSnackbar({
                     open: true,
