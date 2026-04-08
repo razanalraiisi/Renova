@@ -26,13 +26,27 @@ const NewRecycleRequest = () => {
 
         const collector = JSON.parse(localStorage.getItem("user"));
 
-        const res = await fetch(`http://localhost:5000/api/pickups/all/${collector._id}`);
+        const token = localStorage.getItem("token") || sessionStorage.getItem("token");
 
-        const data = await res.json();
+        // Fetch pickup requests
+        const pickupRes = await fetch(`http://localhost:5000/api/pickups/all/${collector._id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const pickupData = await pickupRes.json();
 
-        console.log("Fetched requests:", data);
+        // Fetch drop-off requests
+        const dropOffRes = await fetch(`http://localhost:5000/api/dropoffs/all/${collector._id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const dropOffData = await dropOffRes.json();
 
-        setRequests(data);
+        // Combine and sort by createdAt descending
+        const allRequests = [...(Array.isArray(pickupData) ? pickupData : []), ...(Array.isArray(dropOffData) ? dropOffData : [])]
+          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+        console.log("Fetched requests:", allRequests);
+
+        setRequests(allRequests);
 
       } catch (error) {
         console.error("Error fetching requests:", error);
@@ -77,7 +91,7 @@ const NewRecycleRequest = () => {
                           <Typography fontWeight={600}><FcViewDetails /> Request Details</Typography>
                           <Typography fontSize={14}>Request Date: {new Date(r.createdAt).toLocaleDateString()}</Typography>
                           <Typography fontSize={14}>Condition: {r.condition}</Typography>
-                          <Typography fontSize={14}>Collection Method: Pickup</Typography>
+                          <Typography fontSize={14}>Collection Method: {r.requestType === "DropOff" ? "Drop-off" : "Pickup"}</Typography>
                           <Typography fontSize={14}>Address: {r.address}</Typography>
                         </Box>
                         <Box>
@@ -119,7 +133,9 @@ const NewRecycleRequest = () => {
                         return;
                       }
 
-                      await fetch(`http://localhost:5000/api/pickups/accept/${r._id}`, {
+                      const endpoint = r.requestType === "DropOff" ? "dropoffs" : "pickups";
+
+                      await fetch(`http://localhost:5000/api/${endpoint}/accept/${r._id}`, {
                         method: "PUT",
                         headers: {
                           Authorization: `Bearer ${token}`
@@ -144,7 +160,7 @@ const NewRecycleRequest = () => {
                     variant="contained"
                     color="error"
                     onClick={() => {
-                      setCancelTargetId(r._id);
+                      setCancelTargetId(r);
                       setCancelConfirmOpen(true);
                     }}
                   >
@@ -185,7 +201,7 @@ const NewRecycleRequest = () => {
           <Button onClick={() => setCancelConfirmOpen(false)}>No</Button>
           <Button
             onClick={async () => {
-              const id = cancelTargetId;
+              const request = cancelTargetId;
               setCancelConfirmOpen(false);
               setCancelTargetId(null);
 
@@ -200,7 +216,8 @@ const NewRecycleRequest = () => {
               }
 
               try {
-                const res = await fetch(`http://localhost:5000/api/pickups/cancel/${id}`, {
+                const endpoint = request.requestType === "DropOff" ? "dropoffs" : "pickups";
+                const res = await fetch(`http://localhost:5000/api/${endpoint}/cancel/${request._id}`, {
                   method: "PUT",
                   headers: { Authorization: `Bearer ${token}` }
                 });
@@ -219,7 +236,7 @@ const NewRecycleRequest = () => {
                 setRequests(prev => prev.map(req => req._id === updated._id ? updated : req));
                 setSnackbar({
                   open: true,
-                  message: `Request "${updated.device}" rejected successfully!`,
+                  message: `Request "${request.device}" rejected successfully!`,
                   severity: 'success'
                 });
               } catch (error) {

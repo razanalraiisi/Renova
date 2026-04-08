@@ -35,7 +35,8 @@ const RequestHistory = () => {
         localStorage.getItem("token") ||
         sessionStorage.getItem("token");
 
-      const res = await fetch(
+      // Fetch pickup history
+      const pickupRes = await fetch(
         `http://localhost:5000/api/pickups/history/${collector._id}`,
         {
           headers: {
@@ -44,14 +45,25 @@ const RequestHistory = () => {
           },
         }
       );
+      const pickupData = await pickupRes.json();
 
-      const data = await res.json();
+      // Fetch drop-off history
+      const dropOffRes = await fetch(
+        `http://localhost:5000/api/dropoffs/history/${collector._id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const dropOffData = await dropOffRes.json();
 
-      if (Array.isArray(data)) {
-        setRequests(data);
-      } else {
-        setRequests([]);
-      }
+      // Combine and sort by createdAt descending
+      const allRequests = [...(Array.isArray(pickupData) ? pickupData : []), ...(Array.isArray(dropOffData) ? dropOffData : [])]
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+      setRequests(allRequests);
 
     } catch (error) {
       console.error("Error fetching requests:", error);
@@ -65,6 +77,7 @@ const RequestHistory = () => {
   const filteredRequests = requests.filter((r) =>
     (r.device || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
     (r.status || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (r.requestType || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
     (r.email || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -77,7 +90,18 @@ const RequestHistory = () => {
         return;
       }
 
-      const res = await fetch(`http://localhost:5000/api/pickups/${newStatus}/${id}`, {
+      // Find the request to determine its type
+      const request = requests.find(r => r._id === id);
+      if (!request) {
+        setMessage({ text: "Request not found.", type: "error" });
+        return;
+      }
+
+      const endpoint = request.requestType === "DropOff" ? 
+        `http://localhost:5000/api/dropoffs/${newStatus}/${id}` : 
+        `http://localhost:5000/api/pickups/${newStatus}/${id}`;
+
+      const res = await fetch(endpoint, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -112,6 +136,7 @@ const RequestHistory = () => {
       "Device",
       "Condition",
       "Status",
+      "Request Type",
       "Name",
       "Email",
       "Phone",
@@ -123,6 +148,7 @@ const RequestHistory = () => {
       r.device,
       r.condition,
       r.status,
+      r.requestType,
       r.name,
       r.email,
       r.phone,
@@ -271,7 +297,7 @@ const RequestHistory = () => {
                               </Typography>
 
                               <Typography fontSize={14}>
-                                Collection Method: Pickup
+                                Collection Method: {r.requestType}
                               </Typography>
                             </Box>
 

@@ -33,7 +33,7 @@ const CollectorDash = () => {
 
   // ✅ NEW STATES (same as NewRecycleRequest)
   const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
-  const [cancelTargetId, setCancelTargetId] = useState(null);
+  const [cancelTargetRequest, setCancelTargetRequest] = useState(null);
 
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -47,12 +47,25 @@ const CollectorDash = () => {
       if (!collector?._id) return;
 
       const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-      const res = await fetch(`http://localhost:5000/api/pickups/all/${collector._id}`, {
+      
+      // Fetch pickup requests
+      const pickupRes = await fetch(`http://localhost:5000/api/pickups/all/${collector._id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      const data = await res.json();
-      console.log("Fetched requests:", data);
-      setRequests(data);
+      const pickupData = await pickupRes.json();
+      
+      // Fetch drop-off requests
+      const dropOffRes = await fetch(`http://localhost:5000/api/dropoffs/all/${collector._id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const dropOffData = await dropOffRes.json();
+      
+      // Combine and sort by createdAt descending
+      const allRequests = [...(Array.isArray(pickupData) ? pickupData : []), ...(Array.isArray(dropOffData) ? dropOffData : [])]
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      
+      console.log("Fetched requests:", allRequests);
+      setRequests(allRequests);
     } catch (error) {
       console.error("Error fetching requests:", error);
     }
@@ -180,7 +193,7 @@ const CollectorDash = () => {
                             <Typography fontWeight={600}><FcViewDetails /> Request Details</Typography>
                             <Typography fontSize={14}>Request Date: {new Date(r.createdAt).toLocaleDateString()}</Typography>
                             <Typography fontSize={14}>Condition: {r.condition}</Typography>
-                            <Typography fontSize={14}>Collection Method: Pickup</Typography>
+                            <Typography fontSize={14}>Collection Method: {r.requestType}</Typography>
                             <Typography fontSize={14}>Address: {r.address}</Typography>
                           </Box>
 
@@ -230,7 +243,11 @@ const CollectorDash = () => {
                           return;
                         }
 
-                        await fetch(`http://localhost:5000/api/pickups/accept/${r._id}`, {
+                        const endpoint = r.requestType === "DropOff" ? 
+                          `http://localhost:5000/api/dropoffs/accept/${r._id}` : 
+                          `http://localhost:5000/api/pickups/accept/${r._id}`;
+
+                        await fetch(endpoint, {
                           method: "PUT",
                           headers: { Authorization: `Bearer ${token}` }
                         });
@@ -253,7 +270,7 @@ const CollectorDash = () => {
                       variant="contained"
                       color="error"
                       onClick={() => {
-                        setCancelTargetId(r._id);
+                        setCancelTargetRequest(r);
                         setCancelConfirmOpen(true);
                       }}
                     >
@@ -280,9 +297,11 @@ const CollectorDash = () => {
             <Button onClick={() => setCancelConfirmOpen(false)}>No</Button>
             <Button
               onClick={async () => {
-                const id = cancelTargetId;
+                const request = cancelTargetRequest;
                 setCancelConfirmOpen(false);
-                setCancelTargetId(null);
+                setCancelTargetRequest(null);
+
+                if (!request) return;
 
                 const token = localStorage.getItem("token") || sessionStorage.getItem("token");
                 if (!token) {
@@ -294,10 +313,18 @@ const CollectorDash = () => {
                   return;
                 }
 
+                const endpoint = request.requestType === "DropOff" ? 
+                  `http://localhost:5000/api/dropoffs/reject/${request._id}` : 
+                  `http://localhost:5000/api/pickups/reject/${request._id}`;
+
                 try {
-                  const res = await fetch(`http://localhost:5000/api/pickups/cancel/${id}`, {
+                  const res = await fetch(endpoint, {
                     method: "PUT",
-                    headers: { Authorization: `Bearer ${token}` }
+                    headers: { 
+                      Authorization: `Bearer ${token}`,
+                      "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ reason: "Rejected by collector" })
                   });
 
                   if (!res.ok) {
@@ -310,15 +337,15 @@ const CollectorDash = () => {
                     return;
                   }
 
-                  setRequests(prev => prev.filter(req => req._id !== id));
+                  setRequests(prev => prev.filter(req => req._id !== request._id));
 
                   setSnackbar({
                     open: true,
-                    message: `Request rejecting successfully!`,
+                    message: `Request rejected successfully!`,
                     severity: 'success'
                   });
                 } catch (error) {
-                  console.error("Cancel error:", error);
+                  console.error("Reject error:", error);
                   setSnackbar({
                     open: true,
                     message: "Error rejecting request.",

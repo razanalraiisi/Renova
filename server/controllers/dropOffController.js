@@ -6,6 +6,7 @@ export const createDropOffRequest = async (req, res) => {
   try {
     const {
       name,
+      email,
       phone,
       deviceCategory,
       device,
@@ -17,10 +18,14 @@ export const createDropOffRequest = async (req, res) => {
 
     const image = req.file ? req.file.filename : null;
 
-    const userId = req.user?._id; 
+    const userId = req.user?._id;
+    
+    // Use email from logged-in user or from form submission
+    const userEmail = req.user?.email || email;
 
     const request = new DropOffRequest({
       name,
+      email: userEmail,
       phone,
       deviceCategory,
       device,
@@ -164,6 +169,30 @@ export const cancelDropOffRequest = async (req, res) => {
     }
 
     res.json(request);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+/**
+ * Get history of drop-off requests for a collector
+ */
+export const getCollectorDropOffHistory = async (req, res) => {
+  try {
+    const { collectorId } = req.params;
+
+    const collector = await User.findById(collectorId);
+    if (!collector) {
+      return res.status(404).json({ message: "Collector not found" });
+    }
+
+    // Get requests processed by this collector
+    const requests = await DropOffRequest.find({
+      collectorId: collectorId,
+      status: { $in: ["Accepted", "Rejected", "Completed"] }
+    }).sort({ createdAt: -1 });
+
+    res.json(Array.isArray(requests) ? requests : []);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
