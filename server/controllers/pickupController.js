@@ -151,7 +151,7 @@ export const getCollectorHistory = async (req, res) => {
     // ✅ ONLY show requests processed by this collector
     const requests = await PickupRequest.find({
       collectorId: collectorId,
-      status: { $in: ["Accepted", "Rejected"] }
+      status: { $in: ["Accepted", "Rejected", "Completed"] }
     }).sort({ createdAt: -1 });
 
     res.json(Array.isArray(requests) ? requests : []);
