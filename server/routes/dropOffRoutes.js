@@ -8,7 +8,8 @@ import {
   rejectDropOffRequest, 
   completeDropOffRequest,
   cancelDropOffRequest,
-  getAllDropOffRequests
+  getAllDropOffRequests,
+  getCollectorDropOffHistory
 } from "../controllers/dropOffController.js";
 import { protect } from "../middleware/authMiddleware.js";
 
@@ -33,6 +34,7 @@ router.put("/cancel/:id", protect, cancelDropOffRequest);
 
 /* COLLECTOR ROUTES */
 router.get("/all/:collectorId", protect, getAllDropOffRequests);
+router.get("/history/:collectorId", protect, getCollectorDropOffHistory);
 router.put("/accept/:id", protect, acceptDropOffRequest);
 router.put("/reject/:id", protect, rejectDropOffRequest);
 router.put("/complete/:id", protect, completeDropOffRequest);

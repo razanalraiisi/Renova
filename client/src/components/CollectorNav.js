@@ -30,17 +30,35 @@ const CollectorNavbar = () => {
         if (!collector?._id) return;
 
         const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-        const res = await fetch(`http://localhost:5000/api/pickups/all/${collector._id}`, {
+        
+        // Fetch pickup requests
+        const pickupRes = await fetch(`http://localhost:5000/api/pickups/all/${collector._id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        const data = await res.json();
-        setRequests(data);
+        const pickupData = await pickupRes.json();
+        
+        // Fetch drop-off requests
+        const dropOffRes = await fetch(`http://localhost:5000/api/dropoffs/all/${collector._id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const dropOffData = await dropOffRes.json();
+        
+        // Combine and sort by createdAt descending
+        const allRequests = [...(Array.isArray(pickupData) ? pickupData : []), ...(Array.isArray(dropOffData) ? dropOffData : [])]
+          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        
+        setRequests(allRequests);
       } catch (error) {
         console.error("Error fetching requests:", error);
       }
     };
 
     fetchRequests();
+
+    // Poll for new requests every 30 seconds
+    const interval = setInterval(fetchRequests, 30000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const unreadCount = requests.length;
@@ -110,7 +128,7 @@ const CollectorNavbar = () => {
                   requests.map((r) => (
                     <div key={r._id} className="notif-item">
                       <div className="notif-item-top">
-                        <div className="notif-item-title">New Pickup Request for {r.device}</div>
+                        <div className="notif-item-title">New {r.requestType === "DropOff" ? "Drop-off" : "Pickup"} Request for {r.device}</div>
                         <div className="notif-time">{new Date(r.createdAt).toLocaleDateString()}</div>
                       </div>
                       <div className="notif-message">Condition: {r.condition}</div>

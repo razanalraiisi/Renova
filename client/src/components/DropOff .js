@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Navbar, NavbarBrand } from "reactstrap";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { FaArrowLeft } from "react-icons/fa";
@@ -23,6 +23,7 @@ const DropOff = () => {
 
   const [form, setForm] = useState({
     name: "",
+    email: "",
     phone: "",
     deviceCategory: "",
     device: "",
@@ -52,6 +53,19 @@ const DropOff = () => {
     },
   ];
 
+  // Pre-fill user data from logged-in user
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem("user")) || JSON.parse(sessionStorage.getItem("user"));
+    if (storedUser) {
+      setForm(prev => ({
+        ...prev,
+        name: storedUser.uname || "",
+        email: storedUser.email || "",
+        phone: storedUser.phone || "",
+      }));
+    }
+  }, []);
+
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
@@ -66,6 +80,12 @@ const DropOff = () => {
 
     if (!form.name.trim()) {
       newErrors.name = "Name is required";
+    }
+
+    if (!form.email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!/\S+@\S+\.\S+/.test(form.email)) {
+      newErrors.email = "Enter a valid email address";
     }
 
     if (!form.phone.trim()) {
@@ -112,6 +132,7 @@ const DropOff = () => {
 
     const formData = new FormData();
     formData.append("name", form.name);
+    formData.append("email", form.email);
     formData.append("phone", form.phone);
     formData.append("deviceCategory", form.deviceCategory);
     formData.append("device", form.device);
@@ -135,6 +156,7 @@ const DropOff = () => {
         // Reset form
         setForm({
           name: "",
+          email: "",
           phone: "",
           deviceCategory: "",
           device: "",
@@ -253,8 +275,11 @@ const DropOff = () => {
         <form style={styles.formContainer} onSubmit={handleSubmit}>
           <h3>Schedule Drop Off</h3>
 
-          <input name="name" placeholder="Name" style={styles.input} onChange={handleChange} />
+          <input name="name" placeholder="Name" style={styles.input} value={form.name} onChange={handleChange} />
           {errors.name && <p style={styles.error}>{errors.name}</p>}
+
+          <input name="email" placeholder="Email" style={styles.input} value={form.email} onChange={handleChange} />
+          {errors.email && <p style={styles.error}>{errors.email}</p>}
 
           <input
             name="phone"
