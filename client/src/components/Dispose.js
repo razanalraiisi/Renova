@@ -208,7 +208,7 @@ const Dispose = () => {
             fontSize: "1rem",
             cursor: "pointer",
           }}
-          onClick={() => navigate("/DropOff")}
+          onClick={() => navigate("/DropOff", { state: { category: "Dispose" } })}
         >
           📍 Drop Off Instead
         </button>

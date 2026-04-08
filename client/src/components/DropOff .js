@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Navbar, NavbarBrand } from "reactstrap";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { FaArrowLeft } from "react-icons/fa";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
@@ -18,6 +18,8 @@ L.Icon.Default.mergeOptions({
 
 const DropOff = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const category = location.state?.category || "DropOff";
 
   const [form, setForm] = useState({
     name: "",
@@ -29,6 +31,7 @@ const DropOff = () => {
     address: "",
   });
 
+  const [image, setImage] = useState(null);
   const [errors, setErrors] = useState({});
   const [selectedCenter, setSelectedCenter] = useState(null);
 
@@ -107,19 +110,29 @@ const DropOff = () => {
       return;
     }
 
+    const formData = new FormData();
+    formData.append("name", form.name);
+    formData.append("phone", form.phone);
+    formData.append("deviceCategory", form.deviceCategory);
+    formData.append("device", form.device);
+    formData.append("condition", form.condition);
+    formData.append("dateTime", form.dateTime);
+    formData.append("address", form.address);
+    formData.append("category", category);
+    if (image) formData.append("image", image);
+
     try {
       const response = await fetch("http://localhost:5000/api/dropoffs/create", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(form),
+        body: formData,
       });
       const result = await response.json();
       if (response.ok) {
         alert("Drop-Off request submitted successfully!");
-        // Reset form or navigate
+        // Reset form
         setForm({
           name: "",
           phone: "",
@@ -129,6 +142,7 @@ const DropOff = () => {
           dateTime: "",
           address: "",
         });
+        setImage(null);
         setSelectedCenter(null);
       } else {
         alert(result.message || "Error submitting request");
@@ -274,6 +288,17 @@ const DropOff = () => {
 
           <input type="datetime-local" name="dateTime" style={styles.input} onChange={handleChange} />
           {errors.dateTime && <p style={styles.error}>{errors.dateTime}</p>}
+
+          <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold" }}>Upload Picture (Optional)</label>
+          <input type="file" accept="image/*" onChange={(e) => {
+            const file = e.target.files[0];
+            if (file && !file.type.startsWith("image/")) {
+              alert("Only image files are allowed");
+              e.target.value = "";
+              return;
+            }
+            setImage(file);
+          }} style={styles.input} />
 
           <button type="submit" style={styles.button}>
             Confirm Drop-Off

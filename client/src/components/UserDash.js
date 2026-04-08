@@ -91,16 +91,29 @@ const UserDash = () => {
       const token = localStorage.getItem("token") || sessionStorage.getItem("token");
       if (!token) return;
 
-      const res = await fetch("http://localhost:5000/api/pickups/user/requests", {
+      // Fetch pickup requests
+      const pickupRes = await fetch("http://localhost:5000/api/pickups/user/requests", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const data = await res.json();
-      let newRequests = [];
-      if (Array.isArray(data)) newRequests = data;
-      else if (data.requests && Array.isArray(data.requests)) newRequests = data.requests;
+      const pickupData = await pickupRes.json();
+      let pickupRequests = [];
+      if (Array.isArray(pickupData)) pickupRequests = pickupData;
+      else if (pickupData.requests && Array.isArray(pickupData.requests)) pickupRequests = pickupData.requests;
 
-      if (JSON.stringify(newRequests) !== JSON.stringify(requests)) {
-        setRequests(newRequests);
+      // Fetch drop-off requests
+      const dropOffRes = await fetch("http://localhost:5000/api/dropoffs/user/requests", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const dropOffData = await dropOffRes.json();
+      let dropOffRequests = [];
+      if (Array.isArray(dropOffData)) dropOffRequests = dropOffData;
+      else if (dropOffData.requests && Array.isArray(dropOffData.requests)) dropOffRequests = dropOffData.requests;
+
+      // Combine and sort by createdAt descending
+      const allRequests = [...pickupRequests, ...dropOffRequests].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+      if (JSON.stringify(allRequests) !== JSON.stringify(requests)) {
+        setRequests(allRequests);
       }
     } catch (err) {
       console.error("Error fetching requests:", err);
@@ -130,8 +143,19 @@ const UserDash = () => {
       return;
     }
 
+    // Find the request to determine type
+    const request = requests.find(r => r._id === id);
+    if (!request) {
+      setSnackbar({ open: true, message: "Request not found.", severity: "error" });
+      return;
+    }
+
+    const endpoint = request.requestType === "DropOff" ? 
+      `http://localhost:5000/api/dropoffs/cancel/${id}` : 
+      `http://localhost:5000/api/pickups/cancel/${id}`;
+
     try {
-      const res = await fetch(`http://localhost:5000/api/pickups/cancel/${id}`, {
+      const res = await fetch(endpoint, {
         method: "PUT",
         headers: { Authorization: `Bearer ${token}` }
       });

@@ -157,7 +157,7 @@ const Recycle = () => {
             fontSize: "1rem",
             cursor: "pointer",
           }}
-          onClick={() => navigate("/DropOff")}
+          onClick={() => navigate("/DropOff", { state: { category: "Recycle" } })}
         >
           📍 Find Drop-off
         </button>

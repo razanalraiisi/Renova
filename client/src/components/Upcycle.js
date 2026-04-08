@@ -170,7 +170,7 @@ const Upcycle = () => {
             fontSize: "1rem",
             cursor: "pointer",
           }}
-          onClick={() => navigate("/DropOff")}
+          onClick={() => navigate("/DropOff", { state: { category: "Upcycle" } })}
         >
           📍 Drop Off Instead
         </button>

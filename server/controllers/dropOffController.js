@@ -28,6 +28,7 @@ export const createDropOffRequest = async (req, res) => {
       dateTime,
       address,
       category,
+      image,
       userId,
     });
 
@@ -44,8 +45,23 @@ export const createDropOffRequest = async (req, res) => {
 };
 
 /**
- * Accept a drop-off request
+ * Get all drop-off requests for the logged-in user
  */
+export const getUserDropOffRequests = async (req, res) => {
+  try {
+    const userId = req.user?._id;
+
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const requests = await DropOffRequest.find({ userId }).sort({ createdAt: -1 });
+
+    res.json(Array.isArray(requests) ? requests : []);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 export const acceptDropOffRequest = async (req, res) => {
   try {
     const { id } = req.params;
@@ -123,6 +139,29 @@ export const completeDropOffRequest = async (req, res) => {
 
     request.status = "Completed";
     await request.save();
+
+    res.json(request);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+/**
+ * Cancel a drop-off request
+ */
+export const cancelDropOffRequest = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const request = await DropOffRequest.findByIdAndUpdate(
+      id,
+      { status: "Canceled" },
+      { new: true }
+    );
+
+    if (!request) {
+      return res.status(404).json({ message: "Request not found" });
+    }
 
     res.json(request);
   } catch (error) {
