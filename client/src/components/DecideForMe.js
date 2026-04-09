@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Navbar, NavbarBrand } from "reactstrap";
 import { Link, useNavigate } from "react-router-dom";
 import { FaArrowLeft } from "react-icons/fa";
@@ -10,24 +10,59 @@ const DecideForMe = () => {
   const [condition, setCondition] = useState("");
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState(null);
+  const [userName, setUserName] = useState("");
+  const [fileError, setFileError] = useState("");
+  const [conditionError, setConditionError] = useState(false);
+  const [imageError, setImageError] = useState(false);
+  const [hoverUpload, setHoverUpload] = useState(false);
+  const [hoverButton, setHoverButton] = useState(false);
+
+  // Get logged-in user's name
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem("user")) || JSON.parse(sessionStorage.getItem("user"));
+    if (storedUser) setUserName(storedUser.uname || "");
+  }, []);
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    setImage(file);
-    setPreview(URL.createObjectURL(file));
-  };
 
-  const handleDecision = async () => {
-    if (!condition || !image) {
-      alert("Please select device condition and upload an image.");
+    if (!file.type.startsWith("image/")) {
+      setFileError("Only image files are allowed!");
+      setImage(null);
+      setPreview(null);
+      setImageError(true);
+      e.target.value = "";
       return;
     }
 
-    // ===== Call AI service =====
+    setFileError("");
+    setImage(file);
+    setPreview(URL.createObjectURL(file));
+    setImageError(false);
+  };
+
+  const handleDecision = async () => {
+    let hasError = false;
+
+    if (!condition) {
+      setConditionError(true);
+      hasError = true;
+    } else {
+      setConditionError(false);
+    }
+
+    if (!image) {
+      setImageError(true);
+      hasError = true;
+    } else {
+      setImageError(false);
+    }
+
+    if (hasError) return;
+
     const aiResult = await getAIRecommendation(image, condition);
 
-    // ===== Navigate to result page with AI data =====
     navigate("/decision-result", {
       state: {
         recommendation: aiResult,
@@ -43,7 +78,7 @@ const DecideForMe = () => {
       minHeight: "100vh",
       display: "flex",
       flexDirection: "column",
-      backgroundColor: "#fff",
+      backgroundColor: "#f0f8ff",
     },
     backWrapper: {
       maxWidth: "1200px",
@@ -53,48 +88,26 @@ const DecideForMe = () => {
       justifyContent: "flex-start",
       alignItems: "center",
     },
-    backIcon: {
-      color: "#0080AA",
-      cursor: "pointer",
-      fontSize: "22px",
-    },
-    main: {
-      flex: 1,
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      padding: "40px 20px",
-    },
-    card: {
-      border: "1px solid #ccc",
-      padding: "30px",
-      borderRadius: "6px",
-      width: "450px",
-      textAlign: "center",
-    },
-    title: {
-      color: "#0078a8",
-      fontSize: "1.6rem",
-      fontWeight: "bold",
-      marginBottom: "20px",
-    },
-    select: {
-      width: "100%",
-      padding: "10px",
-      marginBottom: "20px",
-    },
+    backIcon: { color: "#0080AA", cursor: "pointer", fontSize: "22px" },
+    main: { flex: 1, display: "flex", justifyContent: "center", alignItems: "center", padding: "40px 20px" },
+    card: { border: "1px solid #ccc", padding: "30px", borderRadius: "6px", width: "450px", textAlign: "center" },
+    pageTitle: { textAlign: "center", fontSize: "1.8rem", color: "#0078a8", fontWeight: "bold", margin: "20px 0" },
+    title: { color: "#0078a8", fontSize: "1.6rem", fontWeight: "bold", marginBottom: "20px" },
+    select: { width: "100%", padding: "10px", marginBottom: "20px", border: "1px solid #ccc", borderRadius: "4px" },
+    selectError: { border: "2px solid red" },
     uploadBox: {
       border: "2px dashed #0078a8",
       padding: "25px",
       borderRadius: "6px",
       cursor: "pointer",
-      marginBottom: "15px",
+      marginBottom: "5px",
+      backgroundColor: hoverUpload ? "#e6f7ff" : "white",
+      borderColor: hoverUpload ? "#00a0d0" : "#0078a8",
+      transition: "all 0.3s ease",
     },
-    preview: {
-      width: "100%",
-      marginTop: "10px",
-      borderRadius: "4px",
-    },
+    uploadBoxError: { border: "2px dashed red" },
+    fileError: { color: "red", fontSize: "0.9rem", marginBottom: "10px" },
+    preview: { width: "100%", marginTop: "10px", borderRadius: "4px" },
     button: {
       backgroundColor: "#0078a8",
       color: "#fff",
@@ -104,23 +117,43 @@ const DecideForMe = () => {
       cursor: "pointer",
       fontWeight: "bold",
       marginTop: "10px",
+      transition: "all 0.2s ease",
+      transform: hoverButton ? "scale(1.05)" : "scale(1)",
+      backgroundColor: hoverButton ? "#005f7a" : "#0078a8",
     },
   };
 
   return (
     <div className="user-flow-page" style={styles.page}>
       {/* NAVBAR */}
-      <Navbar style={{ backgroundColor: "#0080AA" }} className="user-flow-navbar">
-        <NavbarBrand tag={Link} to="/start" style={{ color: "white" }}>
+      <Navbar style={{ backgroundColor: "#0080AA", display: "flex", justifyContent: "space-between", padding: "0 20px" }}>
+        <NavbarBrand tag={Link} to="/start" style={{ color: "white", display: "flex", alignItems: "center" }}>
           <img src={logo} alt="logo" style={{ height: 40, marginRight: 10 }} />
           ReNova
         </NavbarBrand>
+        {userName && (
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <div style={{
+              width: "35px", height: "35px", borderRadius: "50%",
+              backgroundColor: "white", color: "#00a0d0",
+              display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold"
+            }}>
+              {userName.charAt(0).toUpperCase()}
+            </div>
+            <span style={{ color: "white", fontWeight: "bold" }}>
+              Hi {userName} 👋
+            </span>
+          </div>
+        )}
       </Navbar>
 
       {/* ⬅️ BACK ARROW */}
       <div style={styles.backWrapper}>
         <FaArrowLeft style={styles.backIcon} onClick={() => navigate("/start")} />
       </div>
+
+      {/* PAGE TITLE */}
+      <h2 style={styles.pageTitle}>Let AI Decide For You</h2>
 
       {/* MAIN */}
       <main style={styles.main}>
@@ -129,7 +162,7 @@ const DecideForMe = () => {
 
           <label>Device Condition</label>
           <select
-            style={styles.select}
+            style={{ ...styles.select, ...(conditionError ? styles.selectError : {}) }}
             value={condition}
             onChange={(e) => setCondition(e.target.value)}
           >
@@ -138,16 +171,27 @@ const DecideForMe = () => {
             <option value="damaged">Damaged / Not working</option>
             <option value="dangerous">Burned / Dangerous</option>
           </select>
+          {conditionError && <p style={styles.fileError}>Please select a device condition</p>}
 
           <label>Upload photo of device here...</label>
-          <div style={styles.uploadBox}>
+          <div
+            style={{ ...styles.uploadBox, ...(imageError ? styles.uploadBoxError : {}) }}
+            onMouseEnter={() => setHoverUpload(true)}
+            onMouseLeave={() => setHoverUpload(false)}
+          >
             <input type="file" accept="image/*" onChange={handleImageUpload} />
             <p>Drag and drop files here to upload</p>
           </div>
+          {(imageError || fileError) && <p style={styles.fileError}>{fileError || "Please upload an image of your device"}</p>}
 
           {preview && <img src={preview} alt="Preview" style={styles.preview} />}
 
-          <button style={styles.button} onClick={handleDecision}>
+          <button
+            style={styles.button}
+            onMouseEnter={() => setHoverButton(true)}
+            onMouseLeave={() => setHoverButton(false)}
+            onClick={handleDecision}
+          >
             Upload
           </button>
         </div>
