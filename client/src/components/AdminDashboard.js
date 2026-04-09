@@ -46,7 +46,7 @@ const SideCard = ({ title, lines = [], buttonText = "View", onClick }) => {
     <div className="side-card">
       <h6>{title}</h6>
       {lines.map((t, idx) => (
-        <div key={idx} style={{ fontSize: 12, marginBottom: 4 }}>
+        <div key={idx} className="side-card-line">
           {t}
         </div>
       ))}
@@ -83,6 +83,9 @@ const AdminDashboard = () => {
             ...prev,
             totalUsers: data.totalUsers ?? 0,
             collectors: data.totalCollectors ?? 0,
+            disposals: data.disposals ?? 0,
+            recycles: data.recycles ?? 0,
+            upcycles: data.upcycles ?? 0,
           }));
         }
       } catch (err) {
@@ -121,6 +124,7 @@ const AdminDashboard = () => {
     const labels8 = d?.newUsers?.labels ?? ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug"];
     const dataDisposals = d?.disposals?.data ?? empty7;
     const dataRecycles = d?.recycles?.data ?? empty7;
+    const dataUpcycles = d?.upcycles?.data ?? empty7;
     const dataNewUsers = d?.newUsers?.data ?? empty8;
 
     return [
@@ -155,6 +159,22 @@ const AdminDashboard = () => {
         },
       },
       {
+        title: "Upcycles",
+        type: "line",
+        data: {
+          labels: labels7,
+          datasets: [
+            {
+              data: dataUpcycles,
+              borderColor: "#0080AA",
+              backgroundColor: "rgba(0,128,170,0.15)",
+              tension: 0.35,
+              pointBackgroundColor: "#0080AA",
+            },
+          ],
+        },
+      },
+      {
         title: "New Users Registered",
         type: "bar",
         data: {
@@ -180,20 +200,31 @@ const AdminDashboard = () => {
   const chartOptions = (title) => ({
     responsive: true,
     maintainAspectRatio: false,
+    layout: {
+      padding: { top: 4, bottom: 8, left: 4, right: 8 },
+    },
     plugins: {
       legend: { display: false },
-      title: { display: true, text: title, font: { size: 18, weight: "bold" } },
+      title: {
+        display: true,
+        text: title,
+        font: { size: 15, weight: "bold" },
+        padding: { bottom: 6, top: 2 },
+      },
     },
-    scales: { y: { beginAtZero: true } },
+    scales: {
+      y: { beginAtZero: true, ticks: { maxTicksLimit: 6 } },
+      x: { ticks: { maxRotation: 45, minRotation: 0, autoSkip: true } },
+    },
   });
 
   return (
     <div className="admin-board">
       <h3 className="admin-title">Welcome Admin!</h3>
 
-      <Row>
+      <Row className="admin-dash-grid gx-3 align-items-stretch">
         {/* LEFT COLUMN */}
-        <Col md="2" style={{ minWidth: 200 }} className="side-column">
+        <Col md="2" className="side-column">
           <SideCard
             title="Users"
             lines={["Total users registered:", statsLoading ? "…" : stats.totalUsers]}
@@ -233,30 +264,26 @@ const AdminDashboard = () => {
             </Col>
 
             {/* View All Graphs */}
-            <Col md="4">
+            <Col md="6">
               <div className="graphs-card">
-                <div className="graphs-icons">
+                <div className="graphs-icons-row">
                   <div className="graphs-icon-box">
                     <img src={barImg} alt="Bar" className="graphs-img" />
                   </div>
                   <div className="graphs-icon-box">
                     <img src={lineImg} alt="Line" className="graphs-img" />
                   </div>
-                </div>
-
-                <div className="graphs-right">
-                  <Button
-                    className="mini-btn"
-                    size="sm"
-                    onClick={() => navigate("/admin/dashboard/graphs")}
-                  >
-                    View All Graphs
-                  </Button>
-
                   <div className="graphs-donut-box">
                     <img src={pieImg} alt="Pie" className="graphs-donut-img" />
                   </div>
                 </div>
+                <Button
+                  className="mini-btn graphs-card-btn"
+                  size="sm"
+                  onClick={() => navigate("/admin/dashboard/graphs")}
+                >
+                  View All Graphs
+                </Button>
               </div>
             </Col>
           </Row>
@@ -274,9 +301,8 @@ const AdminDashboard = () => {
                   key={idx}
                   onExiting={() => setAnimating(true)}
                   onExited={() => setAnimating(false)}
-                  style={{ height: 290 }}
                 >
-                  <div style={{ height: 290 }}>
+                  <div className="dashboard-carousel-chart-wrap">
                     {slide.type === "bar" ? (
                       <Bar data={slide.data} options={chartOptions(slide.title)} />
                     ) : (
@@ -302,23 +328,23 @@ const AdminDashboard = () => {
         </Col>
 
         {/* RIGHT COLUMN */}
-        <Col md="2" style={{ minWidth: 200 }} className="side-column">
+        <Col md="2" className="side-column">
           <div className="side-card">
             <h6>Disposals</h6>
-            <div>
-              <b>{stats.disposals}</b>
+            <div className="side-card-line">
+              <b>{statsLoading ? "…" : stats.disposals}</b>
             </div>
-            <div>
-              Recycles: <b>{stats.recycles}</b>
+            <div className="side-card-line">
+              Recycles: <b>{statsLoading ? "…" : stats.recycles}</b>
             </div>
-            <div>
-              Upcycles: <b>{stats.upcycles}</b>
+            <div className="side-card-line">
+              Upcycles: <b>{statsLoading ? "…" : stats.upcycles}</b>
             </div>
 
             <Button
               className="mini-btn"
               size="sm"
-              onClick={() => navigate("/admin/reports/disposals-recycles-upcycles")}
+              onClick={() => navigate("/admin/dashboard/graphs")}
             >
               View
             </Button>

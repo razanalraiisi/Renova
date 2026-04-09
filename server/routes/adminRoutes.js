@@ -19,13 +19,14 @@ import {
   updateDevice,
   deleteDevice,
 } from "../controllers/deviceController.js";
-import { getChartData } from "../controllers/dashboardController.js";
+import { getChartData, getAdminRequestsByCategory } from "../controllers/dashboardController.js";
 import { verifyAdmin } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
 router.get("/stats", getDashboardStats);
 router.get("/chart-data", getChartData);
+router.get("/report-requests", getAdminRequestsByCategory);
 router.get("/pendingCollectors", getPendingCollectors);
 router.get("/notifications", getAdminNotifications);
 router.get("/users", getUsers);

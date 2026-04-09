@@ -46,6 +46,7 @@ import DecisionResult from './components/DecisionResult.js';
 // Admin – Reports
 import RecyclesReport from "./components/RecyclesReport";
 import DisposalsReport from "./components/DisposalsReport";
+import UpcyclesReport from "./components/UpcyclesReport";
 import UsersReport from "./components/UsersReport";
 import DisposalsRecyclesUpcyclesReport from "./components/DisposalsRecyclesUpcyclesReport";
 import AdminThemeSync from "./components/AdminThemeSync.js";
@@ -135,6 +136,7 @@ function App() {
             <Route path="/admin/manage-collectors" element={<AdminManageCollectors />} />
             <Route path="/admin/reports/recycles" element={<RecyclesReport />} />
             <Route path="/admin/reports/disposals" element={<DisposalsReport />} />
+            <Route path="/admin/reports/upcycles" element={<UpcyclesReport />} />
             <Route path="/admin/reports/disposals-recycles-upcycles" element={<DisposalsRecyclesUpcyclesReport />} />
             <Route
               path="/admin/reports/collectors"

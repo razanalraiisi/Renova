@@ -42,9 +42,13 @@ const ForgetPassword = () => {
         navigate("/VerifyOtp", { state: { email } });
       }, 1800);
     } catch (err) {
+      const msg =
+        err.response?.data?.message ||
+        err.message ||
+        "Something went wrong. Please try again.";
       setSnackbar({
         open: true,
-        message: err.message || "Email not found",
+        message: msg,
         severity: "error",
       });
     }

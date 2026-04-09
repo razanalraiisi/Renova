@@ -29,6 +29,24 @@ ChartJS.register(
 const API_CHART_DATA = "http://localhost:5000/admin/chart-data";
 const CHART_COLOR = "#0080AA";
 
+function GraphSection({ title, reportPath, navigate, children }) {
+  return (
+    <>
+      <div className="graphCardHeader">
+        <h3 className="graphCardTitle">{title}</h3>
+        <button
+          type="button"
+          className="graphViewReportBtn"
+          onClick={() => navigate(reportPath)}
+        >
+          View report
+        </button>
+      </div>
+      <div className="graphChartArea">{children}</div>
+    </>
+  );
+}
+
 export default function AdminDashboardGraphs() {
   const navigate = useNavigate();
   const [chartData, setChartData] = useState(null);
@@ -51,12 +69,12 @@ export default function AdminDashboardGraphs() {
     fetchChartData();
   }, []);
 
-  const chartOptions = (title, showLegend = true) => ({
+  const embedChartOptions = (showLegend = true) => ({
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
       legend: { display: showLegend },
-      title: { display: true, text: title, font: { size: 18, weight: "bold" } },
+      title: { display: false },
       tooltip: {
         callbacks: {
           label: (ctx) => ` ${ctx.parsed.y}`,
@@ -79,12 +97,13 @@ export default function AdminDashboardGraphs() {
     return {
       disposals: {
         title: "Disposals by Month",
+        reportPath: "/admin/reports/disposals",
         type: "bar",
         data: {
           labels: labels7,
           datasets: [
             {
-              label: "Pickup requests",
+              label: "Requests (pickup + drop-off)",
               data: d?.disposals?.data ?? empty7,
               backgroundColor: CHART_COLOR,
               borderRadius: 6,
@@ -94,13 +113,33 @@ export default function AdminDashboardGraphs() {
       },
       recycles: {
         title: "Recycles by Month",
+        reportPath: "/admin/reports/recycles",
         type: "line",
         data: {
           labels: labels7,
           datasets: [
             {
-              label: "Pickup requests",
+              label: "Requests (pickup + drop-off)",
               data: d?.recycles?.data ?? empty7,
+              borderColor: CHART_COLOR,
+              backgroundColor: "rgba(0,128,170,0.15)",
+              tension: 0.35,
+              pointBackgroundColor: CHART_COLOR,
+              fill: true,
+            },
+          ],
+        },
+      },
+      upcycles: {
+        title: "Upcycles by Month",
+        reportPath: "/admin/reports/upcycles",
+        type: "line",
+        data: {
+          labels: labels7,
+          datasets: [
+            {
+              label: "Requests (pickup + drop-off)",
+              data: d?.upcycles?.data ?? empty7,
               borderColor: CHART_COLOR,
               backgroundColor: "rgba(0,128,170,0.15)",
               tension: 0.35,
@@ -112,6 +151,7 @@ export default function AdminDashboardGraphs() {
       },
       newUsers: {
         title: "New Users Registered by Month",
+        reportPath: "/admin/reports/users",
         type: "bar",
         data: {
           labels: labels8,
@@ -143,7 +183,7 @@ export default function AdminDashboardGraphs() {
               ← Back to Dashboard
             </button>
             <h2 className="dashTitle">View All Graphs</h2>
-            <p className="graphsSubtitle">Detailed charts from your MongoDB data</p>
+            <p className="graphsSubtitle">Detailed charts from real data</p>
           </div>
 
           {loading ? (
@@ -151,24 +191,55 @@ export default function AdminDashboardGraphs() {
           ) : (
             <div className="graphsGrid graphsGridDetail">
               <div className="graphCard graphCardDetail">
-                <Bar
-                  data={charts.disposals.data}
-                  options={chartOptions(charts.disposals.title)}
-                />
+                <GraphSection
+                  title={charts.disposals.title}
+                  reportPath={charts.disposals.reportPath}
+                  navigate={navigate}
+                >
+                  <Bar
+                    data={charts.disposals.data}
+                    options={embedChartOptions(true)}
+                  />
+                </GraphSection>
               </div>
 
               <div className="graphCard graphCardDetail">
-                <Line
-                  data={charts.recycles.data}
-                  options={chartOptions(charts.recycles.title)}
-                />
+                <GraphSection
+                  title={charts.recycles.title}
+                  reportPath={charts.recycles.reportPath}
+                  navigate={navigate}
+                >
+                  <Line
+                    data={charts.recycles.data}
+                    options={embedChartOptions(true)}
+                  />
+                </GraphSection>
+              </div>
+
+              <div className="graphCard graphCardDetail graphCardSpanRow">
+                <GraphSection
+                  title={charts.upcycles.title}
+                  reportPath={charts.upcycles.reportPath}
+                  navigate={navigate}
+                >
+                  <Line
+                    data={charts.upcycles.data}
+                    options={embedChartOptions(true)}
+                  />
+                </GraphSection>
               </div>
 
               <div className="graphCard graphCardDetail graphCardFullWidth">
-                <Bar
-                  data={charts.newUsers.data}
-                  options={chartOptions(charts.newUsers.title)}
-                />
+                <GraphSection
+                  title={charts.newUsers.title}
+                  reportPath={charts.newUsers.reportPath}
+                  navigate={navigate}
+                >
+                  <Bar
+                    data={charts.newUsers.data}
+                    options={embedChartOptions(true)}
+                  />
+                </GraphSection>
               </div>
             </div>
           )}

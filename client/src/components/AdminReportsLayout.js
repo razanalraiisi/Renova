@@ -19,25 +19,48 @@ export default function AdminReportsLayout({
   /** Renders a small Back control above the title row (e.g. dashboard) */
   onBack,
   backLabel = "← Back",
+  /**
+   * When set, filter dropdowns use these lists (e.g. from live data).
+   * Omit to keep legacy dummy labels for static demo pages.
+   */
+  itemSelectOptions,
+  userSelectOptions,
+  /** Called with current filter fields when user clicks Apply */
+  onFilterApply,
+  /** Called when user clicks Reset (after local fields clear) */
+  onFilterReset,
 }) {
-  // UI-only options (dummy)
-  const items = useMemo(() => ["Dish washer", "Air Conditioner", "Laptop"], []);
-  const users = useMemo(() => ["Faisal Al Wahabi", "Amal Al Abri", "Sulaiman Al Salmi"], []);
+  const dummyItems = useMemo(() => ["Dish washer", "Air Conditioner", "Laptop"], []);
+  const dummyUsers = useMemo(() => ["Faisal Al Wahabi", "Amal Al Abri", "Sulaiman Al Salmi"], []);
+  const items = itemSelectOptions ?? dummyItems;
+  const users = userSelectOptions ?? dummyUsers;
 
   const [showFilter, setShowFilter] = useState(true);
-  const [date, setDate] = useState("2022-06-20");
+  const [date, setDate] = useState("");
   const [item, setItem] = useState("");
   const [user, setUser] = useState("");
 
+  /** When parent omits `searchValue`, keep query locally so typing always updates the field and notifies the parent. */
+  const [localSearchDraft, setLocalSearchDraft] = useState("");
+  const parentOwnsSearch =
+    searchValue !== undefined && searchValue !== null;
+  const searchInputValue = parentOwnsSearch ? String(searchValue) : localSearchDraft;
+
+  const handleSearchInput = (e) => {
+    const v = e.currentTarget.value;
+    if (!parentOwnsSearch) setLocalSearchDraft(v);
+    onSearchChange?.(v);
+  };
+
   const apply = () => {
-    // UI-only: close filter like the screenshot
-    setShowFilter(false);
+    onFilterApply?.({ date, item, user });
   };
 
   const reset = () => {
-    setDate("2022-06-20");
+    setDate("");
     setItem("");
     setUser("");
+    onFilterReset?.();
   };
 
   return (
@@ -59,16 +82,24 @@ export default function AdminReportsLayout({
 
             <div className="reportsActions">
               {onSearchChange != null && (
-                <div className="searchBox reportsHeaderSearch">
-                  🔍{" "}
+                <form
+                  className="searchBox reportsHeaderSearch"
+                  role="search"
+                  onSubmit={(e) => e.preventDefault()}
+                >
+                  <span aria-hidden="true">🔍</span>
                   <input
-                    type="search"
+                    type="text"
+                    inputMode="search"
+                    enterKeyHint="search"
+                    autoComplete="off"
+                    name="admin-report-search"
                     placeholder={searchPlaceholder ?? "Search"}
-                    value={searchValue ?? ""}
-                    onChange={(e) => onSearchChange(e.target.value)}
+                    value={searchInputValue}
+                    onChange={handleSearchInput}
                     aria-label={searchPlaceholder ?? "Search"}
                   />
-                </div>
+                </form>
               )}
               <button
                 className="downloadBtn"

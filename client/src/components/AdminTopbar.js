@@ -134,6 +134,10 @@ const AdminTopbar = () => {
               Disposals Report
             </DropdownItem>
 
+            <DropdownItem onClick={() => navigate("/admin/reports/upcycles")}>
+              Upcycles Report
+            </DropdownItem>
+
             <DropdownItem onClick={() => navigate("/admin/manage-collectors")}>
               Collectors Report
             </DropdownItem>

@@ -1,9 +1,32 @@
 import User from "../models/UserModel.js";
+import PickupRequest from "../models/PickupRequestModel.js";
+import DropOffRequest from "../models/DropOffRequestModel.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { sendEmail } from "../utils/email.js";
- 
- 
+
+const appLoginUrl = () =>
+  `${(process.env.FRONTEND_URL || process.env.CLIENT_URL || "http://localhost:3000").replace(/\/$/, "")}/login`;
+
+function escapeRegex(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+async function findUserByEmail(email) {
+  const e = (email || "").trim();
+  if (!e) return null;
+  return User.findOne({ email: new RegExp(`^${escapeRegex(e)}$`, "i") });
+}
+
+async function countRequestsByCategory(category) {
+  const rx = new RegExp(`^${escapeRegex(String(category))}$`, "i");
+  const [pickups, dropoffs] = await Promise.all([
+    PickupRequest.countDocuments({ category: rx }),
+    DropOffRequest.countDocuments({ category: rx }),
+  ]);
+  return pickups + dropoffs;
+}
+
 // --------------------
 // Auto-ID Generators
 // --------------------
@@ -30,15 +53,15 @@ export const registerUser = async (req, res) => {
       return res.status(400).json({ message: "All fields are required." });
     }
  
-    const existing = await User.findOne({ email });
+    const existing = await findUserByEmail(email);
     if (existing) return res.status(400).json({ message: "Email already exists." });
- 
+
     const hashed = await bcrypt.hash(password, 10);
     const ids = await generateUserId();
  
     const newUser = new User({
       uname,
-      email,
+      email: email.trim().toLowerCase(),
       password: hashed,
       phone,
       pic,
@@ -79,15 +102,15 @@ export const registerCollector = async (req, res) => {
       return res.status(400).json({ message: "All fields are required." });
     }
  
-    const existing = await User.findOne({ email });
+    const existing = await findUserByEmail(email);
     if (existing) return res.status(400).json({ message: "Email already exists." });
- 
+
     const hashed = await bcrypt.hash(password, 10);
     const ids = await generateCollectorId();
  
     const newCollector = new User({
       companyName,
-      email,
+      email: email.trim().toLowerCase(),
       password: hashed,
       phone,
       pic,
@@ -120,11 +143,16 @@ export const registerAdmin = async (req, res) => {
     if (secretKey !== process.env.ADMIN_SECRET) return res.status(403).json({ message: "Unauthorized." });
  
     if (!email || !password) return res.status(400).json({ message: "All fields required." });
-    const existing = await User.findOne({ email });
+    const existing = await findUserByEmail(email);
     if (existing) return res.status(400).json({ message: "Email already exists." });
- 
+
     const hashed = await bcrypt.hash(password, 10);
-    const admin = new User({ email, password: hashed, role: "admin", isApproved: true });
+    const admin = new User({
+      email: email.trim().toLowerCase(),
+      password: hashed,
+      role: "admin",
+      isApproved: true,
+    });
     await admin.save();
     res.status(201).json({ message: "Admin created." });
   } catch (err) {
@@ -141,7 +169,7 @@ export const login = async (req, res) => {
     const { email, password } = req.body;
     if (!email || !password) return res.status(400).json({ message: "Email and password required." });
  
-    const user = await User.findOne({ email });
+    const user = await findUserByEmail(email);
     if (!user) return res.status(400).json({ message: "User not found." });
  
     const valid = await bcrypt.compare(password, user.password);
@@ -263,7 +291,7 @@ export const approveCollector = async (req, res) => {
       </ul>
  
       <div style="text-align: center; margin-top: 20px;">
-        <a href="http://localhost:3000/login"
+        <a href="${appLoginUrl()}"
           style="padding: 12px 20px; color: white; text-decoration: none; background-color: #0080AA; border-radius: 6px;">
           Login Now
         </a>
@@ -275,11 +303,24 @@ export const approveCollector = async (req, res) => {
     </div>
     `;
  
-    await sendEmail(collector.email, "Your ReNova Request Has Been Accepted", html);
- 
-    res.json({ message: "Collector approved & email sent." });
- 
+    let emailSent = true;
+    let emailError = null;
+    try {
+      await sendEmail(collector.email, "Your ReNova collector account is approved — you can log in", html);
+    } catch (mailErr) {
+      emailSent = false;
+      emailError = mailErr.message || "Unknown email error";
+      console.error("Approval email failed:", mailErr);
+    }
+
+    res.json({
+      message: emailSent
+        ? "Collector approved. A confirmation email was sent."
+        : `Collector approved, but the email could not be sent: ${emailError}`,
+      emailSent,
+    });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Server error." });
   }
 };
@@ -326,14 +367,20 @@ export const rejectCollector = async (req, res) => {
     </div>
     `;
  
-    await sendEmail(collector.email, "Your ReNova Request Has Been Rejected", html);
- 
-    // Delete the collector from DB
+    try {
+      await sendEmail(collector.email, "Your ReNova Request Has Been Rejected", html);
+    } catch (mailErr) {
+      console.error("Rejection email failed:", mailErr);
+      return res.status(503).json({
+        message: `Could not send rejection email: ${mailErr.message}. The collector was not removed.`,
+      });
+    }
+
     await User.findByIdAndDelete(req.params.id);
- 
-    res.json({ message: "Collector rejected & email sent." });
- 
+
+    res.json({ message: "Collector rejected and notified by email." });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Server error." });
   }
 };
@@ -341,31 +388,41 @@ export const rejectCollector = async (req, res) => {
  
 export const sendPasswordOtp = async (req, res) => {
   try {
-    const { email } = req.body;
- 
-    const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ message: "Email not found." });
- 
-    // Generate 6-digit OTP
+    const raw = req.body?.email;
+    const email = typeof raw === "string" ? raw.trim() : "";
+    if (!email) return res.status(400).json({ message: "Email is required." });
+
+    const user = await findUserByEmail(email);
+    if (!user) return res.status(404).json({ message: "No account found for this email." });
+
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
- 
+
     user.otp = otp;
-    user.otpExpires = Date.now() + 5 * 60 * 1000; // 5 min validity
+    user.otpExpires = new Date(Date.now() + 5 * 60 * 1000);
     await user.save();
- 
+
     const html = `
       <div style="font-family: Arial; padding: 20px;">
-        <h2 style="color:#0080AA;">We Got Your Request</h2>
-        <p>You can now reset your password using this verification code:</p>
+        <h2 style="color:#0080AA;">Password reset</h2>
+        <p>Use this verification code to reset your ReNova password:</p>
         <h1 style="letter-spacing: 5px;">${otp}</h1>
         <p>This code expires in <strong>5 minutes</strong>.</p>
       </div>
     `;
- 
-    await sendEmail(email, "ReNova Password Reset Request", html);
- 
-    res.json({ message: "OTP sent to email." });
- 
+
+    try {
+      await sendEmail(user.email, "ReNova password reset code", html);
+    } catch (mailErr) {
+      user.otp = undefined;
+      user.otpExpires = undefined;
+      await user.save();
+      console.error(mailErr);
+      return res.status(503).json({
+        message: mailErr.message || "Could not send email. Check server email settings.",
+      });
+    }
+
+    res.json({ message: "Check your email for a 6-digit code." });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error." });
@@ -376,21 +433,21 @@ export const sendPasswordOtp = async (req, res) => {
 export const verifyPasswordOtp = async (req, res) => {
   try {
     const { email, otp } = req.body;
- 
-    const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ message: "Email not found." });
- 
-    if (user.otp !== otp) {
-      return res.status(400).json({ message: "Invalid OTP." });
+
+    const user = await findUserByEmail(email);
+    if (!user) return res.status(404).json({ message: "No account found for this email." });
+
+    if (String(user.otp || "") !== String(otp || "").trim()) {
+      return res.status(400).json({ message: "Invalid code." });
     }
- 
-    if (user.otpExpires < Date.now()) {
-      return res.status(400).json({ message: "OTP has expired." });
+
+    if (!user.otpExpires || new Date(user.otpExpires).getTime() < Date.now()) {
+      return res.status(400).json({ message: "Code has expired. Request a new one." });
     }
- 
-    res.json({ message: "OTP verified successfully." });
- 
+
+    res.json({ message: "Code verified. You can set a new password." });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Server error." });
   }
 };
@@ -399,9 +456,15 @@ export const verifyPasswordOtp = async (req, res) => {
 export const resetPassword = async (req, res) => {
   try {
     const { email, newPassword } = req.body;
- 
-    const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ message: "Email not found." });
+
+    const user = await findUserByEmail(email);
+    if (!user) return res.status(404).json({ message: "No account found for this email." });
+
+    if (!user.otp || !user.otpExpires || new Date(user.otpExpires).getTime() < Date.now()) {
+      return res.status(400).json({
+        message: "Reset session expired or invalid. Go back and request a new code.",
+      });
+    }
  
    
     const isSamePassword = await bcrypt.compare(newPassword, user.password);
@@ -499,11 +562,20 @@ export const updateUserProfile = async (req, res) => {
 // --------------------
 export const getDashboardStats = async (req, res) => {
   try {
-    const [totalUsers, totalCollectors] = await Promise.all([
+    const [totalUsers, totalCollectors, disposals, recycles, upcycles] = await Promise.all([
       User.countDocuments({ role: "user" }),
       User.countDocuments({ role: "collector", isApproved: true }),
+      countRequestsByCategory("Dispose"),
+      countRequestsByCategory("Recycle"),
+      countRequestsByCategory("Upcycle"),
     ]);
-    res.json({ totalUsers, totalCollectors });
+    res.json({
+      totalUsers,
+      totalCollectors,
+      disposals,
+      recycles,
+      upcycles,
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error." });
@@ -584,9 +656,22 @@ export const deactivateCollector = async (req, res) => {
     </div>
     `;
 
-    await sendEmail(collector.email, "Your ReNova Collector Account Has Been Deactivated", html);
+    let emailSent = true;
+    let emailError = null;
+    try {
+      await sendEmail(collector.email, "Your ReNova Collector Account Has Been Deactivated", html);
+    } catch (mailErr) {
+      emailSent = false;
+      emailError = mailErr.message || "Unknown email error";
+      console.error("Deactivation email failed:", mailErr);
+    }
 
-    res.json({ message: "Collector deactivated and email sent." });
+    res.json({
+      message: emailSent
+        ? "Collector deactivated. A notification email was sent."
+        : `Collector deactivated, but email could not be sent: ${emailError}`,
+      emailSent,
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error." });
@@ -706,7 +791,7 @@ export const reactivateCollector = async (req, res) => {
       </ul>
 
       <div style="text-align: center; margin-top: 20px;">
-        <a href="http://localhost:3000/login"
+        <a href="${appLoginUrl()}"
           style="padding: 12px 20px; color: white; text-decoration: none; background-color: #0080AA; border-radius: 6px;">
           Log in
         </a>
@@ -718,9 +803,22 @@ export const reactivateCollector = async (req, res) => {
     </div>
     `;
 
-    await sendEmail(collector.email, "Your ReNova Collector Account Has Been Reactivated", html);
+    let emailSent = true;
+    let emailError = null;
+    try {
+      await sendEmail(collector.email, "Your ReNova Collector Account Has Been Reactivated", html);
+    } catch (mailErr) {
+      emailSent = false;
+      emailError = mailErr.message || "Unknown email error";
+      console.error("Reactivation email failed:", mailErr);
+    }
 
-    res.json({ message: "Collector reactivated and email sent." });
+    res.json({
+      message: emailSent
+        ? "Collector reactivated. A confirmation email was sent."
+        : `Collector reactivated, but email could not be sent: ${emailError}`,
+      emailSent,
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error." });

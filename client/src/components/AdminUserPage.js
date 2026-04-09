@@ -144,7 +144,7 @@ const AdminUserPage = () => {
         right: notificationsEnabled ? "Allow" : "Off",
         onClick: () => setNotificationsEnabled((v) => !v),
       },
-      { key: "requests", label: "My Requests", icon: <FaClipboardList />, path: "/admin/my-requests" },
+      { key: "requests", label: "Requests History", icon: <FaClipboardList />, path: "/admin/my-requests" },
       { key: "forgot", label: "Forget Password", icon: <FaLock />, path: "/admin/forget-password" },
     ],
     [notificationsEnabled]
@@ -231,7 +231,15 @@ const AdminUserPage = () => {
 
       {/* BODY */}
       <div className="au-body">
-        <div className="au-center-bg">
+        <div className="au-layout-wrap">
+          <button
+            type="button"
+            className="au-back-btn"
+            onClick={() => navigate("/admin/dashboard")}
+          >
+            ← Back to Dashboard
+          </button>
+          <div className="au-center-bg">
           <div className="au-grid">
             {/* LEFT PANEL */}
             <div className="au-left">
@@ -433,6 +441,7 @@ const AdminUserPage = () => {
                 </>
               )}
             </div>
+          </div>
           </div>
         </div>
       </div>

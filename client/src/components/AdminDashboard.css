@@ -3,13 +3,17 @@
   --admin-blue-dark: #006D90;
   --admin-card: #d9ebf3; /* light blue tint */
   --admin-border: #b7c9d6;
+  --admin-dash-gap: 1.125rem;
+  --admin-card-pad: 14px;
+  --admin-card-radius: 8px;
+  --admin-top-card-min-h: 152px;
 }
 
 .admin-board {
   background: #ffffff;
   border: 1px solid #d7dbe0;
   border-radius: 12px;
-  padding: 20px 24px 24px;
+  padding: var(--admin-dash-gap) clamp(16px, 3vw, 24px);
   box-sizing: border-box;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
@@ -17,17 +21,21 @@
 .admin-title {
   font-weight: 900;
   text-align: center;
-  margin: 10px 0 18px;
+  margin: 0 0 var(--admin-dash-gap);
   color: #c94141;
 }
 
 .side-card {
   border: 1px solid var(--admin-border);
   background: var(--admin-card);
-  border-radius: 8px;
-  padding: 14px 12px;
-  margin-bottom: 14px;
+  border-radius: var(--admin-card-radius);
+  padding: var(--admin-card-pad);
+  margin-bottom: 0;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
   transition: box-shadow 0.2s ease, border-color 0.2s ease;
 }
 .side-card:hover {
@@ -36,7 +44,14 @@
 
 .side-card h6 {
   font-weight: 900;
-  margin-bottom: 8px;
+  margin: 0;
+}
+
+.side-card-line {
+  font-size: 12px;
+  line-height: 1.35;
+  margin: 0;
+  text-align: center;
 }
 
 .mini-btn {
@@ -69,10 +84,17 @@
 .stat-card {
   border: 1px solid var(--admin-border);
   background: var(--admin-card);
-  border-radius: 8px;
-  padding: 12px;
-  height: 140px;
+  border-radius: var(--admin-card-radius);
+  padding: var(--admin-card-pad);
+  min-height: var(--admin-top-card-min-h);
+  height: 100%;
   position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  box-sizing: border-box;
   transition: box-shadow 0.2s ease;
 }
 .stat-card:hover {
@@ -82,7 +104,7 @@
 .stat-card-title {
   font-weight: 900;
   font-size: 13px;
-  margin-bottom: 6px;
+  margin: 0;
   text-align: center;
 }
 
@@ -90,7 +112,7 @@
   font-weight: 900;
   font-size: 20px;
   text-align: center;
-  margin-top: 2px;
+  margin: 0;
 }
 
 .stat-card-sub {
@@ -110,18 +132,65 @@
 
 .center-graph-box {
   border: 1px solid #d7dbe0;
-  border-radius: 10px;
-  background: white;
-  padding: 18px;
-  min-height: 360px;
+  border-radius: var(--admin-card-radius);
+  background: #fff;
+  padding: var(--admin-card-pad);
+  min-height: 0;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  margin-top: 0;
 }
+
+/* Responsive chart height: scales with viewport, stays within the card */
+.dashboard-carousel-chart-wrap {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  height: clamp(210px, min(38vw, 40vh), 360px);
+  min-height: 210px;
+  max-height: 380px;
+  box-sizing: border-box;
+}
+
+/* react-chartjs-2 root fills the measured box so charts resize with the window */
+.dashboard-carousel-chart-wrap > div {
+  height: 100%;
+  min-height: 0;
+  position: relative;
+}
+
+.center-graph-box .carousel {
+  width: 100%;
+  min-width: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.center-graph-box .carousel-inner {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+}
+
+.center-graph-box .carousel-item {
+  position: relative;
+  min-width: 0;
+}
+
 
 .carousel-dots {
   display: flex;
   justify-content: center;
   gap: 8px;
-  margin-top: 10px;
+  margin-top: var(--admin-dash-gap);
+  flex-shrink: 0;
 }
 
 .dot {
@@ -138,42 +207,59 @@
 /* ===== Collectors card buttons ===== */
 .collector-btns {
   display: grid;
-  gap: 10px;
+  gap: 8px;
   justify-items: center;
-  margin-top: 10px;
+  margin-top: 0;
+  width: 100%;
 }
 
 /* ===== View All Graphs Card (updated layout) ===== */
 
 .graphs-card {
+  container-type: inline-size;
+  container-name: graphs-card;
   border: 1px solid var(--admin-border);
-  background: #ffffff;
-  border-radius: 8px;
-  padding: 12px 14px;
-  height: 140px;
+  background: var(--admin-card);
+  border-radius: var(--admin-card-radius);
+  padding: var(--admin-card-pad);
+  min-height: var(--admin-top-card-min-h);
+  height: 100%;
+  min-width: 0;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  justify-content: center;
+  gap: clamp(10px, 3cqw, 14px);
+  box-sizing: border-box;
   transition: box-shadow 0.2s ease;
 }
 .graphs-card:hover {
   box-shadow: 0 2px 8px rgba(0, 128, 170, 0.08);
 }
 
-/* LEFT: bar + line icons */
-.graphs-icons {
+/* Three thumbnails in one row — scale with card width */
+.graphs-icons-row {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(6px, 2.5cqw, 12px);
+  width: 100%;
+  min-width: 0;
+}
+
+.graphs-icons-row > .graphs-icon-box,
+.graphs-icons-row > .graphs-donut-box {
+  flex: 1 1 0;
+  min-width: 0;
 }
 
 .graphs-icon-box {
-  width: 64px;
-  height: 32px;
+  aspect-ratio: 2 / 1;
+  min-height: 22px;
   border: 1px solid #d0d7de;
   border-radius: 6px;
-  background: #ffffff;
+  background: #fff;
 
   display: flex;
   align-items: center;
@@ -184,25 +270,17 @@
 .graphs-img {
   width: 100%;
   height: 100%;
+  max-width: 100%;
+  max-height: 100%;
   object-fit: contain;
-}
-
-/* RIGHT side: button top-right + pie under it */
-.graphs-right {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  justify-content: space-between;
-  height: 100%;
-  gap: 10px;
+  display: block;
 }
 
 .graphs-donut-box {
-  width: 48px;
-  height: 48px;
+  aspect-ratio: 1;
   border: 1px solid #d0d7de;
   border-radius: 50%;
-  background: #ffffff;
+  background: #fff;
 
   display: flex;
   align-items: center;
@@ -213,13 +291,27 @@
 .graphs-donut-img {
   width: 100%;
   height: 100%;
+  max-width: 100%;
+  max-height: 100%;
   object-fit: contain;
+  display: block;
+}
+
+.graphs-card-btn {
+  max-width: 100%;
+  white-space: normal;
+  line-height: 1.25;
+  height: auto;
+  min-height: 36px;
+  padding: 8px 12px !important;
+  text-align: center;
+  flex-shrink: 0;
 }
 /* ===== GRID & SPACING FIXES ===== */
 
-/* Give all rows consistent vertical spacing */
+/* Rows: even vertical rhythm (horizontal gutters use Bootstrap gx-* on each row) */
 .admin-board .row {
-  row-gap: 18px;
+  row-gap: var(--admin-dash-gap);
 }
 
 /* Ensure all top cards align visually */
@@ -231,38 +323,44 @@
 }
 
 /* Top row cards: equal height alignment */
-.top-cards-row > .col-md-4,
-.top-cards-row > .col-md-2 {
+.top-cards-row > [class*="col-"] {
   display: flex;
+  min-width: 0;
 }
 
 .top-cards-row > div > * {
-  flex: 1;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 /* Left & right side columns: spacing + cap width so they don't stretch on ultrawide */
 .side-column {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--admin-dash-gap);
   max-width: 260px;
+  min-width: 0;
+}
+
+@media (min-width: 768px) {
+  .side-column {
+    min-width: 160px;
+  }
+}
+
+@media (min-width: 992px) {
+  .side-column {
+    min-width: 180px;
+  }
 }
 
 /* Center column spacing */
 .center-column {
   display: flex;
   flex-direction: column;
-  gap: 18px;
-}
-
-/* Make sure cards never stick to chart */
-.center-graph-box {
-  margin-top: 6px;
-}
-
-/* Slight breathing room between chart and dots */
-.carousel-dots {
-  margin-top: 12px;
+  gap: var(--admin-dash-gap);
+  min-width: 0;
+  flex: 1 1 auto;
 }
 
 .admin-top-bar {

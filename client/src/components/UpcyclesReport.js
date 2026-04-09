@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminReportsLayout from "./AdminReportsLayout";
 
-const API_REPORT = "http://localhost:5000/admin/report-requests?category=Dispose";
+const API_REPORT = "http://localhost:5000/admin/report-requests?category=Upcycle";
 const UPLOADS_BASE = "http://localhost:5000/uploads";
 
 function escapeCsvCell(value) {
@@ -52,7 +52,7 @@ function imageSrc(image) {
   return `${UPLOADS_BASE}/${t.replace(/^\/+/, "")}`;
 }
 
-export default function DisposalsReport() {
+export default function UpcyclesReport() {
   const navigate = useNavigate();
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -67,7 +67,7 @@ export default function DisposalsReport() {
         const res = await fetch(API_REPORT);
         if (!res.ok) {
           const body = await res.json().catch(() => ({}));
-          throw new Error(body.message || "Failed to load disposals");
+          throw new Error(body.message || "Failed to load upcycles");
         }
         const data = await res.json();
         setRecords(Array.isArray(data) ? data : []);
@@ -145,14 +145,14 @@ export default function DisposalsReport() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `disposals-report-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.download = `upcycles-report-${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   }, [filteredRows]);
 
   return (
     <AdminReportsLayout
-      title="Disposals"
+      title="Upcycles"
       onBack={() => navigate("/admin/dashboard")}
       onDownload={handleDownload}
       fillViewport
@@ -161,21 +161,21 @@ export default function DisposalsReport() {
       onFilterApply={setFilterCriteria}
       onFilterReset={() => setFilterCriteria({ date: "", item: "", user: "" })}
     >
-      {loading && <div className="muted">Loading disposals…</div>}
+      {loading && <div className="muted">Loading upcycles…</div>}
       {error && (
         <div className="muted" style={{ color: "#c00" }}>
           {error}
         </div>
       )}
       {!loading && !error && records.length === 0 && (
-        <div className="muted">No disposal requests found yet.</div>
+        <div className="muted">No upcycle requests found yet.</div>
       )}
       {!loading && !error && records.length > 0 && filteredRows.length === 0 && (
         <div className="muted">No rows match your filters.</div>
       )}
       {!loading && !error && filteredRows.length > 0 && (
         <div className="muted" style={{ marginBottom: 8 }}>
-          Showing {filteredRows.length} of {records.length} disposal request
+          Showing {filteredRows.length} of {records.length} upcycle request
           {records.length === 1 ? "" : "s"}
         </div>
       )}
@@ -194,7 +194,7 @@ export default function DisposalsReport() {
                 </span>
               </div>
               <div className="muted">Date: {formatLocalDate(r.createdAt)}</div>
-              <div className="muted">Disposed by: {r.name || "—"}</div>
+              <div className="muted">User: {r.name || "—"}</div>
               <button
                 type="button"
                 className="link"

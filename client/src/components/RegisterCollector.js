@@ -12,6 +12,11 @@ import logo from "../assets/logo.png";
 const DEFAULT_PROFILE_PIC =
   "https://icon-library.com/images/profiles-icon/profiles-icon-0.jpg";
 
+const API_BASE = "http://localhost:5000";
+
+/** GeolocationPositionError codes (compare numerically; constants may be missing on `error`) */
+const GEO = { PERMISSION_DENIED: 1, POSITION_UNAVAILABLE: 2, TIMEOUT: 3 };
+
 const RegisterCollector = () => {
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
@@ -45,43 +50,104 @@ const RegisterCollector = () => {
     resolver: yupResolver(UserRegisterSchemaValidation),
   });
 
-  const getCurrentLocation = () => {
+  const getCurrentPositionPromise = (options) =>
+    new Promise((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(resolve, reject, options);
+    });
+
+  const geoErrorMessage = (code) => {
+    if (code === GEO.PERMISSION_DENIED) {
+      return "Permission denied. Allow location in your browser, or use “Place pin from address” below.";
+    }
+    if (code === GEO.POSITION_UNAVAILABLE) {
+      return "GPS/Wi‑Fi position unavailable (common on desktop). Use “Place pin from address”, or try “Retry GPS”.";
+    }
+    if (code === GEO.TIMEOUT) {
+      return "Location timed out. Try “Retry GPS” or “Place pin from address”.";
+    }
+    return "Unable to retrieve location.";
+  };
+
+  const tryGpsLocation = async () => {
     setLocationError("");
     setLocationLoading(true);
+    setCoords(null);
 
     if (!navigator.geolocation) {
       setLocationLoading(false);
-      setToast({ open: true, message: "Geolocation is not supported by your browser.", severity: "error" });
-      setLocationError("Geolocation not supported by your browser.");
+      setLocationError("This browser does not support GPS. Fill your address and use “Place pin from address”.");
       return;
     }
 
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        console.log("Location success:", position.coords);
+    if (!window.isSecureContext) {
+      setLocationLoading(false);
+      setLocationError("Location usually requires HTTPS (except on localhost). Use “Place pin from address” instead.");
+      return;
+    }
+
+    const attempts = [
+      { enableHighAccuracy: false, timeout: 22000, maximumAge: 300000 },
+      { enableHighAccuracy: true, timeout: 28000, maximumAge: 0 },
+    ];
+
+    let lastCode;
+    for (const opts of attempts) {
+      try {
+        const position = await getCurrentPositionPromise(opts);
         setCoords({
           lat: position.coords.latitude,
           lng: position.coords.longitude,
         });
         setLocationError("");
         setLocationLoading(false);
-      },
-      (error) => {
-        console.log("Location error:", error);
-        setCoords(null);
-        setLocationLoading(false);
-
-        if (error.code === error.PERMISSION_DENIED) {
-          setLocationError("Permission denied. Enable location access and try again.");
-        } else if (error.code === error.POSITION_UNAVAILABLE) {
-          setLocationError("Location unavailable. Please try again.");
-        } else if (error.code === error.TIMEOUT) {
-          setLocationError("Location request timed out. Please try again.");
-        } else {
-          setLocationError("Unable to retrieve location.");
-        }
+        return;
+      } catch (err) {
+        lastCode = err?.code;
+        if (lastCode === GEO.PERMISSION_DENIED) break;
       }
-    );
+    }
+
+    setCoords(null);
+    setLocationLoading(false);
+    setLocationError(geoErrorMessage(lastCode));
+  };
+
+  /** @returns {Promise<{ lat: number, lng: number } | null>} */
+  const geocodeFromAddress = async () => {
+    const line = address.trim();
+    if (!line) {
+      setLocationError("Enter your address above, then use “Place pin from address”.");
+      return null;
+    }
+    setLocationError("");
+    setLocationLoading(true);
+    try {
+      const res = await fetch(
+        `${API_BASE}/api/geocode?q=${encodeURIComponent(line)}`
+      );
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setCoords(null);
+        setLocationError(data.message || "Could not place pin from this address.");
+        setLocationLoading(false);
+        return null;
+      }
+      if (typeof data.lat === "number" && typeof data.lng === "number") {
+        const c = { lat: data.lat, lng: data.lng };
+        setCoords(c);
+        setLocationLoading(false);
+        return c;
+      }
+      setCoords(null);
+      setLocationError("Could not place pin from this address.");
+      setLocationLoading(false);
+      return null;
+    } catch {
+      setCoords(null);
+      setLocationError("Could not reach the server. Is the backend running?");
+      setLocationLoading(false);
+      return null;
+    }
   };
 
   const handleNextStep = () => {
@@ -93,7 +159,7 @@ const RegisterCollector = () => {
     setStep(2);
   };
 
-  const submitCollector = () => {
+  const submitCollector = async () => {
     let ok = true;
     if (acceptedCategories.length === 0) {
       setCategoriesError("Select at least one category");
@@ -107,16 +173,21 @@ const RegisterCollector = () => {
       setAddressError("Address required");
       ok = false;
     } else setAddressError("");
+    let locationForSubmit = coords;
+
     if (!locationConsent) {
       setLocationError("Consent required for location");
       ok = false;
     } else if (locationLoading) {
       setLocationError("Detecting location, please wait...");
       ok = false;
-    } else if (!coords) {
-      setLocationError("Location not detected. Please enable location sharing and try again.");
-      getCurrentLocation();
-      ok = false;
+    } else if (!locationForSubmit) {
+      const geocoded = await geocodeFromAddress();
+      if (!geocoded) ok = false;
+      else {
+        locationForSubmit = geocoded;
+        setLocationError("");
+      }
     } else {
       setLocationError("");
     }
@@ -134,7 +205,7 @@ const RegisterCollector = () => {
       password,
       phone,
       pic: pic.trim() ? pic : DEFAULT_PROFILE_PIC,
-      location: coords,
+      location: locationForSubmit,
       locationConsent,
     };
 
@@ -527,7 +598,7 @@ const RegisterCollector = () => {
                       onChange={(e) => {
                         const checked = e.target.checked;
                         setLocationConsent(checked);
-                        if (checked) getCurrentLocation();
+                        if (checked) void tryGpsLocation();
                         else {
                           setCoords(null);
                           setLocationError("");
@@ -541,9 +612,35 @@ const RegisterCollector = () => {
                         Detecting location...
                       </span>
                     )}
+                    {coords && !locationLoading && (
+                      <span style={{ color: "#2f855a", fontSize: "14px", marginLeft: 10 }}>
+                        Map pin set.
+                      </span>
+                    )}
                     {locationError && (
                       <div style={{ color: "red", fontSize: "14px", marginTop: "5px" }}>
                         {locationError}
+                      </div>
+                    )}
+                    {locationConsent && !locationLoading && (
+                      <div className="d-flex flex-wrap gap-2 mt-2">
+                        <Button
+                          type="button"
+                          size="sm"
+                          style={{ backgroundColor: "#006D90", border: "none" }}
+                          onClick={() => void tryGpsLocation()}
+                        >
+                          Retry GPS
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          outline
+                          style={{ color: "#006D90", borderColor: "#006D90" }}
+                          onClick={() => void geocodeFromAddress()}
+                        >
+                          Place pin from address
+                        </Button>
                       </div>
                     )}
                   </div>

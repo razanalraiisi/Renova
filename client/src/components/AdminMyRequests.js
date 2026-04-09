@@ -91,7 +91,7 @@ export default function AdminMyRequests() {
       </button>
       <h2 className="admin-title">Collector Account Requests – History</h2>
       <p style={{ textAlign: "center", color: "#666", marginBottom: 20 }}>
-        All collector requests (pending, approved, and deactivated). You can reactivate deactivated accounts.
+        All collector requests (pending, approved, and deactivated)
       </p>
 
       {loading && <p style={{ textAlign: "center" }}>Loading…</p>}
