@@ -4,9 +4,9 @@ import { Navbar, NavbarBrand } from "reactstrap";
 import { FaUserCircle } from "react-icons/fa";
 
 import recycle from "../assets/recycle.png";
-import Dispose from "../assets/Dispose.jpg";
+import Dispose from "../assets/Dispose.png";
 import ddc from "../assets/ddc.png";
-import Upcycle from "../assets/Upcycle.jpg";
+import Upcycle from "../assets/Upcycle.png";
 import logo from "../assets/logo.png";
 
 const Start = () => {

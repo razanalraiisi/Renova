@@ -4,8 +4,8 @@ import { Navbar, NavbarBrand } from "reactstrap";
 import { FaArrowLeft } from "react-icons/fa";
 import logo from "../assets/logo.png";
 import recycleImg from "../assets/recycle.png";
-import upcycleImg from "../assets/Upcycle.jpg";
-import disposeImg from "../assets/Dispose.jpg";
+import upcycleImg from "../assets/Upcycle.png";
+import disposeImg from "../assets/Dispose.png";
 
 const DecisionResult = () => {
   const navigate = useNavigate();
