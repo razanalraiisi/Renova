@@ -19,22 +19,19 @@ const UserDash = () => {
 
   const [activeTab, setActiveTab] = useState("profile");
   const [theme, setTheme] = useState(() => localStorage.getItem("userTheme") || "Light");
-  const isDarkEffective =
-    theme === "Dark" ||
-    (theme === "System" &&
-      window.matchMedia &&
-      window.matchMedia("(prefers-color-scheme: dark)").matches);
+  const isDarkEffective = theme === "Dark" || (theme === "System" && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+
   const [requests, setRequests] = useState([]);
   const [loadingRequests, setLoadingRequests] = useState(true);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
   const [cancelTargetId, setCancelTargetId] = useState(null);
 
-  // Notification state
+  // Notifications
   const [notifOpen, setNotifOpen] = useState(false);
   const [openId, setOpenId] = useState(null);
   const [seenNotifications, setSeenNotifications] = useState([]);
-  // Search state
+
   const [searchTerm, setSearchTerm] = useState("");
 
   const defaultValues = { uname: user?.uname || "", phone: user?.phone || "" };
@@ -50,11 +47,9 @@ const UserDash = () => {
     resolver: yupResolver(schema),
   });
 
-  // Apply theme immediately on this page (AdminThemeSync only updates on route change).
   useEffect(() => {
     const root = document.documentElement;
     const apply = (value) => root.setAttribute("data-theme", value);
-
     if (theme === "System") {
       const media = window.matchMedia("(prefers-color-scheme: dark)");
       const applySystem = () => apply(media.matches ? "dark" : "light");
@@ -62,9 +57,7 @@ const UserDash = () => {
       media.addEventListener("change", applySystem);
       return () => media.removeEventListener("change", applySystem);
     }
-
     apply(theme.toLowerCase());
-    return undefined;
   }, [theme]);
 
   useEffect(() => {
@@ -91,46 +84,27 @@ const UserDash = () => {
       const token = localStorage.getItem("token") || sessionStorage.getItem("token");
       if (!token) return;
 
-      // Fetch pickup requests
-      const pickupRes = await fetch("http://localhost:5000/api/pickups/user/requests", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const pickupRes = await fetch("http://localhost:5000/api/pickups/user/requests", { headers: { Authorization: `Bearer ${token}` } });
       const pickupData = await pickupRes.json();
-      let pickupRequests = [];
-      if (Array.isArray(pickupData)) pickupRequests = pickupData;
-      else if (pickupData.requests && Array.isArray(pickupData.requests)) pickupRequests = pickupData.requests;
+      let pickupRequests = Array.isArray(pickupData) ? pickupData : pickupData.requests || [];
 
-      // Fetch drop-off requests
-      const dropOffRes = await fetch("http://localhost:5000/api/dropoffs/user/requests", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const dropOffRes = await fetch("http://localhost:5000/api/dropoffs/user/requests", { headers: { Authorization: `Bearer ${token}` } });
       const dropOffData = await dropOffRes.json();
-      let dropOffRequests = [];
-      if (Array.isArray(dropOffData)) dropOffRequests = dropOffData;
-      else if (dropOffData.requests && Array.isArray(dropOffData.requests)) dropOffRequests = dropOffData.requests;
+      let dropOffRequests = Array.isArray(dropOffData) ? dropOffData : dropOffData.requests || [];
 
-      // Combine and sort by createdAt descending
       const allRequests = [...pickupRequests, ...dropOffRequests].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-
-      if (JSON.stringify(allRequests) !== JSON.stringify(requests)) {
-        setRequests(allRequests);
-      }
+      if (JSON.stringify(allRequests) !== JSON.stringify(requests)) setRequests(allRequests);
     } catch (err) {
-      console.error("Error fetching requests:", err);
+      console.error(err);
       setRequests([]);
     } finally {
       setLoadingRequests(false);
     }
   };
 
-  useEffect(() => {
-    fetchRequests();
-  }, [user]);
+  useEffect(() => { fetchRequests(); }, [user]);
 
-  const handleCancel = (id) => {
-    setCancelTargetId(id);
-    setCancelConfirmOpen(true);
-  };
+  const handleCancel = (id) => { setCancelTargetId(id); setCancelConfirmOpen(true); };
 
   const confirmCancel = async () => {
     const id = cancelTargetId;
@@ -138,28 +112,17 @@ const UserDash = () => {
     setCancelTargetId(null);
 
     const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-    if (!token) {
-      setSnackbar({ open: true, message: "Authentication required.", severity: "error" });
-      return;
-    }
+    if (!token) { setSnackbar({ open: true, message: "Authentication required.", severity: "error" }); return; }
 
-    // Find the request to determine type
     const request = requests.find(r => r._id === id);
-    if (!request) {
-      setSnackbar({ open: true, message: "Request not found.", severity: "error" });
-      return;
-    }
+    if (!request) { setSnackbar({ open: true, message: "Request not found.", severity: "error" }); return; }
 
-    const endpoint = request.requestType === "DropOff" ? 
-      `http://localhost:5000/api/dropoffs/cancel/${id}` : 
-      `http://localhost:5000/api/pickups/cancel/${id}`;
+    const endpoint = request.requestType === "DropOff"
+      ? `http://localhost:5000/api/dropoffs/cancel/${id}`
+      : `http://localhost:5000/api/pickups/cancel/${id}`;
 
     try {
-      const res = await fetch(endpoint, {
-        method: "PUT",
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
+      const res = await fetch(endpoint, { method: "PUT", headers: { Authorization: `Bearer ${token}` } });
       if (res.ok) {
         setRequests(prev => prev.map(req => req._id === id ? { ...req, status: "Canceled" } : req));
         setSnackbar({ open: true, message: "Request canceled successfully!", severity: "success" });
@@ -168,8 +131,34 @@ const UserDash = () => {
         setSnackbar({ open: true, message: error.message || "Failed to cancel request.", severity: "error" });
       }
     } catch (err) {
-      console.error("Cancel error:", err);
+      console.error(err);
       setSnackbar({ open: true, message: "Server error.", severity: "error" });
+    }
+  };
+
+  const handleTryAgain = async (requestId) => {
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+    if (!token) return setSnackbar({ open: true, message: "You must be logged in", severity: "error" });
+
+    const request = requests.find(r => r._id === requestId);
+    if (!request) return setSnackbar({ open: true, message: "Request not found", severity: "error" });
+
+    try {
+      const endpoint = request.requestType === "DropOff"
+        ? `http://localhost:5000/api/dropoffs/try-again/${requestId}`
+        : `http://localhost:5000/api/pickups/try-again/${requestId}`;
+
+      const res = await fetch(endpoint, { method: "PUT", headers: { Authorization: `Bearer ${token}` } });
+      if (res.ok) {
+        setSnackbar({ open: true, message: "We are looking for a new collector!", severity: "success" });
+        fetchRequests();
+      } else {
+        const error = await res.json();
+        setSnackbar({ open: true, message: error.message || "Failed to try again", severity: "error" });
+      }
+    } catch (err) {
+      console.error(err);
+      setSnackbar({ open: true, message: "Server error", severity: "error" });
     }
   };
 
@@ -182,26 +171,16 @@ const UserDash = () => {
     navigate("/");
   };
 
-  const handleThemeChange = (e) => {
-    const value = e.target.value;
-    setTheme(value);
-    localStorage.setItem("userTheme", value);
-  };
-
   const toggleTheme = () => {
     const next = isDarkEffective ? "Light" : "Dark";
     setTheme(next);
     localStorage.setItem("userTheme", next);
-    setNotifOpen(false); // avoid overlapping with the notification dropdown
+    setNotifOpen(false);
   };
 
   const onSubmit = async (data) => {
     if (!user?._id) return;
-    const payload = {
-      ...data,
-      uname: user?.uname || data.uname,
-      _id: user._id,
-    };
+    const payload = { ...data, uname: user?.uname || data.uname, _id: user._id };
     await dispatch(updateUser(payload));
     fetchRequests();
   };
@@ -216,14 +195,13 @@ const UserDash = () => {
   ];
 
   const getStatusColor = (status) => {
-    if (status === "Pending") return "#9e9e9e";
+    if (status === "Pending") return "#ffc107";
     if (status === "Accepted") return "#28a745";
     if (status === "Rejected") return "#dc3545";
     if (status === "Canceled") return "#6c757d";
     return "#9e9e9e";
   };
 
-  // Filtered requests based on search
   const filteredRequests = requests.filter(req =>
     req.device.toLowerCase().includes(searchTerm.toLowerCase()) ||
     req.requestType.toLowerCase().includes(searchTerm.toLowerCase())
@@ -239,146 +217,55 @@ const UserDash = () => {
           </NavbarBrand>
           <div className="nav-links">
             {navItems.map((item) => (
-              <Link
-                key={item.name}
-                to={item.path}
-                className={location.pathname === item.path ? "nav-link active-link" : "nav-link"}
-              >
-                {item.name}
-              </Link>
+              <Link key={item.name} to={item.path} className={location.pathname === item.path ? "nav-link active-link" : "nav-link"}>{item.name}</Link>
             ))}
           </div>
 
           {/* Notification Bell */}
-<div style={{ position: "relative" }}>
-  <FaBell
-    style={{ fontSize: 22, color: "#fff", cursor: "pointer" }}
-    onClick={() => setNotifOpen(!notifOpen)}
-  />
+          <div style={{ position: "relative" }}>
+            <FaBell style={{ fontSize: 22, color: "#fff", cursor: "pointer" }} onClick={() => setNotifOpen(!notifOpen)} />
+            {requests.filter(r => !seenNotifications.includes(r._id)).length > 0 && (
+              <span style={{ position: "absolute", top: -5, right: -5, width: 12, height: 12, borderRadius: "50%", backgroundColor: "#dc3545" }} />
+            )}
+            {notifOpen && (
+              <Box sx={{ position: "absolute", right: 0, top: 28, width: 350, maxHeight: 400, overflowY: "auto", bgcolor: "background.paper", boxShadow: 3, borderRadius: 2, zIndex: 9999, p: 1 }}>
+                {loadingRequests ? (
+                  <Typography sx={{ p: 2 }}>Loading...</Typography>
+                ) : requests.filter(r => !seenNotifications.includes(r._id)).length === 0 ? (
+                  <Typography sx={{ p: 2 }}>No notifications</Typography>
+                ) : (
+                  requests
+                    .filter(r => !seenNotifications.includes(r._id))
+                    .map((r) => (
+                      <Card key={r._id} sx={{
+                        mb: 1,
+                        borderRadius: 2,
+                        border: r.status === "Accepted" ? "2px solid #28a745" : r.status === "Pending" ? "2px dashed #ffc107" : "1px solid #ddd",
+                        backgroundColor: r.status === "Accepted" ? "#e6f4ea" : "#fff",
+                      }}>
+                        <CardContent sx={{ display: "flex", gap: 1 }}>
+                          <img src={r.image ? `http://localhost:5000/uploads/${r.image}` : "https://via.placeholder.com/50"} style={{ width: 50, height: 50, objectFit: "cover", borderRadius: 6 }} />
+                          <Box sx={{ flex: 1 }}>
+                            <Typography fontWeight={600}>{r.device}</Typography>
+                            <Typography fontSize={12}>Type: {r.requestType}</Typography>
+                            <Typography fontSize={12}>Request Date: {new Date(r.createdAt).toLocaleDateString()}</Typography>
+                            {r.status === "Accepted" && r.collectorName && (
+                              <Typography fontSize={12} color="#28a745">Collector: {r.collectorName}</Typography>
+                            )}
+                            <Typography fontSize={12} color={getStatusColor(r.status)}>Status: {r.status}</Typography>
+                            {r.status === "Pending" && (
+                              <Button variant="contained" size="small" sx={{ mt: 1, backgroundColor: "#ffc107", color: "#000" }} onClick={() => handleTryAgain(r._id)}>Try Again</Button>
+                            )}
+                          </Box>
+                        </CardContent>
+                      </Card>
+                    ))
+                )}
+              </Box>
+            )}
+          </div>
 
-  {/* ✅ UPDATED RED DOT */}
-  {requests.filter(r => !seenNotifications.includes(r._id)).length > 0 && (
-    <span style={{
-      position: "absolute",
-      top: -5,
-      right: -5,
-      width: 12,
-      height: 12,
-      borderRadius: "50%",
-      backgroundColor: "#dc3545",
-    }} />
-  )}
-
-  {notifOpen && (
-    <Box sx={{
-      position: "absolute",
-      right: 0,
-      top: 28,
-      width: 350,
-      maxHeight: 400,
-      overflowY: "auto",
-      bgcolor: "background.paper",
-      boxShadow: 3,
-      borderRadius: 2,
-      zIndex: 9999,
-      p: 1
-    }}>
-      {loadingRequests ? (
-        <Typography sx={{ p: 2 }}>Loading...</Typography>
-      ) : requests.filter(r => !seenNotifications.includes(r._id)).length === 0 ? (
-        <Typography sx={{ p: 2 }}>No notifications</Typography>
-      ) : (
-        requests
-          .filter(r => !seenNotifications.includes(r._id))
-          .map((r) => (
-            <Card key={r._id} sx={{ mb: 1, borderRadius: 2 }}>
-              <CardContent sx={{ display: 'flex', gap: 1 }}>
-                <img
-                  src={r.image ? `http://localhost:5000/uploads/${r.image}` : "https://via.placeholder.com/50"}
-                  style={{ width: 50, height: 50, objectFit: "cover", borderRadius: 6 }}
-                />
-
-                <Box sx={{ flex: 1 }}>
-                  <Typography fontWeight={600}>{r.device}</Typography>
-
-                  {openId === r._id ? (
-                    <>
-                      <Divider sx={{ my: 0.5 }} />
-                      <Typography fontSize={12}>Type: {r.requestType}</Typography>
-                      <Typography fontSize={12}>
-                        Request Date: {new Date(r.createdAt).toLocaleDateString()}
-                      </Typography>
-
-                      {r.status === "Accepted" && r.acceptedAt && (
-                        <Typography fontSize={12}>
-                          Accepted Date: {new Date(r.acceptedAt).toLocaleDateString()}
-                        </Typography>
-                      )}
-
-                      <Typography fontSize={12}>Condition: {r.condition}</Typography>
-                      <Typography fontSize={12}>Status: {r.status}</Typography>
-
-                      <Typography
-                        sx={{ mt: 0.5, color: '#1976D2', cursor: 'pointer', fontSize: 12 }}
-                        onClick={() => setOpenId(null)}
-                      >
-                        Less info
-                      </Typography>
-                    </>
-                  ) : (
-                    <>
-                      <Typography fontSize={12}>Type: {r.requestType}</Typography>
-                      <Typography fontSize={12}>
-                        Date: {new Date(r.createdAt).toLocaleDateString()}
-                      </Typography>
-
-                      {r.status === "Accepted" && r.acceptedAt && (
-                        <Typography fontSize={12}>
-                          Accepted Date: {new Date(r.acceptedAt).toLocaleDateString()}
-                        </Typography>
-                      )}
-
-                      <Typography fontSize={12}>Status: {r.status}</Typography>
-
-                      {/* ✅ ONLY CHANGE HERE */}
-                      <Typography
-                        sx={{ mt: 0.5, color: '#1976D2', cursor: 'pointer', fontSize: 12 }}
-                        onClick={() => {
-                          setOpenId(r._id);
-                          setSeenNotifications(prev => [...prev, r._id]);
-                        }}
-                      >
-                        More info
-                      </Typography>
-                    </>
-                  )}
-                </Box>
-              </CardContent>
-            </Card>
-          ))
-      )}
-    </Box>
-  )}
-</div>
-
-          {/* Theme toggle (Light / Dark) */}
-          <button
-            type="button"
-            onClick={toggleTheme}
-            title="Toggle dark mode"
-            style={{
-              marginLeft: 12,
-              background: "transparent",
-              border: "none",
-              color: "#fff",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 20,
-              padding: 0,
-            }}
-          >
+          <button type="button" onClick={toggleTheme} title="Toggle dark mode" style={{ marginLeft: 12, background: "transparent", border: "none", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, padding: 0 }}>
             {isDarkEffective ? <FaSun /> : <FaMoon />}
           </button>
         </div>
@@ -397,18 +284,9 @@ const UserDash = () => {
             <strong>{user?.uname || "User"}</strong>
             <div className="email">{user?.email}</div>
           </div>
-
-          <div className={activeTab === "profile" ? "menu-item active" : "menu-item"} onClick={() => setActiveTab("profile")}>
-            <FaUser /> My Profile
-          </div>
-
-          <div className={activeTab === "requests" ? "menu-item active" : "menu-item"} onClick={() => setActiveTab("requests")}>
-            <FaClipboardList /> My Requests
-          </div>
-
-          <button className="logout-btn" onClick={handleLogout}>
-            <FaSignOutAlt /> Logout
-          </button>
+          <div className={activeTab === "profile" ? "menu-item active" : "menu-item"} onClick={() => setActiveTab("profile")}><FaUser /> My Profile</div>
+          <div className={activeTab === "requests" ? "menu-item active" : "menu-item"} onClick={() => setActiveTab("requests")}><FaClipboardList /> My Requests</div>
+          <button className="logout-btn" onClick={handleLogout}><FaSignOutAlt /> Logout</button>
         </div>
 
         {/* CONTENT */}
@@ -439,70 +317,26 @@ const UserDash = () => {
             <>
               <div className="section-title" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 My Requests
-                {/* SEARCH BAR WITH CLEAR BUTTON */}
                 <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                  <input
-                    type="text"
-                    placeholder="Search requests..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    style={{
-                      padding: "6px 10px",
-                      borderRadius: 6,
-                      border: "1px solid #ccc",
-                      fontSize: 14,
-                      width: 180
-                    }}
-                  />
-                  {searchTerm && (
-                    <button
-                      onClick={() => setSearchTerm("")}
-                      style={{
-                        border: "none",
-                        background: "#ccc",
-                        borderRadius: "50%",
-                        width: 20,
-                        height: 20,
-                        cursor: "pointer",
-                        fontWeight: "bold",
-                        lineHeight: "16px",
-                        padding: 0
-                      }}
-                    >
-                      ×
-                    </button>
-                  )}
+                  <input type="text" placeholder="Search requests..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{ padding: "6px 10px", borderRadius: 6, border: "1px solid #ccc", fontSize: 14, width: 180 }} />
+                  {searchTerm && (<button onClick={() => setSearchTerm("")} style={{ border: "none", background: "#ccc", borderRadius: "50%", width: 20, height: 20, cursor: "pointer", fontWeight: "bold", lineHeight: "16px", padding: 0 }}>×</button>)}
                 </div>
               </div>
 
-              {loadingRequests ? (
-                <p>Loading requests...</p>
-              ) : filteredRequests.length === 0 ? (
-                <p>You don’t have any requests yet.</p>
-              ) : (
+              {loadingRequests ? (<p>Loading requests...</p>) : filteredRequests.length === 0 ? (<p>You don’t have any requests yet.</p>) : (
                 filteredRequests.map((req) => (
                   <div key={req._id} style={{ display: "flex", alignItems: "center", borderBottom: "1px solid #ddd", padding: "20px 0", gap: "20px" }}>
-                    <img src={req.image ? `http://localhost:5000/uploads/${req.image}` : "https://via.placeholder.com/100"}
-                      style={{ width: 100, height: 100, objectFit: "contain", backgroundColor: "#f7f7f7", borderRadius: 8 }} />
+                    <img src={req.image ? `http://localhost:5000/uploads/${req.image}` : "https://via.placeholder.com/100"} style={{ width: 100, height: 100, objectFit: "contain", backgroundColor: "#f7f7f7", borderRadius: 8 }} />
                     <div style={{ flex: 1 }}>
                       <h4 style={{ margin: 0 }}>{req.device}</h4>
                       <div style={{ fontSize: 13, color: "#555", fontWeight: "bold" }}>Type: <span style={{ color: '#1976D2' }}>{req.requestType}</span></div>
                       <div style={{ fontSize: 13, color: "#666" }}>Request Date: {new Date(req.createdAt).toLocaleDateString()}</div>
-                      {req.status === "Accepted" && req.acceptedAt && (
-                        <div style={{ fontSize: 13, color: "#28a745", fontWeight: "bold" }}>Accepted Date: {new Date(req.acceptedAt).toLocaleDateString()}</div>
-                      )}
-                      <div style={{ fontSize: 13, color: "#666" }}>Time: {new Date(req.createdAt).toLocaleTimeString()}</div>
-                    </div>
-                    <div style={{ textAlign: "right", minWidth: 120 }}>
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 8 }}>
-                        <span>{req.status}</span>
-                        <span style={{ width: 12, height: 12, borderRadius: "50%", background: getStatusColor(req.status), display: "inline-block" }} />
+                      {req.status === "Accepted" && req.collectorName && <div style={{ fontSize: 13, color: "#28a745" }}>Collector: {req.collectorName}</div>}
+                      <div style={{ fontSize: 13, color: getStatusColor(req.status), fontWeight: "bold" }}>Status: {req.status}</div>
+                      <div style={{ marginTop: 8, display: "flex", gap: 10 }}>
+                        {req.status === "Pending" && <button className="btn-tryagain" onClick={() => handleTryAgain(req._id)}>Try Again</button>}
+                        {req.status !== "Canceled" && req.status !== "Accepted" && <button className="btn-cancel" onClick={() => handleCancel(req._id)}>Cancel</button>}
                       </div>
-                      {req.status === "Pending" && (
-                        <button onClick={() => handleCancel(req._id)} style={{ marginTop: 20, padding: "6px 14px", border: "1px solid #ccc", borderRadius: 6, background: "#eee", cursor: "pointer" }}>
-                          Cancel
-                        </button>
-                      )}
                     </div>
                   </div>
                 ))
@@ -512,22 +346,19 @@ const UserDash = () => {
         </div>
       </div>
 
+      {/* Cancel Confirmation Dialog */}
       <Dialog open={cancelConfirmOpen} onClose={() => setCancelConfirmOpen(false)}>
         <DialogTitle>Cancel Request</DialogTitle>
-        <DialogContent>
-          <Typography>Are you sure you want to cancel this request?</Typography>
-        </DialogContent>
+        <DialogContent>Are you sure you want to cancel this request?</DialogContent>
         <DialogActions>
-          <Button onClick={() => setCancelConfirmOpen(false)} variant="outlined">No</Button>
-          <Button onClick={confirmCancel} variant="contained" color="error">Yes, cancel</Button>
+          <Button onClick={() => setCancelConfirmOpen(false)}>No</Button>
+          <Button onClick={confirmCancel} variant="contained" color="error">Yes, Cancel</Button>
         </DialogActions>
       </Dialog>
 
       {/* Snackbar */}
-      <Snackbar open={snackbar.open} autoHideDuration={4000} onClose={() => setSnackbar({ ...snackbar, open: false })} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
-        <Alert onClose={() => setSnackbar({ ...snackbar, open: false })} severity={snackbar.severity} sx={{ width: '100%' }}>
-          {snackbar.message}
-        </Alert>
+      <Snackbar open={snackbar.open} autoHideDuration={3000} onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}>
+        <Alert onClose={() => setSnackbar(prev => ({ ...prev, open: false }))} severity={snackbar.severity} sx={{ width: '100%' }}>{snackbar.message}</Alert>
       </Snackbar>
     </div>
   );
