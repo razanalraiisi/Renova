@@ -8,6 +8,7 @@ const PickupRequest = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const category = location.state?.category || "Pickup";
+  const fromPage = location.state?.from || null; // store previous page if provided
 
   const [form, setForm] = useState({
     name: "",
@@ -57,19 +58,16 @@ const PickupRequest = () => {
     let newErrors = {};
 
     if (!form.name.trim()) newErrors.name = "Name is required";
-
     if (!form.email.trim()) {
       newErrors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(form.email)) {
       newErrors.email = "Enter a valid email address";
     }
-
     if (!form.phone.trim()) {
       newErrors.phone = "Phone is required";
     } else if (!/^[279][0-9]{7}$/.test(form.phone)) {
       newErrors.phone = "Enter valid Omani number (8 digits, starts with 2, 7, or 9)";
     }
-
     if (!form.deviceCategory.trim()) newErrors.deviceCategory = "Category is required";
     if (!form.device.trim()) newErrors.device = "Device is required";
     if (!form.condition.trim()) newErrors.condition = "Condition is required";
@@ -158,7 +156,6 @@ const PickupRequest = () => {
             }}>
               {userName.charAt(0).toUpperCase()}
             </div>
-
             <span style={{ color: "white", fontWeight: "bold" }}>
               Hi {userName} 👋
             </span>
@@ -167,10 +164,16 @@ const PickupRequest = () => {
       </Navbar>
 
       <div style={{ padding: "20px" }}>
-        <FaArrowLeft onClick={() => navigate("/start")} style={{ cursor: "pointer" }} />
+        <FaArrowLeft
+          onClick={() => {
+            // If previous page provided, navigate back to it, otherwise go back in history
+            if (fromPage) navigate(fromPage);
+            else navigate(-1);
+          }}
+          style={{ cursor: "pointer" }}
+        />
       </div>
 
-      {/* ✅ NEW TITLE + SUBTITLE */}
       <h2 style={{ textAlign: "center", marginTop: "10px", color: "#0080AA" }}>
         Schedule Your Pickup
       </h2>

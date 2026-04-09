@@ -81,19 +81,16 @@ const DropOff = () => {
     let newErrors = {};
 
     if (!form.name.trim()) newErrors.name = "Name is required";
-
     if (!form.email.trim()) {
       newErrors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(form.email)) {
       newErrors.email = "Enter a valid email address";
     }
-
     if (!form.phone.trim()) {
       newErrors.phone = "Phone is required";
     } else if (!/^[279][0-9]{7}$/.test(form.phone)) {
       newErrors.phone = "Enter valid Omani number (8 digits, starts with 2, 7, or 9)";
     }
-
     if (!form.deviceCategory.trim()) newErrors.deviceCategory = "Category is required";
     if (!form.device.trim()) newErrors.device = "Device is required";
     if (!form.condition.trim()) newErrors.condition = "Condition is required";
@@ -214,7 +211,16 @@ const DropOff = () => {
       </Navbar>
 
       <div style={{ padding: "20px" }}>
-        <FaArrowLeft onClick={() => navigate("/start")} style={{ cursor: "pointer" }} />
+        <FaArrowLeft
+          onClick={() => {
+            if (location.state?.from) {
+              navigate(location.state.from);
+            } else {
+              navigate(-1);
+            }
+          }}
+          style={{ cursor: "pointer" }}
+        />
       </div>
 
       {/* TITLE */}
@@ -235,7 +241,6 @@ const DropOff = () => {
 
           <h3>Schedule Drop Off</h3>
 
-          {/* ORIGINAL FIELDS */}
           <input name="name" placeholder="Name" style={styles.input} value={form.name} readOnly />
           {errors.name && <p style={styles.error}>{errors.name}</p>}
 
@@ -290,7 +295,6 @@ const DropOff = () => {
             Confirm Drop-Off
           </button>
 
-          {/* CENTER INFO */}
           {selectedCenter && (
             <div style={{
               marginTop: "10px",
