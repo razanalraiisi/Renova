@@ -152,7 +152,7 @@ const RequestHistory = () => {
       r.name,
       r.email,
       r.phone,
-      new Date(r.createdAt).toLocaleDateString()
+      new Date(r.createdAt).toLocaleString()
     ]);
 
     let csvContent =
@@ -287,9 +287,9 @@ const RequestHistory = () => {
                               </Typography>
 
                               <Typography fontSize={14}>
-                                Request Date: {new Date(
+                                Request Date & Time: {new Date(
                                   r.createdAt
-                                ).toLocaleDateString()}
+                                ).toLocaleString()}
                               </Typography>
 
                               <Typography fontSize={14}>
@@ -338,7 +338,7 @@ const RequestHistory = () => {
                           <Typography fontSize={14}>
                             Request Date: {new Date(
                               r.createdAt
-                            ).toLocaleDateString()}
+                            ).toLocaleString()}
                           </Typography>
 
                           <Typography fontSize={14}>
