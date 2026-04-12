@@ -40,7 +40,6 @@ const UserNavbar = () => {
   // Refs for click outside handling
   const profileRef = useRef();
   const notifRef = useRef();
-  const ecoActionsRef = useRef();
 
   // ================= EFFECTS =================
   useEffect(() => {
@@ -83,9 +82,6 @@ const UserNavbar = () => {
       if (notifRef.current && !notifRef.current.contains(event.target)) {
         setNotifOpen(false);
       }
-      if (ecoActionsRef.current && !ecoActionsRef.current.contains(event.target)) {
-        setDropdownOpen(false);
-      }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
@@ -115,43 +111,37 @@ const UserNavbar = () => {
       <div className="nav-container" style={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
 
         {/* LEFT */}
-        <NavbarBrand tag={Link} to="/start" className="brand" style={{ display: "flex", alignItems: "center", color: "#fff" }}>
+        <NavbarBrand tag={Link} to="/start" className="brand" style={{ display: "flex", alignItems: "center" }}>
           <img src={logo} className="logo" alt="logo" />
-          <span style={{ fontWeight: "bold", marginLeft: 8, color: "#fff" }}>ReNova</span>
+          <span style={{ fontWeight: "bold", marginLeft: 8 }}>ReNova</span>
         </NavbarBrand>
 
         {/* CENTER */}
         <div style={{ display: "flex", gap: 20, alignItems: "center" }}>
 
           {/* Animated Dropdown */}
-          <div ref={ecoActionsRef} className="dropdown" style={{ position: "relative" }}>
+          <div className="dropdown">
             <span
               className="nav-link"
-              onClick={() => {
-                setDropdownOpen(!dropdownOpen);
-                setProfileOpen(false);
-                setNotifOpen(false);
-              }}
+              onClick={() => setDropdownOpen(!dropdownOpen)}
               style={{ cursor: "pointer", color: "#fff" }}
             >
-              Request Action
+              Request Actions ▾
             </span>
 
-            {dropdownOpen && (
-              <div className="dropdown-menu open" style={{ position: "absolute", top: 30, left: 0, background: "white", borderRadius: 8, boxShadow: "0 4px 10px rgba(0,0,0,0.1)", display: "flex", flexDirection: "column", minWidth: 180, zIndex: 1000 }}>
-                {ecoActions.map((item) => (
-                  <Link
-                    key={item.name}
-                    to={item.path}
-                    className="dropdown-item"
-                    onClick={() => setDropdownOpen(false)}
-                    style={{ color: "#000", padding: "10px", textDecoration: "none" }}
-                  >
-                    {item.name}
-                  </Link>
-                ))}
-              </div>
-            )}
+            <div className={`dropdown-menu ${dropdownOpen ? "open" : ""}`}>
+              {ecoActions.map((item) => (
+                <Link
+                  key={item.name}
+                  to={item.path}
+                  className="dropdown-item"
+                  onClick={() => setDropdownOpen(false)}
+                  style={{ color: "#000000" }}
+                >
+                  {item.name}
+                </Link>
+              ))}
+            </div>
           </div>
 
           {navItems.map((item) => (
@@ -171,10 +161,7 @@ const UserNavbar = () => {
 
           {/* NOTIFICATIONS */}
           <div ref={notifRef} style={{ position: "relative" }}>
-            <FaBell style={{ fontSize: 22, color: "#fff", cursor: "pointer" }} onClick={() => {
-              setNotifOpen(!notifOpen);
-              setDropdownOpen(false);
-            }} />
+            <FaBell style={{ fontSize: 22, color: "#fff", cursor: "pointer" }} onClick={() => setNotifOpen(!notifOpen)} />
             {unread > 0 && (
               <span style={{ position: "absolute", top: -5, right: -5, width: 12, height: 12, borderRadius: "50%", backgroundColor: "#dc3545" }} />
             )}
@@ -200,11 +187,7 @@ const UserNavbar = () => {
                             <Typography fontSize={12} color="#28a745">Collector: {r.collectorName}</Typography>
                           )}
                           <Typography fontSize={12} color={r.status === "Accepted" ? "#28a745" : r.status === "Pending" ? "#a67c00" : "#666"}>Status: {r.status}</Typography>
-                          {r.status === "Pending" && (
-                            <Button variant="contained" size="small" sx={{ mt: 1, backgroundColor: "#ffc107", color: "#000" }} onClick={() => {
-                              // Try again functionality would go here
-                            }}>Try Again</Button>
-                          )}
+                          {r.status === "Pending"}
                         </Box>
                       </CardContent>
                     </Card>
@@ -225,7 +208,6 @@ const UserNavbar = () => {
               onClick={() => {
                 setProfileOpen((prev) => !prev);
                 setNotifOpen(false);
-                setDropdownOpen(false);
               }}
               style={{
                 display: "flex",
@@ -260,11 +242,11 @@ const UserNavbar = () => {
 
             {/* PROFILE DROPDOWN */}
             {profileOpen && (
-              <div className="dropdown-menu open" style={{ position: "absolute", right: 0, left: "auto", minWidth: 220, background: "white", borderRadius: 8, boxShadow: "0 4px 10px rgba(0,0,0,0.1)", zIndex: 1000, display: "flex", flexDirection: "column" }}>
-                <div className="profile-box" style={{ padding: "20px", borderBottom: "1px solid #eee", textAlign: "center", color: "#000" }}>
+              <div className="dropdown-menu open" style={{ position: "absolute", right: 0, left: "auto", minWidth: 220, background: "#333", borderRadius: 8, boxShadow: "0 4px 10px rgba(0,0,0,0.1)", zIndex: 1000, display: "flex", flexDirection: "column" }}>
+                <div className="profile-box" style={{ padding: "20px", borderBottom: "1px solid #555", textAlign: "center", color: "#fff" }}>
                   {user?.pic ? <img src={user.pic} alt="profile" className="avatar-img" /> : <div className="avatar"></div>}
-                  <strong style={{ color: "#000" }}>{userName}</strong>
-                  <div className="email" style={{ color: "#666" }}>{user?.email}</div>
+                  <strong style={{ color: "#fff" }}>{userName}</strong>
+                  <div className="email" style={{ color: "#ccc" }}>{user?.email}</div>
                 </div>
                 <button
                   type="button"
@@ -273,7 +255,7 @@ const UserNavbar = () => {
                     setProfileOpen(false);
                     navigate("/UserDash");
                   }}
-                  style={{ width: "100%", textAlign: "left", background: "transparent", border: "none", padding: "10px 14px", cursor: "pointer", color: "#000" }}
+                  style={{ width: "100%", textAlign: "left", background: "transparent", border: "none", padding: "10px 14px", cursor: "pointer", color: "#fff" }}
                 >
                   My Profile
                 </button>
