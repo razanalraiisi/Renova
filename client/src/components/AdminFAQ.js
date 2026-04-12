@@ -6,7 +6,12 @@ import {
   CardBody,
   CardTitle
 } from "reactstrap";
-import { getFAQs, saveFAQs } from "../services/FaqServices";
+import {
+  getFAQs,
+  createFAQ,
+  updateFAQ,
+  deleteFAQ
+} from "../services/FaqServices";
 import './Components.css';
 
 const AdminFAQ = () => {
@@ -16,44 +21,38 @@ const AdminFAQ = () => {
   const [editId, setEditId] = useState(null);
 
   useEffect(() => {
-    const storedFAQs = getFAQs();
-    setFaqs(storedFAQs);
+    const fetchFAQs = async () => {
+      const data = await getFAQs();
+      setFaqs(data);
+    };
+    fetchFAQs();
   }, []);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!question.trim() || !answer.trim()) return;
 
-    let updatedFAQs;
-
     if (editId !== null) {
-      updatedFAQs = faqs.map(faq =>
-        faq.id === editId ? { ...faq, question, answer } : faq
-      );
+      const updated = await updateFAQ(editId, { question, answer });
+      setFaqs(faqs.map(faq => faq._id === editId ? updated : faq));
       setEditId(null);
     } else {
-      updatedFAQs = [
-        ...faqs,
-        { id: Date.now(), question, answer }
-      ];
+      const newFAQ = await createFAQ({ question, answer });
+      setFaqs([newFAQ, ...faqs]);
     }
-
-    setFaqs(updatedFAQs);
-    saveFAQs(updatedFAQs);
 
     setQuestion("");
     setAnswer("");
   };
 
   const handleEdit = (faq) => {
-    setEditId(faq.id);
+    setEditId(faq._id);
     setQuestion(faq.question);
     setAnswer(faq.answer);
   };
 
-  const handleDelete = (id) => {
-    const updatedFAQs = faqs.filter(faq => faq.id !== id);
-    setFaqs(updatedFAQs);
-    saveFAQs(updatedFAQs);
+  const handleDelete = async (id) => {
+    await deleteFAQ(id);
+    setFaqs(faqs.filter(faq => faq._id !== id));
   };
 
   return (
@@ -61,7 +60,8 @@ const AdminFAQ = () => {
       <h3 style={{ textAlign: "center", color: "#006D90"}}>Manage FAQs</h3>
       <br/>
 
-      <Card className="faq-form">
+      {/* ❌ REMOVED key={faq._id} (this was causing the error) */}
+      <Card className="faq-item">
         <CardBody>
           <CardTitle><b style={{color: "#006D90"}}>Add / Update FAQ</b></CardTitle>
 
@@ -87,7 +87,7 @@ const AdminFAQ = () => {
       </Card>
 
       {faqs.map(faq => (
-        <Card key={faq.id} className="faq-item">
+        <Card key={faq._id} className="faq-item">
           <CardBody>
             <strong>{faq.question}</strong>
             <p>{faq.answer}</p>
@@ -95,7 +95,7 @@ const AdminFAQ = () => {
             <Button color="warning" size="sm" onClick={() => handleEdit(faq)}>
               Edit
             </Button>{" "}
-            <Button color="danger" size="sm" onClick={() => handleDelete(faq.id)}>
+            <Button color="danger" size="sm" onClick={() => handleDelete(faq._id)}>
               Delete
             </Button>
           </CardBody>

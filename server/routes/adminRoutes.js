@@ -21,6 +21,12 @@ import {
 } from "../controllers/deviceController.js";
 import { getChartData, getAdminRequestsByCategory } from "../controllers/dashboardController.js";
 import { verifyAdmin } from "../middleware/authMiddleware.js";
+import {
+  getFAQs,
+  createFAQ,
+  updateFAQ,
+  deleteFAQ
+} from "../controllers/faqController.js";
 
 const router = express.Router();
 
@@ -47,6 +53,10 @@ router.get("/devices", getDevices);
 router.post("/devices", createDevice);
 router.put("/devices/:id", updateDevice);
 router.delete("/devices/:id", deleteDevice);
-
+// FAQ ROUTES
+router.get("/faqs", getFAQs);
+router.post("/faqs", createFAQ);
+router.put("/faqs/:id", updateFAQ);
+router.delete("/faqs/:id", deleteFAQ);
 
 export default router;
