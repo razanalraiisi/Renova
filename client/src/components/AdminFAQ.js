@@ -21,11 +21,22 @@ const AdminFAQ = () => {
   const [editId, setEditId] = useState(null);
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchFAQs = async () => {
-      const data = await getFAQs();
-      setFaqs(data);
+      try {
+        const data = await getFAQs();
+        if (isMounted) setFaqs(data || []);
+      } catch (err) {
+        if (isMounted) setFaqs([]);
+      }
     };
+
     fetchFAQs();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const handleSave = async () => {
@@ -60,10 +71,11 @@ const AdminFAQ = () => {
       <h3 style={{ textAlign: "center", color: "#006D90"}}>Manage FAQs</h3>
       <br/>
 
-      {/* ❌ REMOVED key={faq._id} (this was causing the error) */}
       <Card className="faq-item">
         <CardBody>
-          <CardTitle><b style={{color: "#006D90"}}>Add / Update FAQ</b></CardTitle>
+          <CardTitle>
+            <b style={{color: "#006D90"}}>Add / Update FAQ</b>
+          </CardTitle>
 
           <Input
             placeholder="Enter question"

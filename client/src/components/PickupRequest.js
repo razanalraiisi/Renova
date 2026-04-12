@@ -33,15 +33,21 @@ const PickupRequest = () => {
 
   // Pre-fill user data
   useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem("user")) || JSON.parse(sessionStorage.getItem("user"));
-    if (storedUser) {
-      setForm(prev => ({
-        ...prev,
-        name: storedUser.uname || "",
-        email: storedUser.email || "",
-        phone: storedUser.phone || "",
-      }));
-      setUserName(storedUser.uname || "");
+    try {
+      const storedUser =
+        JSON.parse(localStorage.getItem("user") || "null") ||
+        JSON.parse(sessionStorage.getItem("user") || "null");
+      if (storedUser) {
+        setForm(prev => ({
+          ...prev,
+          name: storedUser.uname || "",
+          email: storedUser.email || "",
+          phone: storedUser.phone || "",
+        }));
+        setUserName(storedUser.uname || "");
+      }
+    } catch (error) {
+      console.error("Error parsing user data from storage:", error);
     }
   }, []);
 
