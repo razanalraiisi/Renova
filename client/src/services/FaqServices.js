@@ -1,19 +1,22 @@
-const FAQ_KEY = "faqs";
+import axios from "axios";
 
-export const getFAQs = () => {
-  try {
-    const data = localStorage.getItem(FAQ_KEY);
-    return data ? JSON.parse(data) : [];
-  } catch (error) {
-    console.error("Error reading FAQs from localStorage:", error);
-    return [];
-  }
+const API_URL = "http://localhost:5000/admin/faqs";
+
+export const getFAQs = async () => {
+  const res = await axios.get(API_URL);
+  return res.data;
 };
 
-export const saveFAQs = (faqs) => {
-  try {
-    localStorage.setItem(FAQ_KEY, JSON.stringify(faqs));
-  } catch (error) {
-    console.error("Error saving FAQs to localStorage:", error);
-  }
+export const createFAQ = async (faq) => {
+  const res = await axios.post(API_URL, faq);
+  return res.data;
+};
+
+export const updateFAQ = async (id, faq) => {
+  const res = await axios.put(`${API_URL}/${id}`, faq);
+  return res.data;
+};
+
+export const deleteFAQ = async (id) => {
+  await axios.delete(`${API_URL}/${id}`);
 };
