@@ -332,11 +332,30 @@ const UserDash = () => {
                       <div style={{ fontSize: 13, color: "#555", fontWeight: "bold" }}>Type: <span style={{ color: '#1976D2' }}>{req.requestType}</span></div>
                       <div style={{ fontSize: 13, color: "#666" }}>Request Date: {new Date(req.createdAt).toLocaleDateString()}</div>
                       {req.status === "Accepted" && req.collectorName && <div style={{ fontSize: 13, color: "#28a745" }}>Collector: {req.collectorName}</div>}
-                      <div style={{ fontSize: 13, color: getStatusColor(req.status), fontWeight: "bold" }}>Status: {req.status}</div>
-                      <div style={{ marginTop: 8, display: "flex", gap: 10 }}>
-                        {req.status === "Pending" && <button className="btn-tryagain" onClick={() => handleTryAgain(req._id)}>Try Again</button>}
-                        {req.status !== "Canceled" && req.status !== "Accepted" && <button className="btn-cancel" onClick={() => handleCancel(req._id)}>Cancel</button>}
-                      </div>
+                      <div style={{ fontSize: 13, color: getStatusColor(req.status), fontWeight: "bold" }}>
+  Status: {req.status === "Canceled" && req.rejectReason ? "Rejected" : req.status}
+</div>
+                     <div style={{ marginTop: 8, display: "flex", gap: 10 }}>
+
+  {/* ✅ PENDING → ONLY CANCEL */}
+  {req.status === "Pending" && (
+    <button className="btn-cancel" onClick={() => handleCancel(req._id)}>
+      Cancel
+    </button>
+  )}
+
+  {/* ❌ ACCEPTED → NO BUTTONS */}
+
+  {/* ❌ CANCELED → NO BUTTONS */}
+
+  {/* ✅ REJECTED → ONLY TRY AGAIN */}
+  {req.status === "Rejected" && (
+    <button className="btn-tryagain" onClick={() => handleTryAgain(req._id)}>
+      Try Again
+    </button>
+  )}
+
+</div>
                     </div>
                   </div>
                 ))
