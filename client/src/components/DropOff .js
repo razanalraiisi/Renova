@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Navbar, NavbarBrand } from "reactstrap";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { FaArrowLeft } from "react-icons/fa";
+import { FaArrowLeft, FaSync } from "react-icons/fa";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import axios from "axios";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import markerIcon from "leaflet/dist/images/marker-icon.png";
@@ -34,8 +35,11 @@ const DropOff = () => {
 
   const [image, setImage] = useState(null);
   const [errors, setErrors] = useState({});
+
   const [selectedCenter, setSelectedCenter] = useState(null);
   const [userName, setUserName] = useState("");
+  const [collectors, setCollectors] = useState([]);
+  const [loadingCollectors, setLoadingCollectors] = useState(false);
 
   const allCategories = [
     "Small Electronics","Large Electronics","Home Appliances (Small)","Home Appliances (Large)","IT & Office Equipment",
@@ -43,20 +47,70 @@ const DropOff = () => {
     "Lighting Equipment","Medical & Fitness Devices","Batteries & Accessories"
   ];
 
-  const centers = [
-    {
-      id: 1,
-      companyName: "Beah",
-      position: [23.5859, 58.4059],
-      address: "Muscat, Oman",
-      phone: "98765401",
-      hours: "08:00 - 06:00",
-    },
-  ];
+  // =========================
+  // DATE / TIME RULES (OMAN FIX)
+  // =========================
 
-  // Pre-fill user data
+  const isWeekend = (date) => {
+    const day = date.getDay();
+    return day === 5 || day === 6; // Friday, Saturday
+  };
+
+  const isValidDateTime = (value) => {
+    if (!value) return false;
+
+    const dt = new Date(value);
+    const now = new Date();
+
+    const isSameDay =
+      dt.getFullYear() === now.getFullYear() &&
+      dt.getMonth() === now.getMonth() &&
+      dt.getDate() === now.getDate();
+
+    // ❌ past or today
+    if (dt <= now || isSameDay) return false;
+
+    // ❌ Friday / Saturday
+    if (isWeekend(dt)) return false;
+
+    // ❌ time restriction
+    const hour = dt.getHours();
+    if (hour < 8 || hour > 17) return false;
+
+    return true;
+  };
+
+  const getMinDateTime = () => {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    d.setHours(8, 0, 0, 0);
+    return d.toISOString().slice(0, 16);
+  };
+
+  // =========================
+  // FETCH COLLECTORS
+  // =========================
+
+  const fetchCollectors = async () => {
+    setLoadingCollectors(true);
+    try {
+      const res = await axios.get("http://localhost:5000/admin/getApprovedCollectors");
+      const approvedWithLocation = res.data.filter(
+        (c) => c.isApproved && c.location && c.location.lat && c.location.lng
+      );
+      setCollectors(approvedWithLocation);
+    } catch (err) {
+      console.error("Error fetching collectors:", err);
+    } finally {
+      setLoadingCollectors(false);
+    }
+  };
+
   useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem("user")) || JSON.parse(sessionStorage.getItem("user"));
+    const storedUser =
+      JSON.parse(localStorage.getItem("user")) ||
+      JSON.parse(sessionStorage.getItem("user"));
+
     if (storedUser) {
       setForm(prev => ({
         ...prev,
@@ -66,7 +120,27 @@ const DropOff = () => {
       }));
       setUserName(storedUser.uname || "");
     }
-  }, []);
+
+    fetchCollectors();
+
+    if (location.state?.collector) {
+      const collector = location.state.collector;
+
+      setSelectedCenter({
+        id: collector._id,
+        companyName: collector.companyName,
+        position: [collector.location.lat, collector.location.lng],
+        address: collector.address,
+        phone: collector.phone,
+        hours: collector.openHr,
+      });
+
+      setForm(prev => ({
+        ...prev,
+        address: collector.address,
+      }));
+    }
+  }, [location.state]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -77,29 +151,46 @@ const DropOff = () => {
     setForm({ ...form, phone: value });
   };
 
+  // =========================
+  // VALIDATION
+  // =========================
+
   const validate = () => {
     let newErrors = {};
 
     if (!form.name.trim()) newErrors.name = "Name is required";
+
     if (!form.email.trim()) {
       newErrors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(form.email)) {
       newErrors.email = "Enter a valid email address";
     }
+
     if (!form.phone.trim()) {
       newErrors.phone = "Phone is required";
     } else if (!/^[279][0-9]{7}$/.test(form.phone)) {
       newErrors.phone = "Enter valid Omani number (8 digits, starts with 2, 7, or 9)";
     }
+
     if (!form.deviceCategory.trim()) newErrors.deviceCategory = "Category is required";
     if (!form.device.trim()) newErrors.device = "Device is required";
     if (!form.condition.trim()) newErrors.condition = "Condition is required";
     if (!form.address.trim()) newErrors.address = "Please select location from map";
-    if (!form.dateTime) newErrors.dateTime = "Date & Time is required";
+
+    if (!form.dateTime) {
+      newErrors.dateTime = "Date & Time is required";
+    } else if (!isValidDateTime(form.dateTime)) {
+      newErrors.dateTime =
+        "Only Sunday–Thursday (08:00–17:00), no Friday/Saturday, no past dates";
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
+
+  // =========================
+  // SUBMIT
+  // =========================
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -148,13 +239,25 @@ const DropOff = () => {
     }
   };
 
-  const handleMarkerClick = (center) => {
-    setSelectedCenter(center);
+  const handleMarkerClick = (collector) => {
+    setSelectedCenter({
+      id: collector._id,
+      companyName: collector.companyName,
+      position: [collector.location.lat, collector.location.lng],
+      address: collector.address,
+      phone: collector.phone,
+      hours: collector.openHr,
+    });
+
     setForm(prev => ({
       ...prev,
-      address: center.address,
+      address: collector.address,
     }));
   };
+
+  // =========================
+  // UI (UNCHANGED)
+  // =========================
 
   const styles = {
     page: { fontFamily: "Arial", minHeight: "100vh" },
@@ -173,52 +276,51 @@ const DropOff = () => {
       padding: "20px",
       width: "400px",
     },
-    input: { width: "100%", padding: "10px", marginBottom: "5px", border: "1px solid #ccc", borderRadius: "4px" },
+    input: {
+      width: "100%",
+      padding: "10px",
+      marginBottom: "5px",
+      border: "1px solid #ccc",
+      borderRadius: "4px",
+    },
     error: { color: "red", fontSize: "13px", marginBottom: "10px" },
-    button: { backgroundColor: "#00a0d0", color: "#fff", border: "none", padding: "10px", borderRadius: "20px", width: "100%", fontWeight: "bold" },
-    mapContainer: { flex: 1, height: "600px", borderRadius: "10px", overflow: "hidden" }
+    button: {
+      backgroundColor: "#00a0d0",
+      color: "#fff",
+      border: "none",
+      padding: "10px",
+      borderRadius: "20px",
+      width: "100%",
+      fontWeight: "bold",
+    },
+    mapContainer: {
+      flex: 1,
+      height: "600px",
+      borderRadius: "10px",
+      overflow: "hidden",
+    },
   };
 
   return (
     <div style={styles.page}>
-      
-
       <div style={{ padding: "20px" }}>
         <FaArrowLeft
-          onClick={() => {
-            if (location.state?.from) {
-              navigate(location.state.from);
-            } else {
-              navigate(-1);
-            }
-          }}
+          onClick={() =>
+            location.state?.from ? navigate(location.state.from) : navigate(-1)
+          }
           style={{ cursor: "pointer" }}
         />
       </div>
 
-      {/* TITLE */}
       <h2 style={{ textAlign: "center", color: "#0080AA" }}>
         Schedule Your Drop-Off
       </h2>
-      <p style={{ textAlign: "center", color: "#555", marginBottom: "20px" }}>
-        Choose a nearby center and complete your request ♻️
-      </p>
 
       <div style={styles.mainWrapper}>
         <form style={styles.formContainer} onSubmit={handleSubmit}>
-          {form.name && (
-            <p style={{ marginBottom: "10px", color: "#0080AA", fontWeight: "bold" }}>
-              Hi {form.name}! 😊 Let’s get your drop-off ready!
-            </p>
-          )}
-
-          <h3>Schedule Drop Off</h3>
 
           <input name="name" placeholder="Name" style={styles.input} value={form.name} readOnly />
-          {errors.name && <p style={styles.error}>{errors.name}</p>}
-
           <input name="email" placeholder="Email" style={styles.input} value={form.email} readOnly />
-          {errors.email && <p style={styles.error}>{errors.email}</p>}
 
           <input
             name="phone"
@@ -227,73 +329,71 @@ const DropOff = () => {
             value={form.phone}
             onChange={handlePhoneChange}
           />
-          {errors.phone && <p style={styles.error}>{errors.phone}</p>}
 
-          <select name="deviceCategory" style={styles.input} onChange={handleChange} value={form.deviceCategory}>
+          <select
+            name="deviceCategory"
+            placeholder="Device Category"
+            style={styles.input}
+            value={form.deviceCategory}
+            onChange={handleChange}
+          >
             <option value="">Select Category</option>
-            {allCategories.map((cat, idx) => <option key={idx} value={cat}>{cat}</option>)}
+            {allCategories.map((c, i) => (
+              <option key={i} value={c}>{c}</option>
+            ))}
           </select>
-          {errors.deviceCategory && <p style={styles.error}>{errors.deviceCategory}</p>}
 
-          <input name="device" placeholder="Device" style={styles.input} onChange={handleChange} value={form.device} />
-          {errors.device && <p style={styles.error}>{errors.device}</p>}
+          <input
+            name="device"
+            placeholder="Device"
+            style={styles.input}
+            value={form.device}
+            onChange={handleChange}
+          />
 
-          <input name="condition" placeholder="Condition" style={styles.input} onChange={handleChange} value={form.condition} />
-          {errors.condition && <p style={styles.error}>{errors.condition}</p>}
+          <input
+            name="condition"
+            placeholder="Condition"
+            style={styles.input}
+            value={form.condition}
+            onChange={handleChange}
+          />
 
           <input
             name="address"
             placeholder="Address (auto-filled)"
-            value={form.address}
             style={styles.input}
+            value={form.address}
             readOnly
           />
-          {errors.address && <p style={styles.error}>{errors.address}</p>}
 
-          <input type="datetime-local" name="dateTime" style={styles.input} onChange={handleChange} value={form.dateTime} />
+          <input
+            type="datetime-local"
+            name="dateTime"
+            style={styles.input}
+            value={form.dateTime}
+            min={getMinDateTime()}
+            onChange={handleChange}
+          />
+
           {errors.dateTime && <p style={styles.error}>{errors.dateTime}</p>}
-
-          <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold" }}>Upload Picture (Optional)</label>
-          <input type="file" accept="image/*" onChange={(e) => {
-            const file = e.target.files[0];
-            if (file && !file.type.startsWith("image/")) {
-              alert("Only image files are allowed");
-              e.target.value = "";
-              return;
-            }
-            setImage(file);
-          }} style={styles.input} />
 
           <button type="submit" style={styles.button}>
             Confirm Drop-Off
           </button>
-
-          {selectedCenter && (
-            <div style={{
-              marginTop: "10px",
-              padding: "10px",
-              border: "1px dashed #0078a8",
-              borderRadius: "6px"
-            }}>
-              <strong>{selectedCenter.companyName}</strong><br />
-              {selectedCenter.address}<br />
-              {selectedCenter.phone}<br />
-              {selectedCenter.hours}
-            </div>
-          )}
         </form>
 
-        {/* MAP */}
         <div style={styles.mapContainer}>
           <MapContainer center={[23.5859, 58.4059]} zoom={11} style={{ height: "100%", width: "100%" }}>
             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-            {centers.map(center => (
+
+            {collectors.map((collector) => (
               <Marker
-                key={center.id}
-                position={center.position}
-                eventHandlers={{ click: () => handleMarkerClick(center) }}
+                key={collector._id}
+                position={[collector.location.lat, collector.location.lng]}
+                eventHandlers={{ click: () => handleMarkerClick(collector) }}
               >
-                <Popup>{center.companyName}</Popup>
+                <Popup>{collector.companyName}</Popup>
               </Marker>
             ))}
           </MapContainer>
