@@ -35,6 +35,7 @@ const CollectorDash = () => {
     todayPickups: 0,
   });
   const [monthCounts, setMonthCounts] = useState(Array(months.length).fill(0));
+  const [monthData, setMonthData] = useState(months.map(() => ({ accepted: 0, rejected: 0, completed: 0 })));
   const [categoryCounts, setCategoryCounts] = useState([]);
 
   // ✅ NEW STATES (same as NewRecycleRequest)
@@ -91,12 +92,23 @@ const CollectorDash = () => {
     }).length;
 
     const counts = Array(months.length).fill(0);
+    const statusCounts = months.map(() => ({ accepted: 0, rejected: 0, completed: 0 }));
     const categoryMap = {};
 
     historyRequests.forEach((request) => {
       const date = new Date(request.createdAt);
       if (!isNaN(date) && date.getFullYear() === currentYear) {
-        counts[date.getMonth()] += 1;
+        const monthIndex = date.getMonth();
+        counts[monthIndex] += 1;
+
+        const status = String(request.status || "").toLowerCase().trim();
+        if (status === "accepted") {
+          statusCounts[monthIndex].accepted += 1;
+        } else if (status === "rejected") {
+          statusCounts[monthIndex].rejected += 1;
+        } else if (status === "completed") {
+          statusCounts[monthIndex].completed += 1;
+        }
       }
 
       const category = String(request.deviceCategory || request.category || "Other").trim() || "Other";
@@ -109,6 +121,7 @@ const CollectorDash = () => {
 
     setHistoryCounts({ recycled, upcycled, todayPickups });
     setMonthCounts(counts);
+    setMonthData(statusCounts);
     setCategoryCounts(categoryData);
   };
 
@@ -200,7 +213,11 @@ const CollectorDash = () => {
             <h5 style={{ marginBottom: '10px' }}>Electronics Processed Per Month</h5>
             <BarChart
               xAxis={[{ scaleType: 'band', data: months, label: 'Months' }]}
-              series={[{ data: monthCounts, label: 'Electronics', color: '#90CAF9' }]}
+              series={[
+                { data: monthData.map(m => m.accepted), label: 'Accepted', color: '#4CAF50', stack: 'total' },
+                { data: monthData.map(m => m.rejected), label: 'Rejected', color: '#F44336', stack: 'total' },
+                { data: monthData.map(m => m.completed), label: 'Completed', color: '#2196F3', stack: 'total' }
+              ]}
               height={220}
               width={460}
             />
