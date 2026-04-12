@@ -219,6 +219,15 @@ const UserDash = () => {
           </div>
           <div className={activeTab === "profile" ? "menu-item active" : "menu-item"} onClick={() => setActiveTab("profile")}><FaUser /> My Profile</div>
           <div className={activeTab === "requests" ? "menu-item active" : "menu-item"} onClick={() => setActiveTab("requests")}><FaClipboardList /> My Requests</div>
+          <div
+  className={activeTab === "gamification" ? "menu-item active" : "menu-item"}
+  onClick={() => {
+    setActiveTab("gamification");
+    navigate("/Gamification");
+  }}
+>
+  🏆 Gamification
+</div>
           <button className="logout-btn" onClick={handleLogout}><FaSignOutAlt /> Logout</button>
         </div>
 
