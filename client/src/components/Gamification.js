@@ -11,20 +11,29 @@ const Gamification = () => {
   const [stats, setStats] = useState({
     drops: 0,
     pickups: 0,
-    devices: 0,
+    recycle: 0,
+    upcycle: 0,
+    dispose: 0,
   });
 
   useEffect(() => {
     const savedPoints = parseInt(localStorage.getItem("ecoPoints")) || 0;
+
     const savedDrops = parseInt(localStorage.getItem("drops")) || 0;
     const savedPickups = parseInt(localStorage.getItem("pickups")) || 0;
-    const savedDevices = parseInt(localStorage.getItem("devices")) || 0;
+
+    const recycle = parseInt(localStorage.getItem("recycle")) || 0;
+    const upcycle = parseInt(localStorage.getItem("upcycle")) || 0;
+    const dispose = parseInt(localStorage.getItem("dispose")) || 0;
 
     setPoints(savedPoints);
+
     setStats({
       drops: savedDrops,
       pickups: savedPickups,
-      devices: savedDevices,
+      recycle,
+      upcycle,
+      dispose,
     });
 
     if (savedPoints >= 200) setLevel("Gold 🥇");
@@ -53,7 +62,6 @@ const Gamification = () => {
       color: "#0080AA",
       fontWeight: "bold",
       marginBottom: "20px",
-      width: "fit-content",
     },
     card: {
       background: "#fff",
@@ -67,10 +75,7 @@ const Gamification = () => {
       color: "#0080AA",
       marginBottom: "20px",
     },
-    badge: {
-      fontSize: "20px",
-      fontWeight: "bold",
-    },
+    badge: { fontSize: "20px", fontWeight: "bold" },
     progressBar: {
       height: "12px",
       background: "#ddd",
@@ -87,7 +92,7 @@ const Gamification = () => {
   return (
     <div style={styles.page}>
 
-      {/* ✅ BACK BUTTON */}
+      {/* BACK */}
       <div style={styles.backBtn} onClick={() => navigate("/userdash")}>
         <FaArrowLeft /> 
       </div>
@@ -103,18 +108,21 @@ const Gamification = () => {
         <div style={styles.progressBar}>
           <div style={styles.progressFill}></div>
         </div>
-
-        <p style={{ marginTop: "10px", color: "#555" }}>
-          Progress to next level
-        </p>
       </div>
 
-      {/* STATS */}
+      {/* REQUEST STATS */}
       <div style={styles.card}>
-        <h2>♻️ Your Recycling Stats</h2>
-        <p>📦 Drop-offs: {stats.drops}</p>
-        <p>🚚 Pickups: {stats.pickups}</p>
-        <p>📱 Devices Recycled: {stats.devices}</p>
+        <h2>📦 Your Activity</h2>
+        <p>🚚 Drop-offs: {stats.drops}</p>
+        <p>📍 Pickups: {stats.pickups}</p>
+      </div>
+
+      {/* DEVICE ACTIONS */}
+      <div style={styles.card}>
+        <h2>♻️ Device Handling Types</h2>
+        <p>♻️ Recycled: {stats.recycle}</p>
+        <p>🔁 Upcycled: {stats.upcycle}</p>
+        <p>🗑 Disposed: {stats.dispose}</p>
       </div>
 
       {/* BADGES */}
@@ -132,7 +140,7 @@ const Gamification = () => {
       <div style={styles.card}>
         <h2>💡 Motivation</h2>
         <p>
-          Keep recycling electronics through Drop-Off or Pickup requests 🌍✨
+          Every action matters — recycle, upcycle, or dispose responsibly 🌍✨
         </p>
       </div>
 
