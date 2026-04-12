@@ -324,6 +324,49 @@
   color: #888;
 }
 
+/* Reminder notification styles */
+.reminder-badge {
+  background: #ff9800;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 12px;
+  font-size: 10px;
+  margin-left: 6px;
+  font-weight: 600;
+}
+
+.reminder-item {
+  background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+  border-left: 4px solid #ff9800;
+}
+
+.reminder-text {
+  color: #ff5722;
+  font-weight: 700;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.reminder-note {
+  color: #e65100;
+  font-style: italic;
+  font-size: 11px;
+}
+
+.reminder-view {
+  background: #ff9800 !important;
+  color: white !important;
+  padding: 2px 6px !important;
+  border-radius: 4px !important;
+  border: 1px solid #ff9800 !important;
+}
+
+.reminder-view:hover {
+  background: #f57c00 !important;
+  text-decoration: none !important;
+}
+
 .request-history {
   padding: 30px;
   background: #f7f7f7;
