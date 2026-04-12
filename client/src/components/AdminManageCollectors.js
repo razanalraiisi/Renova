@@ -113,6 +113,8 @@ export default function AdminManageCollectors() {
       "Collector ID",
       "Type",
       "Open Hours",
+      "Requests accepted",
+      "Requests completed",
       "Created At",
       "Deactivated At",
     ];
@@ -125,6 +127,8 @@ export default function AdminManageCollectors() {
       c.collectorId ?? "",
       c.collectorType ?? "",
       c.openHr ?? "",
+      c.requestsAccepted ?? 0,
+      c.requestsCompleted ?? 0,
       c.createdAt ? new Date(c.createdAt).toLocaleString() : "",
       c.deactivatedAt ? new Date(c.deactivatedAt).toLocaleString() : "",
     ]);
@@ -212,6 +216,7 @@ export default function AdminManageCollectors() {
     <AdminReportsLayout
       title="Collectors"
       onDownload={handleDownload}
+      fillViewport
       showFilter={false}
       searchValue={searchTerm}
       onSearchChange={setSearchTerm}
@@ -280,6 +285,13 @@ export default function AdminManageCollectors() {
                     </div>
                     <div className="manageMeta">Address: {c.address || "—"}</div>
                     <div className="manageMeta">Phone: {c.phone || "—"}</div>
+                    <div className="manageMeta">
+                      Requests accepted (pickup + drop-off):{" "}
+                      <strong>{c.requestsAccepted ?? 0}</strong>
+                    </div>
+                    <div className="manageMeta">
+                      Requests completed: <strong>{c.requestsCompleted ?? 0}</strong>
+                    </div>
                     {isExpanded && (
                       <>
                         <div className="manageMeta">Email: {c.email || "—"}</div>

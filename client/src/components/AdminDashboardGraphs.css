@@ -121,6 +121,11 @@
   grid-column: 1 / -1;
 }
 
+.graphCardPieOverview {
+  min-height: 340px;
+  height: 340px;
+}
+
 .graphCardFullWidth {
   grid-column: 1 / -1;
   min-height: 360px;

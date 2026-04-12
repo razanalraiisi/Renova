@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import User from "../models/UserModel.js";
 import PickupRequest from "../models/PickupRequestModel.js";
 import DropOffRequest from "../models/DropOffRequestModel.js";
@@ -114,6 +115,116 @@ export const getAdminRequestsByCategory = async (req, res) => {
       ...dropoffs.map((r) => ({ ...r, source: "dropoff" })),
     ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     res.json(merged);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error." });
+  }
+};
+
+/**
+ * GET /admin/report-requests-all
+ * All pickup + drop-off requests (every category), newest first.
+ */
+export const getAdminAllRequests = async (req, res) => {
+  try {
+    const [pickups, dropoffs] = await Promise.all([
+      PickupRequest.find({}).sort({ createdAt: -1 }).lean(),
+      DropOffRequest.find({}).sort({ createdAt: -1 }).lean(),
+    ]);
+    const merged = [
+      ...pickups.map((r) => ({ ...r, source: "pickup" })),
+      ...dropoffs.map((r) => ({ ...r, source: "dropoff" })),
+    ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    res.json(merged);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error." });
+  }
+};
+
+/**
+ * GET /admin/chart-collector-accept-reject
+ * Per collector: pickup + drop-off counts where the collector acted — accepted (Accepted + Completed) vs Rejected.
+ */
+export const getCollectorAcceptRejectChart = async (req, res) => {
+  try {
+    const perCollector = (Model) =>
+      Model.aggregate([
+        {
+          $match: {
+            collectorId: { $exists: true, $ne: null },
+            status: { $in: ["Accepted", "Completed", "Rejected"] },
+          },
+        },
+        {
+          $group: {
+            _id: "$collectorId",
+            accepted: {
+              $sum: {
+                $cond: [{ $in: ["$status", ["Accepted", "Completed"]] }, 1, 0],
+              },
+            },
+            rejected: {
+              $sum: { $cond: [{ $eq: ["$status", "Rejected"] }, 1, 0] },
+            },
+          },
+        },
+      ]);
+
+    const [pickRows, dropRows] = await Promise.all([
+      perCollector(PickupRequest),
+      perCollector(DropOffRequest),
+    ]);
+
+    const map = new Map();
+    const merge = (rows) => {
+      for (const r of rows) {
+        if (!r._id) continue;
+        const k = String(r._id);
+        const cur = map.get(k) || { accepted: 0, rejected: 0 };
+        cur.accepted += Number(r.accepted) || 0;
+        cur.rejected += Number(r.rejected) || 0;
+        map.set(k, cur);
+      }
+    };
+    merge(pickRows);
+    merge(dropRows);
+
+    if (map.size === 0) {
+      return res.json({ labels: [], accepted: [], rejected: [] });
+    }
+
+    const oidList = [...map.keys()]
+      .filter((id) => mongoose.Types.ObjectId.isValid(id))
+      .map((id) => new mongoose.Types.ObjectId(id));
+
+    const users = await User.find({ _id: { $in: oidList } })
+      .select("companyName collectorId")
+      .lean();
+
+    const nameById = new Map(
+      users.map((u) => [
+        String(u._id),
+        (u.companyName && String(u.companyName).trim()) || u.collectorId || String(u._id),
+      ])
+    );
+
+    const series = [...map.entries()].map(([id, v]) => ({
+      name: nameById.get(id) || "Unknown collector",
+      accepted: v.accepted,
+      rejected: v.rejected,
+      total: v.accepted + v.rejected,
+    }));
+
+    series.sort((a, b) => b.total - a.total);
+    const limit = 35;
+    const top = series.slice(0, limit);
+
+    res.json({
+      labels: top.map((s) => s.name),
+      accepted: top.map((s) => s.accepted),
+      rejected: top.map((s) => s.rejected),
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error." });
