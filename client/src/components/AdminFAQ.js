@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Button,
   Input,
@@ -15,6 +16,7 @@ import {
 import './Components.css';
 
 const AdminFAQ = () => {
+  const navigate = useNavigate();
   const [faqs, setFaqs] = useState([]);
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
@@ -68,8 +70,16 @@ const AdminFAQ = () => {
 
   return (
     <div className="admin-faq-container">
-      <h3 style={{ textAlign: "center", color: "#006D90"}}>Manage FAQs</h3>
-      <br/>
+      <div className="admin-faq-toolbar">
+        <button
+          type="button"
+          className="admin-faq-back-btn"
+          onClick={() => navigate("/admin/dashboard")}
+        >
+          Back
+        </button>
+        <h3 className="admin-faq-heading">Manage FAQs</h3>
+      </div>
 
       <Card className="faq-item">
         <CardBody>

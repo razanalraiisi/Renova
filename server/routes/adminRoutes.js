@@ -19,7 +19,12 @@ import {
   updateDevice,
   deleteDevice,
 } from "../controllers/deviceController.js";
-import { getChartData, getAdminRequestsByCategory } from "../controllers/dashboardController.js";
+import {
+  getChartData,
+  getAdminRequestsByCategory,
+  getAdminAllRequests,
+  getCollectorAcceptRejectChart,
+} from "../controllers/dashboardController.js";
 import { verifyAdmin } from "../middleware/authMiddleware.js";
 import {
   getFAQs,
@@ -32,7 +37,9 @@ const router = express.Router();
 
 router.get("/stats", getDashboardStats);
 router.get("/chart-data", getChartData);
+router.get("/chart-collector-accept-reject", getCollectorAcceptRejectChart);
 router.get("/report-requests", getAdminRequestsByCategory);
+router.get("/report-requests-all", getAdminAllRequests);
 router.get("/pendingCollectors", getPendingCollectors);
 router.get("/notifications", getAdminNotifications);
 router.get("/users", getUsers);

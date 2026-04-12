@@ -126,6 +126,10 @@ const AdminTopbar = () => {
 
             <DropdownItem header>Reports</DropdownItem>
 
+            <DropdownItem onClick={() => navigate("/admin/reports/all-requests")}>
+              All requests
+            </DropdownItem>
+
             <DropdownItem onClick={() => navigate("/admin/reports/recycles")}>
               Recycles Report
             </DropdownItem>

@@ -562,9 +562,21 @@ export const updateUserProfile = async (req, res) => {
 // --------------------
 export const getDashboardStats = async (req, res) => {
   try {
-    const [totalUsers, totalCollectors, disposals, recycles, upcycles] = await Promise.all([
+    const [
+      totalUsers,
+      totalCollectors,
+      pendingCollectorRequests,
+      disposals,
+      recycles,
+      upcycles,
+    ] = await Promise.all([
       User.countDocuments({ role: "user" }),
       User.countDocuments({ role: "collector", isApproved: true }),
+      User.countDocuments({
+        role: "collector",
+        isApproved: false,
+        deactivatedAt: null,
+      }),
       countRequestsByCategory("Dispose"),
       countRequestsByCategory("Recycle"),
       countRequestsByCategory("Upcycle"),
@@ -572,6 +584,7 @@ export const getDashboardStats = async (req, res) => {
     res.json({
       totalUsers,
       totalCollectors,
+      pendingCollectorRequests,
       disposals,
       recycles,
       upcycles,
@@ -597,7 +610,67 @@ export const getCollectors = async (req, res) => {
         "companyName address phone email collectorId collectorType openHr createdAt isApproved deactivatedAt"
       )
       .lean();
-    res.json(collectors);
+
+    if (collectors.length === 0) {
+      return res.json([]);
+    }
+
+    const collectorIds = collectors.map((c) => c._id);
+
+    const aggAccepted = (Model) =>
+      Model.aggregate([
+        {
+          $match: {
+            collectorId: { $in: collectorIds },
+            status: { $in: ["Accepted", "Completed"] },
+          },
+        },
+        { $group: { _id: "$collectorId", n: { $sum: 1 } } },
+      ]);
+
+    const aggCompleted = (Model) =>
+      Model.aggregate([
+        {
+          $match: {
+            collectorId: { $in: collectorIds },
+            status: "Completed",
+          },
+        },
+        { $group: { _id: "$collectorId", n: { $sum: 1 } } },
+      ]);
+
+    const [pickAccepted, pickCompleted, dropAccepted, dropCompleted] = await Promise.all([
+      aggAccepted(PickupRequest),
+      aggCompleted(PickupRequest),
+      aggAccepted(DropOffRequest),
+      aggCompleted(DropOffRequest),
+    ]);
+
+    const mergeCounts = (rows, into) => {
+      for (const row of rows) {
+        if (!row._id) continue;
+        const k = String(row._id);
+        into.set(k, (into.get(k) || 0) + row.n);
+      }
+    };
+
+    const acceptedMap = new Map();
+    const completedMap = new Map();
+    mergeCounts(pickAccepted, acceptedMap);
+    mergeCounts(dropAccepted, acceptedMap);
+    mergeCounts(pickCompleted, completedMap);
+    mergeCounts(dropCompleted, completedMap);
+
+    const enriched = collectors.map((c) => {
+      const id = String(c._id);
+      return {
+        ...c,
+        requestsAccepted: acceptedMap.get(id) ?? 0,
+        requestsCompleted: completedMap.get(id) ?? 0,
+      };
+    });
+
+    res.json(enriched);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error." });

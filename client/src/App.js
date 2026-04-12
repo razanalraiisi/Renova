@@ -49,6 +49,7 @@ import DisposalsReport from "./components/DisposalsReport";
 import UpcyclesReport from "./components/UpcyclesReport";
 import UsersReport from "./components/UsersReport";
 import DisposalsRecyclesUpcyclesReport from "./components/DisposalsRecyclesUpcyclesReport";
+import AllRequestsReport from "./components/AllRequestsReport";
 import AdminThemeSync from "./components/AdminThemeSync.js";
 import CollectorNav from './components/CollectorNav.js'; 
 
@@ -143,6 +144,7 @@ function App() {
               element={<Navigate to="/admin/manage-collectors" replace />}
             />
             <Route path="/admin/reports/users" element={<UsersReport />} />
+            <Route path="/admin/reports/all-requests" element={<AllRequestsReport />} />
             <Route path="/admin/profile" element={<AdminUserPage />} />
             <Route path="/admin/my-requests" element={<AdminMyRequests />} />
 

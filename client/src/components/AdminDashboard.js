@@ -23,11 +23,12 @@ import {
   PointElement,
   LineElement,
   BarElement,
+  ArcElement,
   Title,
   Tooltip,
   Legend,
 } from "chart.js";
-import { Bar, Line } from "react-chartjs-2";
+import { Bar, Line, Pie } from "react-chartjs-2";
 
 ChartJS.register(
   CategoryScale,
@@ -35,10 +36,14 @@ ChartJS.register(
   PointElement,
   LineElement,
   BarElement,
+  ArcElement,
   Title,
   Tooltip,
   Legend
 );
+
+/** Pie slices: primary teal + darker + lighter (admin theme) */
+const ACTIVITY_PIE_COLORS = ["#0080AA", "#006D90", "#5CBAD4"];
 
 /* ---------- Side Card ---------- */
 const SideCard = ({ title, lines = [], buttonText = "View", onClick }) => {
@@ -67,6 +72,7 @@ const AdminDashboard = () => {
   const [stats, setStats] = useState({
     totalUsers: 0,
     collectors: 0,
+    pendingCollectorRequests: 0,
     disposals: 0,
     recycles: 0,
     upcycles: 0,
@@ -83,6 +89,7 @@ const AdminDashboard = () => {
             ...prev,
             totalUsers: data.totalUsers ?? 0,
             collectors: data.totalCollectors ?? 0,
+            pendingCollectorRequests: data.pendingCollectorRequests ?? 0,
             disposals: data.disposals ?? 0,
             recycles: data.recycles ?? 0,
             upcycles: data.upcycles ?? 0,
@@ -127,7 +134,26 @@ const AdminDashboard = () => {
     const dataUpcycles = d?.upcycles?.data ?? empty7;
     const dataNewUsers = d?.newUsers?.data ?? empty8;
 
+    const disp = statsLoading ? 0 : stats.disposals;
+    const rec = statsLoading ? 0 : stats.recycles;
+    const upc = statsLoading ? 0 : stats.upcycles;
+
     return [
+      {
+        title: "Activity mix (totals)",
+        type: "pie",
+        data: {
+          labels: ["Disposals", "Recycles", "Upcycles"],
+          datasets: [
+            {
+              data: [disp, rec, upc],
+              backgroundColor: ACTIVITY_PIE_COLORS,
+              borderColor: "#ffffff",
+              borderWidth: 2,
+            },
+          ],
+        },
+      },
       {
         title: "Disposals",
         type: "bar",
@@ -189,7 +215,7 @@ const AdminDashboard = () => {
         },
       },
     ];
-  }, [chartData]);
+  }, [chartData, stats.disposals, stats.recycles, stats.upcycles, statsLoading]);
 
   const next = () =>
     !animating && setActiveIndex((i) => (i + 1) % chartSlides.length);
@@ -218,6 +244,44 @@ const AdminDashboard = () => {
     },
   });
 
+  const pieChartOptions = (title) => ({
+    responsive: true,
+    maintainAspectRatio: false,
+    layout: {
+      padding: { top: 4, bottom: 4, left: 8, right: 8 },
+    },
+    plugins: {
+      legend: {
+        display: true,
+        position: "bottom",
+        labels: {
+          usePointStyle: true,
+          padding: 14,
+          font: { size: 12 },
+          color: "#333",
+        },
+      },
+      title: {
+        display: true,
+        text: title,
+        font: { size: 15, weight: "bold" },
+        padding: { bottom: 8, top: 2 },
+        color: "#333",
+      },
+      tooltip: {
+        callbacks: {
+          label: (ctx) => {
+            const v = Number(ctx.raw) || 0;
+            const arr = ctx.dataset?.data ?? [];
+            const total = arr.reduce((a, b) => a + (Number(b) || 0), 0);
+            const pct = total > 0 ? ((v / total) * 100).toFixed(1) : "0";
+            return ` ${ctx.label}: ${v} (${pct}%)`;
+          },
+        },
+      },
+    },
+  });
+
   return (
     <div className="admin-board">
       <h3 className="admin-title">Welcome Admin!</h3>
@@ -234,37 +298,49 @@ const AdminDashboard = () => {
             title="E-Waste Library"
             onClick={() => navigate("/admin/devices")}
           />
-          <SideCard
-            title="Collectors"
-            lines={["Total collectors:", statsLoading ? "…" : stats.collectors]}
-            onClick={() => navigate("/admin/manage-collectors")}
-          />
+          {/* Activity summary (View → all requests report) */}
+          <div className="side-card">
+            <h6>Activity</h6>
+            <div className="side-card-line">
+              Disposals: <b>{statsLoading ? "…" : stats.disposals}</b>
+            </div>
+            <div className="side-card-line">
+              Recycles: <b>{statsLoading ? "…" : stats.recycles}</b>
+            </div>
+            <div className="side-card-line">
+              Upcycles: <b>{statsLoading ? "…" : stats.upcycles}</b>
+            </div>
+
+            <Button
+              className="mini-btn"
+              size="sm"
+              onClick={() => navigate("/admin/reports/all-requests")}
+            >
+              View
+            </Button>
+          </div>
         </Col>
 
         {/* CENTER COLUMN */}
-        <Col md="8" className="center-column">
+        <Col md="6" className="center-column">
           {/* TOP CARDS */}
-          <Row className="top-cards-row">
-            {/* Collectors */}
-            <Col md="4">
+          <Row className="top-cards-row gx-3 gy-0">
+            {/* FAQs (swapped from side column) */}
+            <Col md="6" className="top-card-col">
               <div className="stat-card">
-                <div className="stat-card-title">Collectors</div>
-                <div className="stat-card-value">{statsLoading ? "…" : stats.collectors}</div>
-
-                <div className="collector-btns">
-                  <Button
-                    className="mini-btn"
-                    size="sm"
-                    onClick={() => navigate("/admin/collectors-requests")}
-                  >
-                    Collector Requests
-                  </Button>
-                </div>
+                <div className="stat-card-title">FAQs</div>
+                <Button
+                  className="mini-btn"
+                  size="sm"
+                  onClick={() => navigate("/AdminFAQ")}
+                >
+                  View
+                </Button>
               </div>
             </Col>
 
             {/* View All Graphs */}
-            <Col md="6">
+            <Col md="6" className="top-card-col">
               <div className="graphs-card">
                 <div className="graphs-icons-row">
                   <div className="graphs-icon-box">
@@ -303,7 +379,9 @@ const AdminDashboard = () => {
                   onExited={() => setAnimating(false)}
                 >
                   <div className="dashboard-carousel-chart-wrap">
-                    {slide.type === "bar" ? (
+                    {slide.type === "pie" ? (
+                      <Pie data={slide.data} options={pieChartOptions(slide.title)} />
+                    ) : slide.type === "bar" ? (
                       <Bar data={slide.data} options={chartOptions(slide.title)} />
                     ) : (
                       <Line data={slide.data} options={chartOptions(slide.title)} />
@@ -327,28 +405,27 @@ const AdminDashboard = () => {
           </div>
         </Col>
 
-        {/* RIGHT COLUMN */}
+        {/* Collector requests (between main chart and View Collectors) */}
         <Col md="2" className="side-column">
-          <div className="side-card">
-            <h6>Disposals</h6>
-            <div className="side-card-line">
-              <b>{statsLoading ? "…" : stats.disposals}</b>
-            </div>
-            <div className="side-card-line">
-              Recycles: <b>{statsLoading ? "…" : stats.recycles}</b>
-            </div>
-            <div className="side-card-line">
-              Upcycles: <b>{statsLoading ? "…" : stats.upcycles}</b>
-            </div>
+          <SideCard
+            title="View Collector Requests"
+            lines={[
+              statsLoading
+                ? "Pending requests: …"
+                : `Pending requests: ${stats.pendingCollectorRequests}`,
+            ]}
+            buttonText="Collector Requests"
+            onClick={() => navigate("/admin/collectors-requests")}
+          />
+        </Col>
 
-            <Button
-              className="mini-btn"
-              size="sm"
-              onClick={() => navigate("/admin/dashboard/graphs")}
-            >
-              View
-            </Button>
-          </div>
+        {/* View Collectors (swapped from left column; View → manage-collectors) */}
+        <Col md="2" className="side-column">
+          <SideCard
+            title="Collectors"
+            lines={["Total collectors:", statsLoading ? "…" : stats.collectors]}
+            onClick={() => navigate("/admin/manage-collectors")}
+          />
         </Col>
       </Row>
     </div>

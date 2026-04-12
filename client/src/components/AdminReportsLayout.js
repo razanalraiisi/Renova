@@ -29,6 +29,12 @@ export default function AdminReportsLayout({
   onFilterApply,
   /** Called when user clicks Reset (after local fields clear) */
   onFilterReset,
+  /** Adds a Status dropdown (Pending / Accepted / Rejected / Completed) */
+  showStatusFilter = false,
+  /** Request category: Dispose / Recycle / Upcycle */
+  showCategoryFilter = false,
+  /** Pickup vs drop-off */
+  showRequestSourceFilter = false,
 }) {
   const dummyItems = useMemo(() => ["Dish washer", "Air Conditioner", "Laptop"], []);
   const dummyUsers = useMemo(() => ["Faisal Al Wahabi", "Amal Al Abri", "Sulaiman Al Salmi"], []);
@@ -39,6 +45,9 @@ export default function AdminReportsLayout({
   const [date, setDate] = useState("");
   const [item, setItem] = useState("");
   const [user, setUser] = useState("");
+  const [status, setStatus] = useState("");
+  const [requestCategory, setRequestCategory] = useState("");
+  const [requestSource, setRequestSource] = useState("");
 
   /** When parent omits `searchValue`, keep query locally so typing always updates the field and notifies the parent. */
   const [localSearchDraft, setLocalSearchDraft] = useState("");
@@ -53,13 +62,23 @@ export default function AdminReportsLayout({
   };
 
   const apply = () => {
-    onFilterApply?.({ date, item, user });
+    onFilterApply?.({
+      date,
+      item,
+      user,
+      status,
+      category: requestCategory,
+      source: requestSource,
+    });
   };
 
   const reset = () => {
     setDate("");
     setItem("");
     setUser("");
+    setStatus("");
+    setRequestCategory("");
+    setRequestSource("");
     onFilterReset?.();
   };
 
@@ -176,6 +195,54 @@ export default function AdminReportsLayout({
                         ))}
                       </select>
                     </div>
+
+                    {showStatusFilter && (
+                      <div className="filterRow">
+                        <div className="filterFieldLabel">Status:</div>
+                        <select
+                          className="filterInput"
+                          value={status}
+                          onChange={(e) => setStatus(e.target.value)}
+                        >
+                          <option value="">All</option>
+                          <option value="pending">Pending</option>
+                          <option value="accepted">Accepted</option>
+                          <option value="rejected">Rejected</option>
+                          <option value="completed">Completed</option>
+                        </select>
+                      </div>
+                    )}
+
+                    {showCategoryFilter && (
+                      <div className="filterRow">
+                        <div className="filterFieldLabel">Category:</div>
+                        <select
+                          className="filterInput"
+                          value={requestCategory}
+                          onChange={(e) => setRequestCategory(e.target.value)}
+                        >
+                          <option value="">All</option>
+                          <option value="Dispose">Dispose</option>
+                          <option value="Recycle">Recycle</option>
+                          <option value="Upcycle">Upcycle</option>
+                        </select>
+                      </div>
+                    )}
+
+                    {showRequestSourceFilter && (
+                      <div className="filterRow">
+                        <div className="filterFieldLabel">Type:</div>
+                        <select
+                          className="filterInput"
+                          value={requestSource}
+                          onChange={(e) => setRequestSource(e.target.value)}
+                        >
+                          <option value="">All</option>
+                          <option value="pickup">Pickup</option>
+                          <option value="dropoff">Drop-off</option>
+                        </select>
+                      </div>
+                    )}
 
                     <div className="filterBtns">
                       <button className="filterApply" type="button" onClick={apply}>

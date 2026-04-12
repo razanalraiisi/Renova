@@ -6,7 +6,9 @@
   --admin-dash-gap: 1.125rem;
   --admin-card-pad: 14px;
   --admin-card-radius: 8px;
-  --admin-top-card-min-h: 152px;
+  --admin-top-card-min-h: clamp(132px, 16vh, 168px);
+  /* Side columns: each card shares column height evenly */
+  --admin-side-card-min: clamp(104px, 12vh, 148px);
 }
 
 .admin-board {
@@ -35,7 +37,11 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 8px;
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: var(--admin-side-card-min);
   transition: box-shadow 0.2s ease, border-color 0.2s ease;
 }
 .side-card:hover {
@@ -59,18 +65,25 @@
   border: none !important;
   color: #fff !important;
   font-weight: 700 !important;
-  font-size: 13px !important;
+  font-size: clamp(12px, 1.8vw, 13px) !important;
 
-  padding: 8px 18px !important;
+  padding: 8px clamp(10px, 2vw, 18px) !important;
   border-radius: 18px !important;
 
-  min-width: 110px;
-  height: 36px;
-  line-height: 20px;
+  min-width: min(110px, 100%);
+  max-width: 100%;
+  min-height: 36px;
+  height: auto;
+  line-height: 1.25;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   white-space: nowrap;
+}
+
+.admin-board .side-card .mini-btn,
+.admin-board .graphs-card-btn {
+  white-space: normal;
 }
 
 .mini-btn {
@@ -87,7 +100,9 @@
   border-radius: var(--admin-card-radius);
   padding: var(--admin-card-pad);
   min-height: var(--admin-top-card-min-h);
-  height: 100%;
+  width: 100%;
+  flex: 1 1 auto;
+  min-width: 0;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -138,6 +153,7 @@
   min-height: 0;
   min-width: 0;
   width: 100%;
+  flex: 1 1 auto;
   box-sizing: border-box;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
   display: flex;
@@ -145,14 +161,14 @@
   margin-top: 0;
 }
 
-/* Responsive chart height: scales with viewport, stays within the card */
+/* Responsive chart height inside the graph card */
 .dashboard-carousel-chart-wrap {
   position: relative;
   width: 100%;
   min-width: 0;
   height: clamp(210px, min(38vw, 40vh), 360px);
-  min-height: 210px;
-  max-height: 380px;
+  min-height: 200px;
+  max-height: min(400px, 55vh);
   box-sizing: border-box;
 }
 
@@ -184,6 +200,27 @@
   min-width: 0;
 }
 
+/* Dark chevrons on light graph card (Bootstrap defaults are pale) */
+.center-graph-box .carousel-control-prev,
+.center-graph-box .carousel-control-next {
+  opacity: 1;
+  width: 10%;
+}
+
+.center-graph-box .carousel-control-prev-icon,
+.center-graph-box .carousel-control-next-icon {
+  filter: brightness(0);
+  width: 2rem;
+  height: 2rem;
+  background-size: 2rem 2rem;
+}
+
+.center-graph-box .carousel-control-prev:hover,
+.center-graph-box .carousel-control-next:hover,
+.center-graph-box .carousel-control-prev:focus,
+.center-graph-box .carousel-control-next:focus {
+  opacity: 1;
+}
 
 .carousel-dots {
   display: flex;
@@ -223,7 +260,8 @@
   border-radius: var(--admin-card-radius);
   padding: var(--admin-card-pad);
   min-height: var(--admin-top-card-min-h);
-  height: 100%;
+  width: 100%;
+  flex: 1 1 auto;
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -314,6 +352,10 @@
   row-gap: var(--admin-dash-gap);
 }
 
+.admin-dash-grid.row {
+  align-items: stretch;
+}
+
 /* Ensure all top cards align visually */
 .stat-card,
 .graphs-card,
@@ -322,7 +364,34 @@
   box-sizing: border-box;
 }
 
-/* Top row cards: equal height alignment */
+/* Main grid: every column stretches to the same row height */
+.admin-dash-grid > [class*="col-"] {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  align-self: stretch;
+}
+
+/* Top row: equal-width columns, cards fill cell height */
+.top-cards-row {
+  flex: 0 0 auto;
+  width: 100%;
+  min-width: 0;
+}
+
+.top-card-col {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+}
+
+.top-card-col > .stat-card,
+.top-card-col > .graphs-card {
+  height: 100%;
+  align-self: stretch;
+}
+
 .top-cards-row > [class*="col-"] {
   display: flex;
   min-width: 0;
@@ -333,13 +402,15 @@
   min-width: 0;
 }
 
-/* Left & right side columns: spacing + cap width so they don't stretch on ultrawide */
+/* Side columns: cards split vertical space evenly (left: 3 cards; FAQ/Disposals: 1 card fills column) */
 .side-column {
   display: flex;
   flex-direction: column;
   gap: var(--admin-dash-gap);
-  max-width: 260px;
   min-width: 0;
+  min-height: 0;
+  width: 100%;
+  max-width: min(280px, 100%);
 }
 
 @media (min-width: 768px) {
@@ -354,13 +425,14 @@
   }
 }
 
-/* Center column spacing */
+/* Center column: top row fixed, chart grows with available height */
 .center-column {
   display: flex;
   flex-direction: column;
   gap: var(--admin-dash-gap);
   min-width: 0;
-  flex: 1 1 auto;
+  min-height: 0;
+  align-self: stretch;
 }
 
 .admin-top-bar {

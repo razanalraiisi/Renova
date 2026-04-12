@@ -3,8 +3,17 @@ import { useNavigate } from "react-router-dom";
 import AdminReportsLayout from "./AdminReportsLayout";
 import RequestStatusDot, { rowMatchesStatusFilter } from "./RequestStatusDot";
 
-const API_REPORT = "http://localhost:5000/admin/report-requests?category=Recycle";
+const API_REPORT = "http://localhost:5000/admin/report-requests-all";
 const UPLOADS_BASE = "http://localhost:5000/uploads";
+
+const EMPTY_FILTERS = {
+  date: "",
+  item: "",
+  user: "",
+  status: "",
+  category: "",
+  source: "",
+};
 
 function escapeCsvCell(value) {
   if (value == null || value === "") return "";
@@ -53,21 +62,25 @@ function imageSrc(image) {
   return `${UPLOADS_BASE}/${t.replace(/^\/+/, "")}`;
 }
 
-export default function RecyclesReport() {
+function categoryMatches(recordCategory, filterCategory) {
+  if (!filterCategory || !String(filterCategory).trim()) return true;
+  const a = String(recordCategory || "").trim().toLowerCase();
+  const b = String(filterCategory).trim().toLowerCase();
+  return a === b;
+}
+
+function sourceMatches(recordSource, filterSource) {
+  if (!filterSource || !String(filterSource).trim()) return true;
+  return String(recordSource || "") === String(filterSource).trim();
+}
+
+export default function AllRequestsReport() {
   const navigate = useNavigate();
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [expandedId, setExpandedId] = useState(null);
-  const [filterCriteria, setFilterCriteria] = useState({
-    date: "",
-    item: "",
-    user: "",
-    status: "",
-  });
-  // Dummy setter: some dev/HMR bundles still reference `setSearchTerm` after search UI was removed.
-  // Do not pass `onSearchChange` to AdminReportsLayout — the search bar stays hidden.
-  const [, setSearchTerm] = useState("");
+  const [filterCriteria, setFilterCriteria] = useState(() => ({ ...EMPTY_FILTERS }));
 
   useEffect(() => {
     const load = async () => {
@@ -76,7 +89,7 @@ export default function RecyclesReport() {
         const res = await fetch(API_REPORT);
         if (!res.ok) {
           const body = await res.json().catch(() => ({}));
-          throw new Error(body.message || "Failed to load recycles");
+          throw new Error(body.message || "Failed to load requests");
         }
         const data = await res.json();
         setRecords(Array.isArray(data) ? data : []);
@@ -108,7 +121,7 @@ export default function RecyclesReport() {
 
   const filteredRows = useMemo(() => {
     let rows = records;
-    const { date, item, user, status } = filterCriteria;
+    const { date, item, user, status, category, source } = filterCriteria;
     if (date) {
       rows = rows.filter((r) => localDateKey(r.createdAt) === date);
     }
@@ -121,12 +134,19 @@ export default function RecyclesReport() {
     if (status) {
       rows = rows.filter((r) => rowMatchesStatusFilter(r.status, status));
     }
+    if (category) {
+      rows = rows.filter((r) => categoryMatches(r.category, category));
+    }
+    if (source) {
+      rows = rows.filter((r) => sourceMatches(r.source, source));
+    }
     return rows;
   }, [records, filterCriteria]);
 
   const handleDownload = useCallback(() => {
     const headers = [
       "Source",
+      "Category",
       "Device",
       "User",
       "Email",
@@ -139,6 +159,7 @@ export default function RecyclesReport() {
     ];
     const rows = filteredRows.map((r) => [
       r.source === "dropoff" ? "Drop-off" : "Pickup",
+      r.category ?? "",
       r.device ?? "",
       r.name ?? "",
       r.email ?? "",
@@ -157,45 +178,43 @@ export default function RecyclesReport() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `recycles-report-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.download = `all-requests-report-${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   }, [filteredRows]);
 
   return (
     <AdminReportsLayout
-      title="Recycles"
+      title="All requests"
       onBack={() => navigate("/admin/dashboard")}
       onDownload={handleDownload}
       fillViewport
       itemSelectOptions={itemSelectOptions}
       userSelectOptions={userSelectOptions}
       showStatusFilter
+      showCategoryFilter
+      showRequestSourceFilter
       onFilterApply={setFilterCriteria}
-      onFilterReset={() =>
-        setFilterCriteria({ date: "", item: "", user: "", status: "" })
-      }
+      onFilterReset={() => setFilterCriteria({ ...EMPTY_FILTERS })}
     >
-      {loading && <div className="muted">Loading recycles…</div>}
+      {loading && <div className="muted">Loading requests…</div>}
       {error && (
         <div className="muted" style={{ color: "#c00" }}>
           {error}
         </div>
       )}
       {!loading && !error && records.length === 0 && (
-        <div className="muted">No recycle requests found yet.</div>
+        <div className="muted">No requests found yet.</div>
       )}
       {!loading && !error && records.length > 0 && filteredRows.length === 0 && (
         <div className="muted">No rows match your filters.</div>
       )}
-      {!loading &&
-        !error &&
-        filteredRows.length > 0 && (
-          <div className="muted" style={{ marginBottom: 8 }}>
-            Showing {filteredRows.length} of {records.length} recycle request
-            {records.length === 1 ? "" : "s"}
-          </div>
-        )}
+      {!loading && !error && filteredRows.length > 0 && (
+        <div className="muted" style={{ marginBottom: 8 }}>
+          Showing {filteredRows.length} of {records.length} request
+          {records.length === 1 ? "" : "s"}
+        </div>
+      )}
       {!loading &&
         !error &&
         filteredRows.map((r) => {
@@ -214,6 +233,14 @@ export default function RecyclesReport() {
                     >
                       {r.source === "dropoff" ? "Drop-off" : "Pickup"}
                     </span>
+                    {r.category && (
+                      <span
+                        className="muted"
+                        style={{ marginLeft: 8, fontWeight: 600, fontSize: 12 }}
+                      >
+                        · {r.category}
+                      </span>
+                    )}
                   </div>
                   <div className="muted">Date: {formatLocalDate(r.createdAt)}</div>
                   <div className="muted">User: {r.name || "—"}</div>

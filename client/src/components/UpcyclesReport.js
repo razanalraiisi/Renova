@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminReportsLayout from "./AdminReportsLayout";
+import RequestStatusDot, { rowMatchesStatusFilter } from "./RequestStatusDot";
 
 const API_REPORT = "http://localhost:5000/admin/report-requests?category=Upcycle";
 const UPLOADS_BASE = "http://localhost:5000/uploads";
@@ -58,7 +59,12 @@ export default function UpcyclesReport() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [expandedId, setExpandedId] = useState(null);
-  const [filterCriteria, setFilterCriteria] = useState({ date: "", item: "", user: "" });
+  const [filterCriteria, setFilterCriteria] = useState({
+    date: "",
+    item: "",
+    user: "",
+    status: "",
+  });
 
   useEffect(() => {
     const load = async () => {
@@ -99,7 +105,7 @@ export default function UpcyclesReport() {
 
   const filteredRows = useMemo(() => {
     let rows = records;
-    const { date, item, user } = filterCriteria;
+    const { date, item, user, status } = filterCriteria;
     if (date) {
       rows = rows.filter((r) => localDateKey(r.createdAt) === date);
     }
@@ -108,6 +114,9 @@ export default function UpcyclesReport() {
     }
     if (user) {
       rows = rows.filter((r) => String(r.name || "").trim() === user);
+    }
+    if (status) {
+      rows = rows.filter((r) => rowMatchesStatusFilter(r.status, status));
     }
     return rows;
   }, [records, filterCriteria]);
@@ -158,8 +167,11 @@ export default function UpcyclesReport() {
       fillViewport
       itemSelectOptions={itemSelectOptions}
       userSelectOptions={userSelectOptions}
+      showStatusFilter
       onFilterApply={setFilterCriteria}
-      onFilterReset={() => setFilterCriteria({ date: "", item: "", user: "" })}
+      onFilterReset={() =>
+        setFilterCriteria({ date: "", item: "", user: "", status: "" })
+      }
     >
       {loading && <div className="muted">Loading upcycles…</div>}
       {error && (
@@ -187,14 +199,22 @@ export default function UpcyclesReport() {
           const imgUrl = imageSrc(r.image);
           return (
             <div className="reportCard" key={id}>
-              <div className="expandRow">
-                <strong>{r.device || "—"}</strong>
-                <span className="muted" style={{ marginLeft: 8, fontWeight: 400, fontSize: 12 }}>
-                  {r.source === "dropoff" ? "Drop-off" : "Pickup"}
-                </span>
+              <div className="reportCardHeader">
+                <div className="reportCardHeaderMain">
+                  <div className="expandRow">
+                    <strong>{r.device || "—"}</strong>
+                    <span
+                      className="muted"
+                      style={{ marginLeft: 8, fontWeight: 400, fontSize: 12 }}
+                    >
+                      {r.source === "dropoff" ? "Drop-off" : "Pickup"}
+                    </span>
+                  </div>
+                  <div className="muted">Date: {formatLocalDate(r.createdAt)}</div>
+                  <div className="muted">User: {r.name || "—"}</div>
+                </div>
+                <RequestStatusDot status={r.status} />
               </div>
-              <div className="muted">Date: {formatLocalDate(r.createdAt)}</div>
-              <div className="muted">User: {r.name || "—"}</div>
               <button
                 type="button"
                 className="link"
