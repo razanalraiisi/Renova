@@ -63,6 +63,28 @@ const CollectorNavbar = () => {
 
   const unreadCount = requests.length;
 
+  // Separate regular requests from reminders (requests older than 7 days)
+  const { regularRequests, reminderRequests } = useMemo(() => {
+    const now = new Date();
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    
+    const regular = [];
+    const reminders = [];
+    
+    requests.forEach(request => {
+      const createdAt = new Date(request.createdAt);
+      if (createdAt < sevenDaysAgo) {
+        reminders.push(request);
+      } else {
+        regular.push(request);
+      }
+    });
+    
+    return { regularRequests: regular, reminderRequests: reminders };
+  }, [requests]);
+
+  const totalUnreadCount = regularRequests.length + reminderRequests.length;
+
   return (
   <Navbar className="collector-navbar d-flex align-items-center">
     <Container fluid className="d-flex align-items-center">
@@ -105,8 +127,8 @@ const CollectorNavbar = () => {
         <div className="notif-wrap">
           <div className="notif-bell" onClick={() => setNotifOpen((v) => !v)}>
             <FaBell size={28}/>
-            {unreadCount > 0 && (
-              <span className="notif-badge">{unreadCount}</span>
+            {totalUnreadCount > 0 && (
+              <span className="notif-badge">{totalUnreadCount}</span>
             )}
           </div>
 
@@ -116,35 +138,73 @@ const CollectorNavbar = () => {
                 <div className="notif-title">
                   New Requests{" "}
                   <span className="notif-count-pill">
-                    {requests.length}
+                    {totalUnreadCount}
                   </span>
+                  {reminderRequests.length > 0 && (
+                    <span className="reminder-badge">
+                      {reminderRequests.length} reminder{reminderRequests.length > 1 ? 's' : ''}
+                    </span>
+                  )}
                 </div>
               </div>
 
               <div className="notif-list">
-                {requests.length === 0 ? (
+                {totalUnreadCount === 0 ? (
                   <div className="notif-empty">No new requests</div>
                 ) : (
-                  requests.map((r) => (
-                    <div key={r._id} className="notif-item">
-                      <div className="notif-item-top">
-                        <div className="notif-item-title">New {r.requestType === "DropOff" ? "Drop-off" : "Pickup"} Request for {r.device}</div>
-                        <div className="notif-time">{new Date(r.createdAt).toLocaleDateString()}</div>
+                  <>
+                    {/* Show reminders first */}
+                    {reminderRequests.map((r) => (
+                      <div key={r._id} className="notif-item reminder-item">
+                        <div className="notif-item-top">
+                          <div className="notif-item-title">
+                            <span className="reminder-text">remainder!!</span>
+                            {" "}
+                            {r.requestType === "DropOff" ? "Drop-off" : "Pickup"} Request for {r.device}
+                          </div>
+                          <div className="notif-time">{new Date(r.createdAt).toLocaleDateString()}</div>
+                        </div>
+                        <div className="notif-message">
+                          Condition: {r.condition}
+                          <br />
+                          <span className="reminder-note">This request has been pending for over a week</span>
+                        </div>
+                        <div className="notif-actions">
+                          <button
+                            className="notif-view reminder-view"
+                            onClick={() => {
+                              setNotifOpen(false);
+                              navigate("/CollectorNewRecycleRequest");
+                            }}
+                          >
+                            view
+                          </button>
+                        </div>
                       </div>
-                      <div className="notif-message">Condition: {r.condition}</div>
-                      <div className="notif-actions">
-                        <button
-                          className="notif-view"
-                          onClick={() => {
-                            setNotifOpen(false);
-                            navigate("/CollectorNewRecycleRequest");
-                          }}
-                        >
-                          view
-                        </button>
+                    ))}
+                    
+                    {/* Show regular requests */}
+                    {regularRequests.map((r) => (
+                      <div key={r._id} className="notif-item">
+                        <div className="notif-item-top">
+                          <div className="notif-item-title">New {r.requestType === "DropOff" ? "Drop-off" : "Pickup"} Request for {r.device}</div>
+                          <div className="notif-time">{new Date(r.createdAt).toLocaleDateString()}</div>
+                        </div>
+                        <div className="notif-message">Condition: {r.condition}</div>
+                        <div className="notif-actions">
+                          <button
+                            className="notif-view"
+                            onClick={() => {
+                              setNotifOpen(false);
+                              navigate("/CollectorNewRecycleRequest");
+                            }}
+                          >
+                            view
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  ))
+                    ))}
+                  </>
                 )}
               </div>
             </div>

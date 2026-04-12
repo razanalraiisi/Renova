@@ -15,11 +15,22 @@ const FAQ = () => {
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchFAQs = async () => {
-      const data = await getFAQs();
-      setFaqs(data);
+      try {
+        const data = await getFAQs();
+        if (isMounted) setFaqs(data || []);
+      } catch (err) {
+        if (isMounted) setFaqs([]);
+      }
     };
+
     fetchFAQs();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const filteredFaqs = faqs.filter((faq) =>
