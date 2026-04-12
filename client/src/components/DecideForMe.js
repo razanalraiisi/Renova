@@ -125,27 +125,7 @@ const DecideForMe = () => {
 
   return (
     <div className="user-flow-page" style={styles.page}>
-      {/* NAVBAR */}
-      <Navbar style={{ backgroundColor: "#0080AA", display: "flex", justifyContent: "space-between", padding: "0 20px" }}>
-        <NavbarBrand tag={Link} to="/start" style={{ color: "white", display: "flex", alignItems: "center" }}>
-          <img src={logo} alt="logo" style={{ height: 40, marginRight: 10 }} />
-          ReNova
-        </NavbarBrand>
-        {userName && (
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <div style={{
-              width: "35px", height: "35px", borderRadius: "50%",
-              backgroundColor: "white", color: "#00a0d0",
-              display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold"
-            }}>
-              {userName.charAt(0).toUpperCase()}
-            </div>
-            <span style={{ color: "white", fontWeight: "bold" }}>
-              Hi {userName} 👋
-            </span>
-          </div>
-        )}
-      </Navbar>
+      
 
       {/* ⬅️ BACK ARROW */}
       <div style={styles.backWrapper}>
