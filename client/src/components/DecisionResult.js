@@ -43,13 +43,7 @@ const DecisionResult = () => {
 
   return (
     <div style={styles.page}>
-      {/* NAVBAR */}
-      <Navbar style={styles.navbar}>
-        <NavbarBrand tag={Link} to="/start" style={{ color: "white" }}>
-          <img src={logo} alt="logo" style={{ height: 40, marginRight: 10 }} />
-          ReNova
-        </NavbarBrand>
-      </Navbar>
+     
 
       {/* BACK */}
       <div style={styles.backWrapper}>

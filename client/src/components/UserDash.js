@@ -185,14 +185,7 @@ const UserDash = () => {
     fetchRequests();
   };
 
-  const navItems = [
-    { name: "Dispose", path: "/dispose" },
-    { name: "Recycle", path: "/recycle" },
-    { name: "Upcycle", path: "/upcycle" },
-    { name: "E-Waste Library", path: "/library" },
-    { name: "FAQs", path: "/faqs" },
-    { name: "About Us", path: "/about" },
-  ];
+
 
   const getStatusColor = (status) => {
     if (status === "Pending") return "#ffc107";
@@ -209,67 +202,7 @@ const UserDash = () => {
 
   return (
     <div className="dashboard-page">
-      {/* NAVBAR */}
-      <Navbar className="top-navbar">
-        <div className="nav-container">
-          <NavbarBrand tag={Link} to="/start" className="brand">
-            <img src={logo} alt="logo" className="logo" /> ReNova
-          </NavbarBrand>
-          <div className="nav-links">
-            {navItems.map((item) => (
-              <Link key={item.name} to={item.path} className={location.pathname === item.path ? "nav-link active-link" : "nav-link"}>{item.name}</Link>
-            ))}
-          </div>
-
-          {/* Notification Bell */}
-          <div style={{ position: "relative" }}>
-            <FaBell style={{ fontSize: 22, color: "#fff", cursor: "pointer" }} onClick={() => setNotifOpen(!notifOpen)} />
-            {requests.filter(r => !seenNotifications.includes(r._id)).length > 0 && (
-              <span style={{ position: "absolute", top: -5, right: -5, width: 12, height: 12, borderRadius: "50%", backgroundColor: "#dc3545" }} />
-            )}
-            {notifOpen && (
-              <Box sx={{ position: "absolute", right: 0, top: 28, width: 350, maxHeight: 400, overflowY: "auto", bgcolor: "background.paper", boxShadow: 3, borderRadius: 2, zIndex: 9999, p: 1 }}>
-                {loadingRequests ? (
-                  <Typography sx={{ p: 2 }}>Loading...</Typography>
-                ) : requests.filter(r => !seenNotifications.includes(r._id)).length === 0 ? (
-                  <Typography sx={{ p: 2 }}>No notifications</Typography>
-                ) : (
-                  requests
-                    .filter(r => !seenNotifications.includes(r._id))
-                    .map((r) => (
-                      <Card key={r._id} sx={{
-                        mb: 1,
-                        borderRadius: 2,
-                        border: r.status === "Accepted" ? "2px solid #28a745" : r.status === "Pending" ? "2px dashed #ffc107" : "1px solid #ddd",
-                        backgroundColor: r.status === "Accepted" ? "#e6f4ea" : "#fff",
-                      }}>
-                        <CardContent sx={{ display: "flex", gap: 1 }}>
-                          <img src={r.image ? `http://localhost:5000/uploads/${r.image}` : "https://via.placeholder.com/50"} style={{ width: 50, height: 50, objectFit: "cover", borderRadius: 6 }} />
-                          <Box sx={{ flex: 1 }}>
-                            <Typography fontWeight={600}>{r.device}</Typography>
-                            <Typography fontSize={12}>Type: {r.requestType}</Typography>
-                            <Typography fontSize={12}>Request Date: {new Date(r.createdAt).toLocaleDateString()}</Typography>
-                            {r.status === "Accepted" && r.collectorName && (
-                              <Typography fontSize={12} color="#28a745">Collector: {r.collectorName}</Typography>
-                            )}
-                            <Typography fontSize={12} color={getStatusColor(r.status)}>Status: {r.status}</Typography>
-                            {r.status === "Pending" && (
-                              <Button variant="contained" size="small" sx={{ mt: 1, backgroundColor: "#ffc107", color: "#000" }} onClick={() => handleTryAgain(r._id)}>Try Again</Button>
-                            )}
-                          </Box>
-                        </CardContent>
-                      </Card>
-                    ))
-                )}
-              </Box>
-            )}
-          </div>
-
-          <button type="button" onClick={toggleTheme} title="Toggle dark mode" style={{ marginLeft: 12, background: "transparent", border: "none", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, padding: 0 }}>
-            {isDarkEffective ? <FaSun /> : <FaMoon />}
-          </button>
-        </div>
-      </Navbar>
+      
 
       {/* MAIN PAGE */}
       <div style={{ padding: "10px 30px" }}>

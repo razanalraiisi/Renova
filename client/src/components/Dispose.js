@@ -21,17 +21,7 @@ const Dispose = () => {
         background: "linear-gradient(180deg, #fff9f2 0%, #ffffff 100%)",
       }}
     >
-      {/* NAVBAR */}
-      <Navbar style={{ backgroundColor: "#0080AA" }} className="user-flow-navbar">
-        <NavbarBrand tag={Link} to="/start" style={{ color: "white" }}>
-          <img
-            src={logo}
-            alt="logo"
-            style={{ height: 40, width: 40, marginRight: 10 }}
-          />
-          ReNova
-        </NavbarBrand>
-      </Navbar>
+      
 
       {/* BACK BUTTON */}
       <div style={{ padding: "20px 30px" }}>

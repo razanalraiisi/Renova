@@ -1,12 +1,16 @@
 import './App.css'; 
 import './components/AdminTheme.css';
 import './components/UserCollectorTheme.css';
-import Login from './components/Login.js';
-import Register from './components/Register.js';
-import Home from './components/Home.js';
+
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Container, Row } from 'reactstrap';
 import { useSelector } from 'react-redux';
+
+
+// Existing imports (KEEP ALL)
+import Login from './components/Login.js';
+import Register from './components/Register.js';
+import Home from './components/Home.js';
 import Header from './components/Header.js';
 import Footer from './components/Footer.js';
 import RegisterCollector from './components/RegisterCollector.js';
@@ -43,14 +47,17 @@ import PrivacyPolicy from './components/PrivacyPolicy.js';
 import AdminUserPage from './components/AdminUserPage.js';
 import AdminMyRequests from './components/AdminMyRequests.js';
 import DecisionResult from './components/DecisionResult.js';
-// Admin – Reports
+
+// Reports
 import RecyclesReport from "./components/RecyclesReport";
 import DisposalsReport from "./components/DisposalsReport";
 import UpcyclesReport from "./components/UpcyclesReport";
 import UsersReport from "./components/UsersReport";
 import DisposalsRecyclesUpcyclesReport from "./components/DisposalsRecyclesUpcyclesReport";
+
 import AdminThemeSync from "./components/AdminThemeSync.js";
-import CollectorNav from './components/CollectorNav.js'; 
+import CollectorNav from './components/CollectorNav.js';
+import UserNavbar from './components/UserNavBar.js';
 
 function App() {
   const email = useSelector((state) => state.users?.user?.email);
@@ -67,12 +74,25 @@ function App() {
     );
   };
 
+  // ✅ NEW: User layout wrapper
+  const withUserNav = (Component) => {
+    return () => (
+      <>
+        <UserNavbar />
+        <div style={{ paddingTop: '70px' }}>
+          <Component />
+        </div>
+      </>
+    );
+  };
+
   return (
     <Container fluid className="appBG">
       <Router>
         <AdminThemeSync />
         <Row>
           <Routes>
+
             {/* Public routes */}
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
@@ -84,38 +104,37 @@ function App() {
             <Route path="/AboutUs" element={<AboutUs />} />
             <Route path="/FAQ" element={<FAQ />} />
             <Route path="/AdminFAQ" element={<AdminFAQ />} />
-            <Route path="/start" element={<Start />} />
-            <Route path="/recycle" element={<Recycle />} />
-            <Route path="/upcycle" element={<Upcycle />} />
-            <Route path="/dispose" element={<Dispose />} />
-            <Route path="/decideForMe" element={<DecideForMe />} />
-            <Route path="/decision-result" element={<DecisionResult />} />
+
+            {/* ✅ USER PAGES WITH NAVBAR */}
+            <Route path="/start" element={withUserNav(Start)()} />
+            <Route path="/UserDash" element={withUserNav(UserDash)()} />
+            <Route path="/PickupRequest" element={withUserNav(PickupRequest)()} />
+            <Route path="/DropOff" element={withUserNav(DropOff)()} />
+            <Route path="/UserRequestHistory" element={withUserNav(UserRequestHistory)()} />
+            <Route path="/EWasteLibrary" element={withUserNav(EWasteLibrary)()} />
+            <Route path="/omanmap" element={withUserNav(OmanMap)()} />
+            <Route path="/recycle" element={withUserNav(Recycle)()} />
+            <Route path="/upcycle" element={withUserNav(Upcycle)()} />
+            <Route path="/dispose" element={withUserNav(Dispose)()} />
+            <Route path="/decideForMe" element={withUserNav(DecideForMe)()} />
+            <Route path="/decision-result" element={withUserNav(DecisionResult)()} />
+
             {/* Collector pages automatically wrapped */}
             <Route path="/CollectorDash" element={withCollectorNav(CollectorDash)()} />
             <Route path="/CollectorProfile" element={withCollectorNav(CollectorProfile)()} />
             <Route path="/CollectorRequestsHistory" element={withCollectorNav(CollectorRequestsHistory)()} />
             <Route path="/CollectorNewRecycleRequest" element={withCollectorNav(NewRecycleRequest)()} />
 
-            {/* Other user routes */}
-            <Route path="/UserRequestHistory" element={<UserRequestHistory />} />
-            <Route path="/EWasteLibrary" element={<EWasteLibrary />} />
+            {/* Other routes (unchanged) */}
             <Route path="/admin/devices" element={<AdminEWasteLibrary />} />
-            <Route path="/omanmap" element={<OmanMap />} />
             <Route path="/support" element={<Support />} />
             <Route path="/terms" element={<TermsConditions />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
-            <Route path="/PickupRequest" element={<PickupRequest />} />
-            <Route path="/DropOff" element={<DropOff />} />
-        
             <Route path="/admin/dashboard/graphs" element={<AdminDashboardGraphs />} />
 
-            {/* Dashboard routes */}
-            <Route path="/UserDash" element={<UserDash />} />
-
-            {/* Admin requests page */}
+            {/* Admin routes */}
             <Route path="/AdminCollectorRequests" element={<AdminCollectorRequests />} />
 
-            {/* Admin routes using AdminLayout */}
             <Route
               path="/admin/dashboard"
               element={
@@ -132,16 +151,14 @@ function App() {
                 </AdminLayout>
               }
             />
+
             <Route path="/admin/collectors-requests" element={<AdminCollectorRequests />} />
             <Route path="/admin/manage-collectors" element={<AdminManageCollectors />} />
             <Route path="/admin/reports/recycles" element={<RecyclesReport />} />
             <Route path="/admin/reports/disposals" element={<DisposalsReport />} />
             <Route path="/admin/reports/upcycles" element={<UpcyclesReport />} />
             <Route path="/admin/reports/disposals-recycles-upcycles" element={<DisposalsRecyclesUpcyclesReport />} />
-            <Route
-              path="/admin/reports/collectors"
-              element={<Navigate to="/admin/manage-collectors" replace />}
-            />
+            <Route path="/admin/reports/collectors" element={<Navigate to="/admin/manage-collectors" replace />} />
             <Route path="/admin/reports/users" element={<UsersReport />} />
             <Route path="/admin/profile" element={<AdminUserPage />} />
             <Route path="/admin/my-requests" element={<AdminMyRequests />} />

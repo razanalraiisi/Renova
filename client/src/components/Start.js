@@ -15,19 +15,6 @@ const Start = () => {
 
   return (
     <>
-      {/* NAVBAR */}
-      <Navbar style={{ backgroundColor: "#0080AA", padding: "0 40px" }} className="user-flow-navbar">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
-          <NavbarBrand tag={Link} to="/" style={{ color: "white", display: "flex", alignItems: "center" }}>
-            <img src={logo} alt="logo" style={{ height: 40, width: 40, marginRight: 10 }} />
-            ReNova
-          </NavbarBrand>
-          <div style={{ display: "flex", alignItems: "center", fontSize: "24px", color: "white", cursor: "pointer" }}>
-            <FaUserCircle onClick={() => navigate("/UserDash")} />
-          </div>
-        </div>
-      </Navbar>
-
       <style>{`
         .action-page {
           min-height: calc(100vh - 120px);
