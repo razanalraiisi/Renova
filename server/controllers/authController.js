@@ -355,7 +355,7 @@ export const rejectCollector = async (req, res) => {
       </ul>
  
       <div style="text-align: center; margin-top: 20px;">
-        <a href="mailto:support@renova.com"
+        <a href="mailto:renova.om@hotmail.com"
           style="padding: 12px 20px; color: white; text-decoration: none; background-color: #005A7A; border-radius: 6px;">
           Contact Support
         </a>
@@ -717,7 +717,7 @@ export const deactivateCollector = async (req, res) => {
       </ul>
 
       <div style="text-align: center; margin-top: 20px;">
-        <a href="mailto:support@renova.com"
+        <a href="mailto:renova.om@hotmail.com"
           style="padding: 12px 20px; color: white; text-decoration: none; background-color: #005A7A; border-radius: 6px;">
           Contact Support
         </a>
