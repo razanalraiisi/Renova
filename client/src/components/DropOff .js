@@ -300,107 +300,135 @@ const DropOff = () => {
       overflow: "hidden",
     },
   };
+return (
+  <div style={styles.page}>
+    <div style={{ padding: "20px" }}>
+      <FaArrowLeft
+        onClick={() =>
+          location.state?.from ? navigate(location.state.from) : navigate(-1)
+        }
+        style={{ cursor: "pointer" }}
+      />
+    </div>
 
-  return (
-    <div style={styles.page}>
-      <div style={{ padding: "20px" }}>
-        <FaArrowLeft
-          onClick={() =>
-            location.state?.from ? navigate(location.state.from) : navigate(-1)
-          }
-          style={{ cursor: "pointer" }}
+    <h2 style={{ textAlign: "center", color: "#0080AA" }}>
+      Schedule Your Drop-Off
+    </h2>
+
+    {/* ✅ 1. SUBTITLE ADDED */}
+    <p style={{ textAlign: "center", color: "#555", marginBottom: "10px" }}>
+      Choose a nearby center and complete your request ♻️
+    </p>
+
+    <div style={styles.mainWrapper}>
+      <form style={styles.formContainer} onSubmit={handleSubmit}>
+
+        {/* ✅ 2. GREETING ADDED */}
+        {form.name && (
+          <p style={{ marginBottom: "10px", color: "#0080AA", fontWeight: "bold" }}>
+            Hi {form.name}! 😊 Let’s get your drop-off ready!
+          </p>
+        )}
+
+        <input name="name" placeholder="Name" style={styles.input} value={form.name} readOnly />
+        <input name="email" placeholder="Email" style={styles.input} value={form.email} readOnly />
+
+        <input
+          name="phone"
+          placeholder="Phone"
+          style={styles.input}
+          value={form.phone}
+          onChange={handlePhoneChange}
         />
-      </div>
 
-      <h2 style={{ textAlign: "center", color: "#0080AA" }}>
-        Schedule Your Drop-Off
-      </h2>
+        <select
+          name="deviceCategory"
+          style={styles.input}
+          value={form.deviceCategory}
+          onChange={handleChange}
+        >
+          <option value="">Select Category</option>
+          {allCategories.map((c, i) => (
+            <option key={i} value={c}>{c}</option>
+          ))}
+        </select>
 
-      <div style={styles.mainWrapper}>
-        <form style={styles.formContainer} onSubmit={handleSubmit}>
+        <input
+          name="device"
+          placeholder="Device"
+          style={styles.input}
+          value={form.device}
+          onChange={handleChange}
+        />
 
-          <input name="name" placeholder="Name" style={styles.input} value={form.name} readOnly />
-          <input name="email" placeholder="Email" style={styles.input} value={form.email} readOnly />
+        <input
+          name="condition"
+          placeholder="Condition"
+          style={styles.input}
+          value={form.condition}
+          onChange={handleChange}
+        />
 
-          <input
-            name="phone"
-            placeholder="Phone"
-            style={styles.input}
-            value={form.phone}
-            onChange={handlePhoneChange}
-          />
+        <input
+          name="address"
+          placeholder="Address (auto-filled)"
+          style={styles.input}
+          value={form.address}
+          readOnly
+        />
 
-          <select
-            name="deviceCategory"
-            placeholder="Device Category"
-            style={styles.input}
-            value={form.deviceCategory}
-            onChange={handleChange}
-          >
-            <option value="">Select Category</option>
-            {allCategories.map((c, i) => (
-              <option key={i} value={c}>{c}</option>
-            ))}
-          </select>
+        <input
+          type="datetime-local"
+          name="dateTime"
+          style={styles.input}
+          value={form.dateTime}
+          min={getMinDateTime()}
+          onChange={handleChange}
+        />
 
-          <input
-            name="device"
-            placeholder="Device"
-            style={styles.input}
-            value={form.device}
-            onChange={handleChange}
-          />
+        {errors.dateTime && <p style={styles.error}>{errors.dateTime}</p>}
 
-          <input
-            name="condition"
-            placeholder="Condition"
-            style={styles.input}
-            value={form.condition}
-            onChange={handleChange}
-          />
+        <button type="submit" style={styles.button}>
+          Confirm Drop-Off
+        </button>
 
-          <input
-            name="address"
-            placeholder="Address (auto-filled)"
-            style={styles.input}
-            value={form.address}
-            readOnly
-          />
+        {/* ✅ 3. SELECTED CENTER CARD ADDED */}
+        {selectedCenter && (
+          <div style={{
+            marginTop: "15px",
+            padding: "12px",
+            border: "1px dashed #0078a8",
+            borderRadius: "8px",
+            background: "#f9fcff"
+          }}>
+            <strong>{selectedCenter.companyName}</strong><br />
+            📍 {selectedCenter.address}<br />
+            📞 {selectedCenter.phone}<br />
+            🕒 {selectedCenter.hours}
+          </div>
+        )}
 
-          <input
-            type="datetime-local"
-            name="dateTime"
-            style={styles.input}
-            value={form.dateTime}
-            min={getMinDateTime()}
-            onChange={handleChange}
-          />
+      </form>
 
-          {errors.dateTime && <p style={styles.error}>{errors.dateTime}</p>}
+      {/* MAP */}
+      <div style={styles.mapContainer}>
+        <MapContainer center={[23.5859, 58.4059]} zoom={11} style={{ height: "100%", width: "100%" }}>
+          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
-          <button type="submit" style={styles.button}>
-            Confirm Drop-Off
-          </button>
-        </form>
-
-        <div style={styles.mapContainer}>
-          <MapContainer center={[23.5859, 58.4059]} zoom={11} style={{ height: "100%", width: "100%" }}>
-            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-
-            {collectors.map((collector) => (
-              <Marker
-                key={collector._id}
-                position={[collector.location.lat, collector.location.lng]}
-                eventHandlers={{ click: () => handleMarkerClick(collector) }}
-              >
-                <Popup>{collector.companyName}</Popup>
-              </Marker>
-            ))}
-          </MapContainer>
-        </div>
+          {collectors.map((collector) => (
+            <Marker
+              key={collector._id}
+              position={[collector.location.lat, collector.location.lng]}
+              eventHandlers={{ click: () => handleMarkerClick(collector) }}
+            >
+              <Popup>{collector.companyName}</Popup>
+            </Marker>
+          ))}
+        </MapContainer>
       </div>
     </div>
-  );
+  </div>
+);
 };
 
 export default DropOff;
