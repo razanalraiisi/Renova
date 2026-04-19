@@ -53,7 +53,7 @@ const DropOff = () => {
 
   const isWeekend = (date) => {
     const day = date.getDay();
-    return day === 5 || day === 6; // Friday, Saturday
+    return day === 5 || day === 6;
   };
 
   const isValidDateTime = (value) => {
@@ -67,13 +67,9 @@ const DropOff = () => {
       dt.getMonth() === now.getMonth() &&
       dt.getDate() === now.getDate();
 
-    // ❌ past or today
     if (dt <= now || isSameDay) return false;
-
-    // ❌ Friday / Saturday
     if (isWeekend(dt)) return false;
 
-    // ❌ time restriction
     const hour = dt.getHours();
     if (hour < 8 || hour > 17) return false;
 
@@ -85,6 +81,31 @@ const DropOff = () => {
     d.setDate(d.getDate() + 1);
     d.setHours(8, 0, 0, 0);
     return d.toISOString().slice(0, 16);
+  };
+
+  // =========================
+  // 🔥 NEW: HANDLE DATE CHANGE (UI BLOCK)
+  // =========================
+
+  const handleDateChange = (e) => {
+    const value = e.target.value;
+    if (!value) return;
+
+    const dt = new Date(value);
+
+    const day = dt.getDay();
+    if (day === 5 || day === 6) {
+      alert("Friday and Saturday are not allowed.");
+      return;
+    }
+
+    const hour = dt.getHours();
+    if (hour < 8 || hour > 17) {
+      alert("Please select time between 08:00 and 17:00.");
+      return;
+    }
+
+    setForm({ ...form, dateTime: value });
   };
 
   // =========================
@@ -255,10 +276,6 @@ const DropOff = () => {
     }));
   };
 
-  // =========================
-  // UI (UNCHANGED)
-  // =========================
-
   const styles = {
     page: { fontFamily: "Arial", minHeight: "100vh" },
     navbar: { backgroundColor: "#00a0d0", color: "white" },
@@ -300,135 +317,136 @@ const DropOff = () => {
       overflow: "hidden",
     },
   };
-return (
-  <div style={styles.page}>
-    <div style={{ padding: "20px" }}>
-      <FaArrowLeft
-        onClick={() =>
-          location.state?.from ? navigate(location.state.from) : navigate(-1)
-        }
-        style={{ cursor: "pointer" }}
-      />
-    </div>
 
-    <h2 style={{ textAlign: "center", color: "#0080AA" }}>
-      Schedule Your Drop-Off
-    </h2>
-
-    {/* ✅ 1. SUBTITLE ADDED */}
-    <p style={{ textAlign: "center", color: "#555", marginBottom: "10px" }}>
-      Choose a nearby center and complete your request ♻️
-    </p>
-
-    <div style={styles.mainWrapper}>
-      <form style={styles.formContainer} onSubmit={handleSubmit}>
-
-        {/* ✅ 2. GREETING ADDED */}
-        {form.name && (
-          <p style={{ marginBottom: "10px", color: "#0080AA", fontWeight: "bold" }}>
-            Hi {form.name}! 😊 Let’s get your drop-off ready!
-          </p>
-        )}
-
-        <input name="name" placeholder="Name" style={styles.input} value={form.name} readOnly />
-        <input name="email" placeholder="Email" style={styles.input} value={form.email} readOnly />
-
-        <input
-          name="phone"
-          placeholder="Phone"
-          style={styles.input}
-          value={form.phone}
-          onChange={handlePhoneChange}
+  return (
+    <div style={styles.page}>
+      <div style={{ padding: "20px" }}>
+        <FaArrowLeft
+          onClick={() =>
+            location.state?.from ? navigate(location.state.from) : navigate(-1)
+          }
+          style={{ cursor: "pointer" }}
         />
+      </div>
 
-        <select
-          name="deviceCategory"
-          style={styles.input}
-          value={form.deviceCategory}
-          onChange={handleChange}
-        >
-          <option value="">Select Category</option>
-          {allCategories.map((c, i) => (
-            <option key={i} value={c}>{c}</option>
-          ))}
-        </select>
+      <h2 style={{ textAlign: "center", color: "#0080AA" }}>
+        Schedule Your Drop-Off
+      </h2>
 
-        <input
-          name="device"
-          placeholder="Device"
-          style={styles.input}
-          value={form.device}
-          onChange={handleChange}
-        />
+      <p style={{ textAlign: "center", color: "#555", marginBottom: "10px" }}>
+        Choose a nearby center and complete your request ♻️
+      </p>
 
-        <input
-          name="condition"
-          placeholder="Condition"
-          style={styles.input}
-          value={form.condition}
-          onChange={handleChange}
-        />
+      <div style={styles.mainWrapper}>
+        <form style={styles.formContainer} onSubmit={handleSubmit}>
+          {form.name && (
+            <p style={{ marginBottom: "10px", color: "#0080AA", fontWeight: "bold" }}>
+              Hi {form.name}! 😊 Let’s get your drop-off ready!
+            </p>
+          )}
 
-        <input
-          name="address"
-          placeholder="Address (auto-filled)"
-          style={styles.input}
-          value={form.address}
-          readOnly
-        />
+          <input name="name" placeholder="Name" style={styles.input} value={form.name} readOnly />
+          <input name="email" placeholder="Email" style={styles.input} value={form.email} readOnly />
 
-        <input
-          type="datetime-local"
-          name="dateTime"
-          style={styles.input}
-          value={form.dateTime}
-          min={getMinDateTime()}
-          onChange={handleChange}
-        />
+          <input
+            name="phone"
+            placeholder="Phone"
+            style={styles.input}
+            value={form.phone}
+            onChange={handlePhoneChange}
+          />
 
-        {errors.dateTime && <p style={styles.error}>{errors.dateTime}</p>}
+          <select
+            name="deviceCategory"
+            style={styles.input}
+            value={form.deviceCategory}
+            onChange={handleChange}
+          >
+            <option value="">Select Category</option>
+            {allCategories.map((c, i) => (
+              <option key={i} value={c}>{c}</option>
+            ))}
+          </select>
 
-        <button type="submit" style={styles.button}>
-          Confirm Drop-Off
-        </button>
+          <input
+            name="device"
+            placeholder="Device"
+            style={styles.input}
+            value={form.device}
+            onChange={handleChange}
+          />
 
-        {/* ✅ 3. SELECTED CENTER CARD ADDED */}
-        {selectedCenter && (
-          <div style={{
-            marginTop: "15px",
-            padding: "12px",
-            border: "1px dashed #0078a8",
-            borderRadius: "8px",
-            background: "#f9fcff"
-          }}>
-            <strong>{selectedCenter.companyName}</strong><br />
-            📍 {selectedCenter.address}<br />
-            📞 {selectedCenter.phone}<br />
-            🕒 {selectedCenter.hours}
-          </div>
-        )}
+          <input
+            name="condition"
+            placeholder="Condition"
+            style={styles.input}
+            value={form.condition}
+            onChange={handleChange}
+          />
 
-      </form>
+          <input
+            name="address"
+            placeholder="Address (auto-filled)"
+            style={styles.input}
+            value={form.address}
+            readOnly
+          />
 
-      {/* MAP */}
-      <div style={styles.mapContainer}>
-        <MapContainer center={[23.5859, 58.4059]} zoom={11} style={{ height: "100%", width: "100%" }}>
-          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+          {/* ✅ ONLY EDITED PART */}
+          <input
+            type="datetime-local"
+            name="dateTime"
+            style={styles.input}
+            value={form.dateTime}
+            min={new Date(
+              new Date().setDate(new Date().getDate() + 1)
+            ).toISOString().slice(0, 10) + "T08:00"}
+            max={new Date(
+              new Date().setDate(new Date().getDate() + 30)
+            ).toISOString().slice(0, 10) + "T17:00"}
+            onChange={handleDateChange}
+          />
 
-          {collectors.map((collector) => (
-            <Marker
-              key={collector._id}
-              position={[collector.location.lat, collector.location.lng]}
-              eventHandlers={{ click: () => handleMarkerClick(collector) }}
-            >
-              <Popup>{collector.companyName}</Popup>
-            </Marker>
-          ))}
-        </MapContainer>
+          {errors.dateTime && <p style={styles.error}>{errors.dateTime}</p>}
+
+          <button type="submit" style={styles.button}>
+            Confirm Drop-Off
+          </button>
+
+          {selectedCenter && (
+            <div style={{
+              marginTop: "15px",
+              padding: "12px",
+              border: "1px dashed #0078a8",
+              borderRadius: "8px",
+              background: "#f9fcff"
+            }}>
+              <strong>{selectedCenter.companyName}</strong><br />
+              📍 {selectedCenter.address}<br />
+              📞 {selectedCenter.phone}<br />
+              🕒 {selectedCenter.hours}
+            </div>
+          )}
+        </form>
+
+        <div style={styles.mapContainer}>
+          <MapContainer center={[23.5859, 58.4059]} zoom={11} style={{ height: "100%", width: "100%" }}>
+            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+
+            {collectors.map((collector) => (
+              <Marker
+                key={collector._id}
+                position={[collector.location.lat, collector.location.lng]}
+                eventHandlers={{ click: () => handleMarkerClick(collector) }}
+              >
+                <Popup>{collector.companyName}</Popup>
+              </Marker>
+            ))}
+          </MapContainer>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
 };
 
 export default DropOff;

@@ -8,7 +8,7 @@ const PickupRequest = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const category = location.state?.category || "Pickup";
-  const fromPage = location.state?.from || null; // store previous page if provided
+  const fromPage = location.state?.from || null;
 
   const [form, setForm] = useState({
     name: "",
@@ -31,7 +31,6 @@ const PickupRequest = () => {
     "Lighting Equipment","Medical & Fitness Devices","Batteries & Accessories"
   ];
 
-  // Pre-fill user data
   useEffect(() => {
     try {
       const storedUser =
@@ -78,7 +77,16 @@ const PickupRequest = () => {
     if (!form.device.trim()) newErrors.device = "Device is required";
     if (!form.condition.trim()) newErrors.condition = "Condition is required";
     if (!form.address.trim()) newErrors.address = "Address is required";
-    if (!form.dateTime) newErrors.dateTime = "Date & Time is required";
+
+    // ✅ UPDATED DATE VALIDATION ONLY
+    const selectedDate = new Date(form.dateTime);
+    const now = new Date();
+
+    if (!form.dateTime) {
+      newErrors.dateTime = "Date & Time is required";
+    } else if (selectedDate < now) {
+      newErrors.dateTime = "Please select a future date and time";
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -141,12 +149,9 @@ const PickupRequest = () => {
 
   return (
     <div style={styles.page}>
-      
-
       <div style={{ padding: "20px" }}>
         <FaArrowLeft
           onClick={() => {
-            // If previous page provided, navigate back to it, otherwise go back in history
             if (fromPage) navigate(fromPage);
             else navigate(-1);
           }}
@@ -195,7 +200,16 @@ const PickupRequest = () => {
         <input name="address" placeholder="Address" style={styles.input} onChange={handleChange} />
         {errors.address && <p style={styles.error}>{errors.address}</p>}
 
-        <input type="datetime-local" name="dateTime" style={styles.input} onChange={handleChange} />
+        {/* ✅ ONLY EDITED PART */}
+        <input
+          type="datetime-local"
+          name="dateTime"
+          style={styles.input}
+          onChange={handleChange}
+          min={new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
+            .toISOString()
+            .slice(0, 16)}
+        />
         {errors.dateTime && <p style={styles.error}>{errors.dateTime}</p>}
 
         <input type="file" accept="image/*" onChange={(e) => setImage(e.target.files[0])} style={styles.input} />
