@@ -10,7 +10,8 @@ import * as Yup from "yup";
 import { Box, Card, CardContent, Typography, Divider, Snackbar, Alert, Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField } from "@mui/material"; // Added TextField
 import logo from "../assets/logo.png";
 import "./Components.css";
-
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 const UserDash = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -235,7 +236,38 @@ const UserDash = () => {
     req.device.toLowerCase().includes(searchTerm.toLowerCase()) ||
     req.requestType.toLowerCase().includes(searchTerm.toLowerCase())
   );
+const downloadRequestsReport = () => {
+  if (!requests || requests.length === 0) {
+    setSnackbar({
+      open: true,
+      message: "No requests to download",
+      severity: "warning",
+    });
+    return;
+  }
 
+  const headers = [["Device", "Type", "Status", "Date", "Collector"]];
+
+  const rows = requests.map((req) => [
+    req.device || "-",
+    req.requestType || "-",
+    req.status || "-",
+    new Date(req.createdAt).toLocaleDateString(),
+    req.collectorName || "-",
+  ]);
+
+  // Create PDF
+  const doc = new jsPDF();
+  doc.text("My Requests Report", 14, 15);
+
+  autoTable(doc, {
+    head: headers,
+    body: rows,
+    startY: 25,
+  });
+
+  doc.save("my_requests_report.pdf");
+};
   return (
     <div className="dashboard-page">
       <div style={{ padding: "10px 30px" }}>
@@ -285,6 +317,21 @@ const UserDash = () => {
                   <input type="text" placeholder="Search requests..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{ padding: "6px 10px", borderRadius: 6, border: "1px solid #ccc", fontSize: 14, width: 180 }} />
                   {searchTerm && (<button onClick={() => setSearchTerm("")} style={{ border: "none", background: "#ccc", borderRadius: "50%", width: 20, height: 20, cursor: "pointer", fontWeight: "bold", lineHeight: "16px", padding: 0 }}>×</button>)}
                 </div>
+                <button
+  onClick={downloadRequestsReport}
+  style={{
+    padding: "6px 12px",
+    backgroundColor: "#0080AA",
+    color: "white",
+    border: "none",
+    borderRadius: 6,
+    cursor: "pointer",
+    fontSize: 13,
+    marginLeft: 10
+  }}
+>
+  Download Report
+</button>
               </div>
 
               {loadingRequests ? (<p>Loading requests...</p>) : filteredRequests.length === 0 ? (<p>You don’t have any requests yet.</p>) : (
