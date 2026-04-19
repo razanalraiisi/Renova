@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Navbar, NavbarBrand } from "reactstrap";
-import { FaArrowLeft, FaUser, FaClipboardList, FaSignOutAlt, FaBell, FaMoon, FaSun } from "react-icons/fa";
+import { FaArrowLeft, FaUser, FaClipboardList, FaSignOutAlt, FaBell, FaMoon, FaSun, FaCalendarAlt } from "react-icons/fa"; // Added FaCalendarAlt
 import { useDispatch, useSelector } from "react-redux";
 import { updateUser, resetUser, resetState } from "../features/UserSlice.js";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as Yup from "yup";
-import { Box, Card, CardContent, Typography, Divider, Snackbar, Alert, Dialog, DialogTitle, DialogContent, DialogActions, Button } from "@mui/material";
+import { Box, Card, CardContent, Typography, Divider, Snackbar, Alert, Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField } from "@mui/material"; // Added TextField
 import logo from "../assets/logo.png";
 import "./Components.css";
 
@@ -26,6 +26,10 @@ const UserDash = () => {
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
   const [cancelTargetId, setCancelTargetId] = useState(null);
+
+  // --- Reschedule States ---
+  const [rescheduleOpen, setRescheduleOpen] = useState(false);
+  const [rescheduleData, setRescheduleData] = useState({ id: null, type: "", newDate: "" });
 
   // Notifications
   const [notifOpen, setNotifOpen] = useState(false);
@@ -162,6 +166,40 @@ const UserDash = () => {
     }
   };
 
+  // --- Reschedule Logic ---
+  const openRescheduleModal = (req) => {
+    setRescheduleData({ id: req._id, type: req.requestType, newDate: "" });
+    setRescheduleOpen(true);
+  };
+
+  const handleRescheduleSubmit = async () => {
+    if (!rescheduleData.newDate) return setSnackbar({ open: true, message: "Please select a date", severity: "warning" });
+
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+    const endpoint = rescheduleData.type === "DropOff"
+      ? `http://localhost:5000/api/dropoffs/reschedule/${rescheduleData.id}`
+      : `http://localhost:5000/api/pickups/reschedule/${rescheduleData.id}`;
+
+    try {
+      const res = await fetch(endpoint, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ newDate: rescheduleData.newDate })
+      });
+
+      if (res.ok) {
+        setSnackbar({ open: true, message: "Rescheduled successfully!", severity: "success" });
+        setRescheduleOpen(false);
+        fetchRequests();
+      } else {
+        const error = await res.json();
+        setSnackbar({ open: true, message: error.message || "Failed to reschedule", severity: "error" });
+      }
+    } catch (err) {
+      setSnackbar({ open: true, message: "Server error", severity: "error" });
+    }
+  };
+
   const handleLogout = () => {
     dispatch(resetUser());
     localStorage.removeItem("token");
@@ -185,8 +223,6 @@ const UserDash = () => {
     fetchRequests();
   };
 
-
-
   const getStatusColor = (status) => {
     if (status === "Pending") return "#ffc107";
     if (status === "Accepted") return "#28a745";
@@ -202,15 +238,11 @@ const UserDash = () => {
 
   return (
     <div className="dashboard-page">
-      
-
-      {/* MAIN PAGE */}
       <div style={{ padding: "10px 30px" }}>
         <FaArrowLeft style={{ color: "#0080AA", cursor: "pointer", fontSize: 22 }} onClick={() => navigate("/start")} />
       </div>
 
       <div className="dashboard-container">
-        {/* SIDEBAR */}
         <div className="sidebar">
           <div className="profile-box">
             {user?.pic ? <img src={user.pic} alt="profile" className="avatar-img" /> : <div className="avatar"></div>}
@@ -219,19 +251,9 @@ const UserDash = () => {
           </div>
           <div className={activeTab === "profile" ? "menu-item active" : "menu-item"} onClick={() => setActiveTab("profile")}><FaUser /> My Profile</div>
           <div className={activeTab === "requests" ? "menu-item active" : "menu-item"} onClick={() => setActiveTab("requests")}><FaClipboardList /> My Requests</div>
-          <div
-  className={activeTab === "gamification" ? "menu-item active" : "menu-item"}
-  onClick={() => {
-    setActiveTab("gamification");
-    navigate("/Gamification");
-  }}
->
-  🏆 Gamification
-</div>
           <button className="logout-btn" onClick={handleLogout}><FaSignOutAlt /> Logout</button>
         </div>
 
-        {/* CONTENT */}
         <div className="content">
           {activeTab === "profile" && (
             <form onSubmit={handleSubmit(onSubmit)}>
@@ -275,29 +297,37 @@ const UserDash = () => {
                       <div style={{ fontSize: 13, color: "#666" }}>Request Date: {new Date(req.createdAt).toLocaleDateString()}</div>
                       {req.status === "Accepted" && req.collectorName && <div style={{ fontSize: 13, color: "#28a745" }}>Collector: {req.collectorName}</div>}
                       <div style={{ fontSize: 13, color: getStatusColor(req.status), fontWeight: "bold" }}>
-  Status: {req.status === "Canceled" && req.rejectReason ? "Rejected" : req.status}
-</div>
-                     <div style={{ marginTop: 8, display: "flex", gap: 10 }}>
+                        Status: {req.status === "Canceled" && req.rejectReason ? "Rejected" : req.status}
+                      </div>
+                      <div style={{ marginTop: 8, display: "flex", gap: 10 }}>
 
-  {/* ✅ PENDING → ONLY CANCEL */}
-  {req.status === "Pending" && (
-    <button className="btn-cancel" onClick={() => handleCancel(req._id)}>
-      Cancel
-    </button>
-  )}
+                        {/* ✅ PENDING → CANCEL & RESCHEDULE */}
+                        {req.status === "Pending" && (
+                          <>
+                            <button className="btn-cancel" onClick={() => handleCancel(req._id)} style={{ padding: '6px 12px', cursor: 'pointer' }}>
+                              Cancel
+                            </button>
+                            <button onClick={() => openRescheduleModal(req)} style={{ padding: '6px 12px', cursor: 'pointer', backgroundColor: '#0080AA', color: 'white', border: 'none', borderRadius: '2px', marginLeft: 'auto' }}>
+                              Reschedule
+                            </button>
+                          </>
+                        )}
 
-  {/* ❌ ACCEPTED → NO BUTTONS */}
+                        {/* ✅ ACCEPTED → ONLY RESCHEDULE */}
+                        {req.status === "Accepted" && (
+                          <button onClick={() => openRescheduleModal(req)} style={{ padding: '6px 12px', cursor: 'pointer', backgroundColor: '#0080AA', color: 'white', border: 'none', borderRadius: '4px' }}>
+                            Reschedule
+                          </button>
+                        )}
 
-  {/* ❌ CANCELED → NO BUTTONS */}
+                        {/* ✅ REJECTED → TRY AGAIN */}
+                        {req.status === "Rejected" && (
+                          <button className="btn-tryagain" onClick={() => handleTryAgain(req._id)}>
+                            Try Again
+                          </button>
+                        )}
 
-  {/* ✅ REJECTED → ONLY TRY AGAIN */}
-  {req.status === "Rejected" && (
-    <button className="btn-tryagain" onClick={() => handleTryAgain(req._id)}>
-      Try Again
-    </button>
-  )}
-
-</div>
+                      </div>
                     </div>
                   </div>
                 ))
@@ -306,6 +336,26 @@ const UserDash = () => {
           )}
         </div>
       </div>
+
+      {/* Reschedule Dialog */}
+      <Dialog open={rescheduleOpen} onClose={() => setRescheduleOpen(false)}>
+        <DialogTitle>Reschedule Request</DialogTitle>
+        <DialogContent sx={{ pt: 2 }}>
+          <Typography variant="body2" sx={{ mb: 2 }}>Select a new date for your {rescheduleData.type}.</Typography>
+          <TextField
+            type="date"
+            fullWidth
+            InputLabelProps={{ shrink: true }}
+            value={rescheduleData.newDate}
+            onChange={(e) => setRescheduleData({ ...rescheduleData, newDate: e.target.value })}
+            inputProps={{ min: new Date().toISOString().split("T")[0] }} // Prevent past dates
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setRescheduleOpen(false)}>Cancel</Button>
+          <Button onClick={handleRescheduleSubmit} variant="contained" color="primary">Confirm</Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Cancel Confirmation Dialog */}
       <Dialog open={cancelConfirmOpen} onClose={() => setCancelConfirmOpen(false)}>

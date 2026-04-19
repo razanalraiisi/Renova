@@ -31,7 +31,7 @@ const upload = multer({ storage });
 router.post("/create", protect, upload.single("image"), createPickupRequest);
 router.get("/user/requests", protect, getUserPickupRequests);
 router.put("/cancel/:id", protect, cancelPickupRequest);
-
+router.put("/reschedule/:id", protect, (req, res) => res.status(200).json({ message: "Reschedule logic needed in controller" }));
 /* COLLECTOR / ADMIN ROUTES */
 router.get("/all/:collectorId", getAllPickupRequests);
 router.get("/history/:collectorId", getCollectorHistory);

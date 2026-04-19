@@ -207,3 +207,31 @@ export const completePickupRequest = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+/**
+ * Reschedule a request by updating its date
+ */
+export const reschedulePickupRequest = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { newDate } = req.body;
+
+    if (!newDate) {
+      return res.status(400).json({ message: "New date is required" });
+    }
+
+    const request = await PickupRequest.findByIdAndUpdate(
+      id,
+      { createdAt: new Date(newDate) },
+      { new: true }
+    );
+
+    if (!request) {
+      return res.status(404).json({ message: "Request not found" });
+    }
+
+    res.json({ message: "Rescheduled successfully", request });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

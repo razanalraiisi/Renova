@@ -31,7 +31,7 @@ const upload = multer({ storage });
 router.post("/create", protect, upload.single("image"), createDropOffRequest);
 router.get("/user/requests", protect, getUserDropOffRequests);
 router.put("/cancel/:id", protect, cancelDropOffRequest);
-
+router.put("/reschedule/:id", protect, (req, res) => res.status(200).json({ message: "Reschedule logic needed in controller" }));
 /* COLLECTOR ROUTES */
 router.get("/all/:collectorId", protect, getAllDropOffRequests);
 router.get("/history/:collectorId", protect, getCollectorDropOffHistory);

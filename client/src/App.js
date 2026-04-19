@@ -47,7 +47,7 @@ import PrivacyPolicy from './components/PrivacyPolicy.js';
 import AdminUserPage from './components/AdminUserPage.js';
 import AdminMyRequests from './components/AdminMyRequests.js';
 import DecisionResult from './components/DecisionResult.js';
-import Gamification from './components/Gamification.js';
+
 // Reports
 import RecyclesReport from "./components/RecyclesReport";
 import DisposalsReport from "./components/DisposalsReport";
@@ -104,7 +104,7 @@ function App() {
             <Route path="/AboutUs" element={<AboutUs />} />
             <Route path="/FAQ" element={<FAQ />} />
             <Route path="/AdminFAQ" element={<AdminFAQ />} />
-            <Route path="/Gamification" element={<Gamification />} />
+       
             {/* ✅ USER PAGES WITH NAVBAR */}
             <Route path="/start" element={withUserNav(Start)()} />
             <Route path="/UserDash" element={withUserNav(UserDash)()} />
