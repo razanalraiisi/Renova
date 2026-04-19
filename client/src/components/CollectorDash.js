@@ -183,7 +183,7 @@ const CollectorDash = () => {
             alignItems: 'center',
             justifyContent: 'center',
           }}>
-            <h5 style={{ marginBottom: '25px' }}>Electronics by Device Category</h5>
+            <h5 style={{ marginBottom: '25px' }}>Distribution of Collected Electronic Waste by Device Category</h5>
             <PieChart
               colors={pieColors}
               series={[{ 
@@ -210,7 +210,7 @@ const CollectorDash = () => {
             flexDirection: 'column',
             justifyContent: 'center',
           }}>
-            <h5 style={{ marginBottom: '10px' }}>Electronics Processed Per Month</h5>
+            <h5 style={{ marginBottom: '10px' }}>Monthly Performance of Electronics Processing Status</h5>
             <BarChart
               xAxis={[{ scaleType: 'band', data: months, label: 'Months' }]}
               series={[
