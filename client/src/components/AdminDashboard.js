@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 
 import barImg from "../assets/bar.png";
@@ -14,6 +14,7 @@ import {
   CarouselControl,
 } from "reactstrap";
 import "./AdminDashboard.css";
+import { downloadInsightsReportPdf } from "../utils/insightsReportPdf.js";
 
 // Chart.js
 import {
@@ -64,6 +65,23 @@ const SideCard = ({ title, lines = [], buttonText = "View", onClick }) => {
 
 const API_STATS = "http://localhost:5000/admin/stats";
 const API_CHART_DATA = "http://localhost:5000/admin/chart-data";
+const API_INSIGHTS = "http://localhost:5000/api/reports/insights";
+
+const defaultInsights = () => ({
+  totalItems: 0,
+  topUser: { name: "", count: 0 },
+  topCategory: { name: "", count: 0, percentage: 0 },
+  peakMonth: "",
+});
+
+function formatCategoryLabel(key) {
+  if (!key) return "—";
+  const s = String(key).toLowerCase();
+  if (s === "disposal") return "Disposal";
+  if (s === "recycle") return "Recycle";
+  if (s === "upcycle") return "Upcycle";
+  return String(key).replace(/^./, (c) => c.toUpperCase());
+}
 
 /* ---------- Admin Dashboard ---------- */
 const AdminDashboard = () => {
@@ -122,6 +140,52 @@ const AdminDashboard = () => {
     };
     fetchChartData();
   }, []);
+
+  const [insights, setInsights] = useState(() => defaultInsights());
+  const [insightsLoading, setInsightsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchInsights = async () => {
+      try {
+        const res = await fetch(API_INSIGHTS);
+        if (res.ok) {
+          const data = await res.json();
+          setInsights({
+            totalItems: data.totalItems ?? 0,
+            topUser: {
+              name: data.topUser?.name ?? "",
+              count: data.topUser?.count ?? 0,
+            },
+            topCategory: {
+              name: data.topCategory?.name ?? "",
+              count: data.topCategory?.count ?? 0,
+              percentage: data.topCategory?.percentage ?? 0,
+            },
+            peakMonth: data.peakMonth ?? "",
+          });
+        }
+      } catch (err) {
+        console.error("Failed to load report insights", err);
+      } finally {
+        setInsightsLoading(false);
+      }
+    };
+    fetchInsights();
+  }, []);
+
+  const handleDownloadInsightsPdf = useCallback(() => {
+    if (insightsLoading) return;
+    const ok = downloadInsightsReportPdf({
+      ...insights,
+      generatedAt: new Date().toLocaleString(undefined, {
+        dateStyle: "medium",
+        timeStyle: "short",
+      }),
+    });
+    if (!ok) {
+      window.alert("The PDF could not be generated. Please try again.");
+    }
+  }, [insights, insightsLoading]);
 
   const chartSlides = useMemo(() => {
     const d = chartData;
@@ -363,6 +427,84 @@ const AdminDashboard = () => {
               </div>
             </Col>
           </Row>
+
+          {/* Report summary (activity insights) */}
+          <section className="report-summary-section" aria-label="Report summary">
+            <div className="report-summary-header-row">
+              <h4 className="report-summary-heading">Report Summary</h4>
+              <button
+                type="button"
+                className="report-summary-pdf-btn"
+                disabled={insightsLoading}
+                onClick={handleDownloadInsightsPdf}
+              >
+                Download PDF
+              </button>
+            </div>
+            <div className="report-summary-cards">
+              <div className="report-summary-card">
+                <div className="report-summary-card-title">Top Collector</div>
+                <div className="report-summary-card-value">
+                  {insightsLoading ? (
+                    <span className="report-summary-loading">Loading…</span>
+                  ) : (
+                    <>
+                      <span className="report-summary-primary">
+                        {insights.topUser.name?.trim() || "—"}
+                      </span>
+                      <span className="report-summary-count">
+                        {insights.topUser.count > 0
+                          ? `${insights.topUser.count} request${
+                              insights.topUser.count === 1 ? "" : "s"
+                            } (accepted or completed)`
+                          : "No Recycle / Upcycle / Dispose completions yet"}
+                      </span>
+                    </>
+                  )}
+                </div>
+              </div>
+              <div className="report-summary-card">
+                <div className="report-summary-card-title">Top Category</div>
+                <div className="report-summary-card-value">
+                  {insightsLoading ? (
+                    <span className="report-summary-loading">Loading…</span>
+                  ) : (
+                    <>
+                      <span className="report-summary-primary">
+                        {insights.topCategory.count > 0
+                          ? `${formatCategoryLabel(insights.topCategory.name)} (${Number(
+                              insights.topCategory.percentage
+                            ).toFixed(1)}%)`
+                          : "—"}
+                      </span>
+                      {insights.topCategory.count > 0 ? (
+                        <span className="report-summary-count">
+                          {insights.topCategory.count} of {insights.totalItems} qualifying
+                        </span>
+                      ) : null}
+                    </>
+                  )}
+                </div>
+              </div>
+              <div className="report-summary-card">
+                <div className="report-summary-card-title">Total Items</div>
+                <div className="report-summary-card-value">
+                  {insightsLoading ? (
+                    <span className="report-summary-loading">Loading…</span>
+                  ) : (
+                    <>
+                      <span className="report-summary-primary">
+                        {insights.totalItems}
+                      </span>
+                      <span className="report-summary-count">
+                        Accepted or completed · Recycle, Upcycle & Dispose
+                      </span>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          </section>
 
           {/* CHART */}
           <div className="center-graph-box">

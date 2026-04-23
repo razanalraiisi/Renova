@@ -16,6 +16,7 @@ import authRoutes from './routes/authRoutes.js';
 import adminRoutes from "./routes/adminRoutes.js";
 import pickupRoutes from "./routes/pickupRoutes.js";
 import dropOffRoutes from "./routes/dropOffRoutes.js";
+import reportRoutes from "./routes/reportRoutes.js";
 
 // =======================
 // Environment
@@ -35,6 +36,7 @@ console.log("✓ AUTH ROUTES LOADED");
 
 app.use("/api/pickups", pickupRoutes);
 app.use("/api/dropoffs", dropOffRoutes);
+app.use("/api/reports", reportRoutes);
 
 // =======================
 // Routes

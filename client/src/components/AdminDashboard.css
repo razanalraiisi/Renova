@@ -145,6 +145,135 @@
   flex-wrap: wrap;
 }
 
+/* ----- Report summary (insights) ----- */
+.report-summary-section {
+  width: 100%;
+  min-width: 0;
+  flex: 0 0 auto;
+}
+
+.report-summary-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  width: 100%;
+  min-width: 0;
+  margin-bottom: 10px;
+}
+
+.report-summary-heading {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #333;
+  text-align: left;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.report-summary-pdf-btn {
+  flex-shrink: 0;
+  background-color: var(--admin-blue);
+  color: #fff;
+  border: none;
+  border-radius: 18px;
+  padding: 8px 16px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.15s ease;
+}
+
+.report-summary-pdf-btn:hover:not(:disabled) {
+  background-color: var(--admin-blue-dark);
+  transform: translateY(-1px);
+}
+
+.report-summary-pdf-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.report-summary-cards {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+}
+
+.report-summary-card {
+  flex: 1 1 0;
+  min-width: min(180px, 100%);
+  border-radius: 12px;
+  padding: 15px;
+  background: var(--admin-card);
+  border: 1px solid var(--admin-border);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.report-summary-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 128, 170, 0.08);
+}
+
+.report-summary-card-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: #6b7280;
+  margin: 0;
+}
+
+.report-summary-card-value {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-height: 2.5rem;
+  justify-content: center;
+}
+
+.report-summary-primary {
+  font-weight: 800;
+  font-size: clamp(1rem, 2.2vw, 1.2rem);
+  line-height: 1.25;
+  color: #1f2937;
+  word-break: break-word;
+}
+
+.report-summary-count {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.report-summary-loading {
+  font-weight: 700;
+  font-size: 1rem;
+  color: #6b7280;
+}
+
+@media (max-width: 767.98px) {
+  .report-summary-cards {
+    flex-direction: column;
+  }
+
+  .report-summary-card {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+}
+
 .center-graph-box {
   border: 1px solid #d7dbe0;
   border-radius: var(--admin-card-radius);

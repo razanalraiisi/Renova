@@ -1,5 +1,10 @@
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
+
+jest.mock('../../utils/insightsReportPdf.js', () => ({
+  downloadInsightsReportPdf: jest.fn(() => true),
+}));
+
 import AdminDashboard from '../AdminDashboard';
 
 jest.mock('react-router-dom', () => ({
@@ -38,6 +43,19 @@ beforeEach(() => {
             recycles: { labels: [], data: [] },
             upcycles: { labels: [], data: [] },
             newUsers: { labels: [], data: [] },
+          }),
+      });
+    }
+
+    if (url.includes('api/reports/insights')) {
+      return Promise.resolve({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            totalItems: 42,
+            topUser: { name: 'Test Collector', count: 10 },
+            topCategory: { name: 'recycle', count: 20, percentage: 47.6 },
+            peakMonth: 'Jan 2026',
           }),
       });
     }
