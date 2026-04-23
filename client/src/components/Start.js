@@ -17,8 +17,8 @@ const Start = () => {
     <>
       <style>{`
         .action-page {
-          min-height: calc(100vh - 120px);
-          padding: 40px 20px;
+          min-height: calc(100vh - 70px);
+          padding: 20px;
           display: flex;
           flex-direction: column;
           justify-content: flex-start;

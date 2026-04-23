@@ -76,15 +76,15 @@ function App() {
 
   // ✅ NEW: User layout wrapper
   const withUserNav = (Component) => {
-    return () => (
-      <>
-        <UserNavbar />
-        <div style={{ paddingTop: '70px' }}>
-          <Component />
-        </div>
-      </>
-    );
-  };
+  return () => (
+    <div className="app-layout">
+      <UserNavbar />
+      <div className="page-content">
+        <Component />
+      </div>
+    </div>
+  );
+};
 
   return (
     <Container fluid className="appBG">

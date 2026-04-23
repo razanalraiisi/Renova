@@ -107,7 +107,10 @@ const UserNavbar = () => {
   const unread = notificationRequests.length;
 
   return (
-    <Navbar className="top-navbar">
+    <Navbar
+  className="top-navbar"
+  style={{ margin: 0, padding: "10px 20px", height: "80px" }}
+>
       <div className="nav-container" style={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
 
         {/* LEFT */}
