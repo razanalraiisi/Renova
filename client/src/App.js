@@ -77,12 +77,12 @@ function App() {
   // ✅ NEW: User layout wrapper
   const withUserNav = (Component) => {
   return () => (
-    <>
+    <div className="app-layout">
       <UserNavbar />
       <div className="page-content">
         <Component />
       </div>
-    </>
+    </div>
   );
 };
 

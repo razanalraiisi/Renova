@@ -63,7 +63,7 @@ const DecideForMe = () => {
 
     const aiResult = await getAIRecommendation(image, condition);
 
-    navigate("/decision-result", {
+    navigate("/decisionlogic", {
       state: {
         recommendation: aiResult,
         imagePreview: preview,
@@ -72,6 +72,7 @@ const DecideForMe = () => {
     });
   };
 
+  
   const styles = {
     page: {
       fontFamily: "Arial, sans-serif",
