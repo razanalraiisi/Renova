@@ -25,6 +25,9 @@ const PickupRequest = () => {
   const [errors, setErrors] = useState({});
   const [userName, setUserName] = useState("");
 
+  // ✅ ADDED: image error state
+  const [imageError, setImageError] = useState("");
+
   const allCategories = [
     "Small Electronics","Large Electronics","Home Appliances (Small)","Home Appliances (Large)","IT & Office Equipment",
     "Kitchen & Cooking Appliances","Entertainment Devices","Personal Care Electronics","Tools & Outdoor Equipment",
@@ -59,6 +62,31 @@ const PickupRequest = () => {
     setForm({ ...form, phone: value });
   };
 
+  // ✅ ADDED: image validation handler
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+
+    if (!file) return;
+
+    const validTypes = ["image/jpeg", "image/png", "image/jpg", "image/webp"];
+
+    if (!validTypes.includes(file.type)) {
+      setImageError("Only image files (JPG, PNG, WEBP) are allowed");
+      setImage(null);
+      return;
+    }
+
+    const maxSize = 2 * 1024 * 1024;
+    if (file.size > maxSize) {
+      setImageError("Image must be less than 2MB");
+      setImage(null);
+      return;
+    }
+
+    setImageError("");
+    setImage(file);
+  };
+
   const validate = () => {
     let newErrors = {};
 
@@ -78,7 +106,6 @@ const PickupRequest = () => {
     if (!form.condition.trim()) newErrors.condition = "Condition is required";
     if (!form.address.trim()) newErrors.address = "Address is required";
 
-    // ✅ UPDATED DATE VALIDATION ONLY
     const selectedDate = new Date(form.dateTime);
     const now = new Date();
 
@@ -95,6 +122,12 @@ const PickupRequest = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
+
+    // ✅ ADDED safety check
+    if (imageError) {
+      alert("Please fix the image error before submitting");
+      return;
+    }
 
     const token = localStorage.getItem("token") || sessionStorage.getItem("token");
     if (!token) {
@@ -129,6 +162,7 @@ const PickupRequest = () => {
           address: "",
         });
         setImage(null);
+        setImageError("");
       } else {
         alert(result.message || "Error submitting request");
       }
@@ -200,7 +234,6 @@ const PickupRequest = () => {
         <input name="address" placeholder="Address" style={styles.input} onChange={handleChange} />
         {errors.address && <p style={styles.error}>{errors.address}</p>}
 
-        {/* ✅ ONLY EDITED PART */}
         <input
           type="datetime-local"
           name="dateTime"
@@ -212,7 +245,14 @@ const PickupRequest = () => {
         />
         {errors.dateTime && <p style={styles.error}>{errors.dateTime}</p>}
 
-        <input type="file" accept="image/*" onChange={(e) => setImage(e.target.files[0])} style={styles.input} />
+        {/* ✅ UPDATED INPUT */}
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleImageChange}
+          style={styles.input}
+        />
+        {imageError && <p style={styles.error}>{imageError}</p>}
 
         <button type="submit" style={styles.button}>
           Confirm Pickup
