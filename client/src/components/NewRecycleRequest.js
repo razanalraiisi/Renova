@@ -89,7 +89,7 @@ const NewRecycleRequest = () => {
                       <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
                         <Box>
                           <Typography fontWeight={600}><FcViewDetails /> Request Details</Typography>
-                          <Typography fontSize={14}>Request Date: {new Date(r.createdAt).toLocaleDateString()}</Typography>
+                          <Typography fontSize={14}>Request Date & Time: {new Date(r.createdAt).toLocaleString()}</Typography>
                           <Typography fontSize={14}>Condition: {r.condition}</Typography>
                           <Typography fontSize={14}>Collection Method: {r.requestType === "DropOff" ? "Drop-off" : "Pickup"}</Typography>
                           <Typography fontSize={14}>Address: {r.address}</Typography>

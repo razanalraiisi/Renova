@@ -15,6 +15,10 @@ import {
 import { Input } from "reactstrap";
 import './Components.css';
 import { MdSimCardDownload } from "react-icons/md";
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import Chart from 'chart.js/auto';
+import logo from '../assets/logo.png';
 
 const RequestHistory = () => {
   const navigate = useNavigate();
@@ -172,6 +176,237 @@ const RequestHistory = () => {
     document.body.removeChild(link);
   };
 
+  /* DOWNLOAD PDF FUNCTION (NEW) */
+  const downloadPDF = async () => {
+    if (filteredRequests.length === 0) {
+      alert("No requests to download");
+      return;
+    }
+
+    // Calculate statistics
+    const totalRequests = filteredRequests.length;
+    const acceptedRequests = filteredRequests.filter(r => r.status === "Accepted").length;
+    const completedRequests = filteredRequests.filter(r => r.status === "Completed").length;
+    const pickupRequests = filteredRequests.filter(r => r.requestType === "Pickup").length;
+    const dropoffRequests = filteredRequests.filter(r => r.requestType === "DropOff").length;
+
+    // Create PDF
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    let yPosition = 15;
+
+    // Add header background color
+    doc.setFillColor(0, 128, 170);
+    doc.rect(0, 0, pageWidth, 35, 'F');
+
+    // Add logo
+    try {
+      const img = new Image();
+      img.src = logo;
+      await new Promise((resolve) => {
+        img.onload = () => {
+          doc.addImage(img, 'PNG', 12, 5, 12, 12);
+          resolve();
+        };
+      });
+    } catch (error) {
+      console.log("Logo not found, skipping");
+    }
+
+    // Title - white text on colored background
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(16);
+    doc.setTextColor(255, 255, 255);
+    doc.text("Collector Request Report", 28, 15);
+
+    // Date and Time - white text
+    doc.setFont("Helvetica", "normal");
+    doc.setFontSize(9);
+    const currentDate = new Date().toLocaleString();
+    doc.text(`Generated on: ${currentDate}`, 28, 22);
+
+    // Reset text color
+    doc.setTextColor(0, 0, 0);
+    yPosition = 42;
+
+    // Summary Statistics Section - No background
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(12);
+    doc.setTextColor(0, 128, 170);
+    doc.text("Summary Statistics", 12, yPosition);
+    yPosition += 8;
+
+    doc.setFontSize(9);
+    doc.setTextColor(0, 0, 0);
+    const statsData = [
+      [`Total Requests:`, totalRequests.toString()],
+      [`Accepted Requests:`, acceptedRequests.toString()],
+      [`Completed Requests:`, completedRequests.toString()],
+      [`Pickup Requests:`, pickupRequests.toString()],
+      [`Drop-off Requests:`, dropoffRequests.toString()],
+    ];
+
+    statsData.forEach((stat) => {
+      doc.setFont("Helvetica", "bold");
+      doc.text(stat[0], 15, yPosition);
+      doc.setFont("Helvetica", "normal");
+      doc.text(stat[1], 65, yPosition);
+      yPosition += 5;
+    });
+
+    yPosition += 8;
+
+    // Request Type Breakdown Section
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(11);
+    doc.setTextColor(0, 128, 170);
+    doc.text("Request Type Distribution", 12, yPosition);
+    yPosition += 7;
+
+    doc.setFont("Helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(0, 0, 0);
+    doc.text(`Pickup: ${pickupRequests} (${((pickupRequests / totalRequests) * 100).toFixed(1)}%)`, 15, yPosition);
+    yPosition += 5;
+    doc.text(`Drop-off: ${dropoffRequests} (${((dropoffRequests / totalRequests) * 100).toFixed(1)}%)`, 15, yPosition);
+    yPosition += 10;
+
+    // Create Status Distribution Chart - SMALLER SIZE
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = 300;
+      canvas.height = 200;
+      canvas.style.display = 'none';
+      document.body.appendChild(canvas);
+      
+      const ctx = canvas.getContext('2d');
+
+      const statusCounts = {
+        Accepted: acceptedRequests,
+        Completed: completedRequests,
+      };
+
+      const statusChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Accepted', 'Completed'],
+          datasets: [
+            {
+              data: [statusCounts.Accepted, statusCounts.Completed],
+              backgroundColor: ['#4CAF50', '#2196F3'],
+              borderColor: ['#388E3C', '#1976D2'],
+              borderWidth: 2,
+            },
+          ],
+        },
+        options: {
+          responsive: false,
+          animation: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                font: { size: 10 },
+              },
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                  const percentage = ((context.parsed / total) * 100).toFixed(1);
+                  return `${context.label}: ${context.parsed} (${percentage}%)`;
+                }
+              }
+            }
+          },
+        },
+      });
+
+      // Wait for chart to render
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Convert chart to image
+      const chartImage = canvas.toDataURL('image/png');
+
+      // Add chart to PDF
+      if (yPosition > 200) {
+        doc.addPage();
+        yPosition = 15;
+      }
+
+      doc.setFont("Helvetica", "bold");
+      doc.setFontSize(11);
+      doc.setTextColor(0, 128, 170);
+      doc.text("Status Distribution", 12, yPosition);
+      yPosition += 8;
+
+      // Smaller chart - reduced from 180x80 to 120x60
+      doc.addImage(chartImage, 'PNG', 45, yPosition, 120, 60);
+      yPosition += 70;
+
+      // Destroy chart to free memory
+      statusChart.destroy();
+      
+      // Clean up canvas
+      document.body.removeChild(canvas);
+    } catch (error) {
+      console.error("Error creating chart:", error);
+    }
+
+    // Add new page for table if needed
+    if (yPosition > 200) {
+      doc.addPage();
+      yPosition = 15;
+    }
+
+    // Prepare table data with user details
+    const tableData = filteredRequests.map(r => [
+      r.device,
+      r.name,
+      r.email,
+      r.phone,
+      r.requestType,
+      r.status,
+      new Date(r.createdAt).toLocaleDateString(),
+    ]);
+
+    // Add table with improved styling
+    autoTable(doc, {
+      head: [['Device', 'Name', 'Email', 'Phone', 'Type', 'Status', 'Date']],
+      body: tableData,
+      startY: yPosition,
+      margin: { top: 10, right: 10, bottom: 10, left: 10 },
+      styles: {
+        font: 'Helvetica',
+        fontSize: 8,
+        cellPadding: 3,
+        textColor: [0, 0, 0],
+      },
+      headStyles: {
+        fillColor: [0, 128, 170],
+        textColor: [255, 255, 255],
+        fontStyle: 'bold',
+        halign: 'center',
+      },
+      alternateRowStyles: {
+        fillColor: [245, 248, 250],
+      },
+      columnStyles: {
+        0: { halign: 'left' },
+        1: { halign: 'left' },
+        2: { halign: 'left' },
+        3: { halign: 'center' },
+        4: { halign: 'center' },
+        5: { halign: 'center' },
+        6: { halign: 'center' },
+      },
+    });
+
+    // Save PDF
+    doc.save('collector_request_report.pdf');
+  };
+
   return (
     <Box sx={{ display: 'flex', justifyContent: 'center', p: 3, mt: 6 }}>
       <Box
@@ -235,7 +470,17 @@ const RequestHistory = () => {
             onClick={downloadCSV}
           >
             <MdSimCardDownload size={21} />
-            Download
+            Download CSV
+          </Button>
+
+          <Button
+            variant="outlined"
+            size="small"
+            sx={{ ml: 1 }}
+            onClick={downloadPDF}
+          >
+            <MdSimCardDownload size={21} />
+            Download PDF
           </Button>
 
         </Box>
