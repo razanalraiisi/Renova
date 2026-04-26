@@ -260,6 +260,26 @@
   text-decoration: underline;
 }
 
+/* Fix for Reactstrap Dropdown - Ensure clickability when open */
+.navbar-links .dropdown-menu.show {
+  pointer-events: auto !important;
+  opacity: 1 !important;
+  transform: none !important;
+  z-index: 1050;
+}
+
+.navbar-links .dropdown-menu .dropdown-item {
+  pointer-events: auto !important;
+  cursor: pointer;
+  padding: 10px 15px;
+  color: #333;
+}
+
+.navbar-links .dropdown-menu .dropdown-item:hover {
+  background-color: #f0f0f0;
+  color: #006D90;
+}
+
 /* Right side */
 .navbar-right .profile-icon {
   color: white;
@@ -1758,22 +1778,11 @@
 .dropdown-item:hover {
   background-color: #f2f2f2;
 }
+/* Dropdown menu animations - removed pointer-events conflicts */
 .dropdown-menu {
-  opacity: 0;
-  transform: translateY(-10px);
-  pointer-events: none;
-  transition: all 0.25s ease;
-}
-
-.dropdown-menu.open {
   opacity: 1;
   transform: translateY(0);
   pointer-events: auto;
-}
-.dropdown-menu {
-  opacity: 0;
-  transform: translateY(-10px);
-  pointer-events: none;
   transition: all 0.25s ease;
 }
 
