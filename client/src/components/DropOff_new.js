@@ -161,6 +161,7 @@ const DropOff = () => {
       setForm(prev => ({
         ...prev,
         address: collector.address,
+        collectorId: collector._id,
       }));
     }
   }, [location.state]);
@@ -172,6 +173,18 @@ const DropOff = () => {
   const handlePhoneChange = (e) => {
     const value = e.target.value.replace(/\D/g, "");
     setForm({ ...form, phone: value });
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   // =========================
@@ -285,18 +298,6 @@ const DropOff = () => {
     }));
   };
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setImage(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
   // Filter collectors by selected category
   const filteredCollectors = form.deviceCategory
     ? collectors.filter(c => 
@@ -365,10 +366,6 @@ const DropOff = () => {
       fontSize: "14px",
       transition: "all 0.3s",
       boxSizing: "border-box"
-    },
-    inputFocus: {
-      borderColor: "#0080AA",
-      boxShadow: "0 0 0 3px rgba(0, 128, 170, 0.1)"
     },
     error: { 
       color: "#d32f2f",
@@ -445,8 +442,8 @@ const DropOff = () => {
       <div style={styles.mainWrapper}>
         <form style={styles.formContainer} onSubmit={handleSubmit}>
           {form.name && (
-            <p style={{ marginBottom: "10px", color: "#0080AA", fontWeight: "bold" }}>
-              Hi {form.name}! 😊 Let’s get your drop-off ready!
+            <p style={{ marginBottom: "20px", color: "#0080AA", fontWeight: "bold", fontSize: "15px" }}>
+              Hi {form.name}! 😊 Let's get your drop-off ready!
             </p>
           )}
 
@@ -499,34 +496,6 @@ const DropOff = () => {
             onChange={handleChange}
           />
           {errors.condition && <p style={styles.error}>{errors.condition}</p>}
-          <label style={styles.label}>Collection Center *</label>
-          <input
-            name="address"
-            placeholder="Address (auto-filled from map)"
-            style={styles.input}
-            value={form.address}
-            readOnly
-          />
-          {errors.address && <p style={styles.error}>{errors.address}</p>}
-          {errors.collectorId && <p style={styles.error}>{errors.collectorId}</p>}
-
-          {errors.collectorId && <p style={styles.error}>{errors.collectorId}</p>}
-
-          <label style={styles.label}>Date & Time *</label>
-          <input
-            type="datetime-local"
-            name="dateTime"
-            style={styles.input}
-            value={form.dateTime}
-            min={new Date(
-              new Date().setDate(new Date().getDate() + 1)
-            ).toISOString().slice(0, 10) + "T08:00"}
-            max={new Date(
-              new Date().setDate(new Date().getDate() + 30)
-            ).toISOString().slice(0, 10) + "T17:00"}
-            onChange={handleDateChange}
-          />
-          {errors.dateTime && <p style={styles.error}>{errors.dateTime}</p>}
 
           <label style={styles.label}>Device Image *</label>
           <div style={styles.imageContainer}>
@@ -550,7 +519,32 @@ const DropOff = () => {
           </div>
           {errors.image && <p style={styles.error}>{errors.image}</p>}
 
-          
+          <label style={styles.label}>Collection Center *</label>
+          <input
+            name="address"
+            placeholder="Address (auto-filled from map)"
+            style={styles.input}
+            value={form.address}
+            readOnly
+          />
+          {errors.address && <p style={styles.error}>{errors.address}</p>}
+          {errors.collectorId && <p style={styles.error}>{errors.collectorId}</p>}
+
+          <label style={styles.label}>Date & Time *</label>
+          <input
+            type="datetime-local"
+            name="dateTime"
+            style={styles.input}
+            value={form.dateTime}
+            min={new Date(
+              new Date().setDate(new Date().getDate() + 1)
+            ).toISOString().slice(0, 10) + "T08:00"}
+            max={new Date(
+              new Date().setDate(new Date().getDate() + 30)
+            ).toISOString().slice(0, 10) + "T17:00"}
+            onChange={handleDateChange}
+          />
+          {errors.dateTime && <p style={styles.error}>{errors.dateTime}</p>}
 
           <button 
             type="submit" 
