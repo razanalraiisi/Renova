@@ -258,7 +258,7 @@ const DropOff = () => {
         setImage(null);
         setImagePreview(null);
         setSelectedCenter(null);
-        navigate("/CollectorDash");
+        
       } else {
         alert(result.message || "Error submitting request");
       }
