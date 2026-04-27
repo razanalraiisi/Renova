@@ -318,9 +318,47 @@ const RequestHistory = () => {
                   return `${context.label}: ${context.parsed} (${percentage}%)`;
                 }
               }
+            },
+            datalabels: {
+              color: '#fff',
+              font: { weight: 'bold', size: 12 },
+              formatter: (value, ctx) => {
+                const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                const percentage = ((value / total) * 100).toFixed(1);
+                return `${percentage}%`;
+              }
             }
           },
         },
+        plugins: [
+          {
+            id: 'datalabels',
+            afterDatasetsDraw(chart) {
+              const {data, ctx} = chart;
+              if (!data.datasets) return;
+              
+              data.datasets.forEach((dataset, i) => {
+                const {data: values} = dataset;
+                const total = values.reduce((a, b) => a + b, 0);
+                
+                const meta = chart.getDatasetMeta(i);
+                if (!meta.data) return;
+                
+                meta.data.forEach((datapoint, index) => {
+                  const {x, y} = datapoint.tooltipPosition();
+                  const value = values[index];
+                  const percentage = ((value / total) * 100).toFixed(1);
+                  
+                  ctx.fillStyle = 'white';
+                  ctx.font = 'bold 11px Arial';
+                  ctx.textAlign = 'center';
+                  ctx.textBaseline = 'middle';
+                  ctx.fillText(`${percentage}%`, x, y);
+                });
+              });
+            }
+          }
+        ]
       });
 
       // Wait for chart to render
@@ -467,16 +505,6 @@ const RequestHistory = () => {
             variant="outlined"
             size="small"
             sx={{ ml: 'auto' }}
-            onClick={downloadCSV}
-          >
-            <MdSimCardDownload size={21} />
-            Download CSV
-          </Button>
-
-          <Button
-            variant="outlined"
-            size="small"
-            sx={{ ml: 1 }}
             onClick={downloadPDF}
           >
             <MdSimCardDownload size={21} />
