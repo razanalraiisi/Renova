@@ -7,17 +7,7 @@ import RenovaAdminRequestCharts from "./RenovaAdminRequestCharts";
 import { summarizeAdminRequestRows } from "../utils/adminRequestReportStats.js";
 import { downloadAdminRequestsReportPdf } from "../utils/adminRequestReportPdf.js";
 
-const API_REPORT = "http://localhost:5000/admin/report-requests-all";
 const UPLOADS_BASE = "http://localhost:5000/uploads";
-
-const EMPTY_FILTERS = {
-  date: "",
-  item: "",
-  user: "",
-  status: "",
-  category: "",
-  source: "",
-};
 
 function escapeCsvCell(value) {
   if (value == null || value === "") return "";
@@ -66,34 +56,44 @@ function imageSrc(image) {
   return `${UPLOADS_BASE}/${t.replace(/^\/+/, "")}`;
 }
 
-function categoryMatches(recordCategory, filterCategory) {
-  if (!filterCategory || !String(filterCategory).trim()) return true;
-  const a = String(recordCategory || "").trim().toLowerCase();
-  const b = String(filterCategory).trim().toLowerCase();
-  return a === b;
-}
-
-function sourceMatches(recordSource, filterSource) {
-  if (!filterSource || !String(filterSource).trim()) return true;
-  return String(recordSource || "") === String(filterSource).trim();
-}
-
-export default function AllRequestsReport() {
+/**
+ * @param {{
+ *   apiUrl: string,
+ *   title: string,
+ *   pdfTitle: string,
+ *   fileSlug: string,
+ *   emptyMessage: string,
+ *   loadErrorVerb: string,
+ * }} props
+ */
+export default function AdminRequestReportPage({
+  apiUrl,
+  title,
+  pdfTitle,
+  fileSlug,
+  emptyMessage,
+  loadErrorVerb,
+}) {
   const navigate = useNavigate();
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [expandedId, setExpandedId] = useState(null);
-  const [filterCriteria, setFilterCriteria] = useState(() => ({ ...EMPTY_FILTERS }));
+  const [filterCriteria, setFilterCriteria] = useState({
+    date: "",
+    item: "",
+    user: "",
+    status: "",
+  });
 
   useEffect(() => {
     const load = async () => {
       try {
         setError(null);
-        const res = await fetch(API_REPORT);
+        const res = await fetch(apiUrl);
         if (!res.ok) {
           const body = await res.json().catch(() => ({}));
-          throw new Error(body.message || "Failed to load requests");
+          throw new Error(body.message || loadErrorVerb);
         }
         const data = await res.json();
         setRecords(Array.isArray(data) ? data : []);
@@ -105,7 +105,7 @@ export default function AllRequestsReport() {
       }
     };
     load();
-  }, []);
+  }, [apiUrl, loadErrorVerb]);
 
   const itemSelectOptions = useMemo(() => {
     const set = new Set();
@@ -125,7 +125,7 @@ export default function AllRequestsReport() {
 
   const filteredRows = useMemo(() => {
     let rows = records;
-    const { date, item, user, status, category, source } = filterCriteria;
+    const { date, item, user, status } = filterCriteria;
     if (date) {
       rows = rows.filter((r) => localDateKey(r.createdAt) === date);
     }
@@ -138,37 +138,28 @@ export default function AllRequestsReport() {
     if (status) {
       rows = rows.filter((r) => rowMatchesStatusFilter(r.status, status));
     }
-    if (category) {
-      rows = rows.filter((r) => categoryMatches(r.category, category));
-    }
-    if (source) {
-      rows = rows.filter((r) => sourceMatches(r.source, source));
-    }
     return rows;
   }, [records, filterCriteria]);
 
   const summaryCards = useMemo(() => {
     const s = summarizeAdminRequestRows(filteredRows);
-    const catCount = (key) =>
-      filteredRows.filter((r) => String(r.category || "").toLowerCase().includes(key)).length;
     return [
       {
         label: "Total requests",
         value: s.total,
-        hint: `${filteredRows.length === records.length ? "All loaded" : `${filteredRows.length} of ${records.length} after filters`}`,
+        hint: `${filteredRows.length === records.length ? "All loaded rows" : `${filteredRows.length} of ${records.length} after filters`}`,
       },
-      { label: "Dispose", value: catCount("dispose") },
-      { label: "Recycle", value: catCount("recycl") },
-      { label: "Upcycle", value: catCount("upcycl") },
       { label: "Accepted", value: s.accepted },
       { label: "Completed", value: s.completed },
+      { label: "Pending", value: s.pending },
+      { label: "Rejected", value: s.rejected },
+      { label: "Pickup / drop-off", value: `${s.pickup} / ${s.dropoff}` },
     ];
   }, [filteredRows, records.length]);
 
-  const handleDownload = useCallback(() => {
+  const handleDownloadCsv = useCallback(() => {
     const headers = [
       "Source",
-      "Category",
       "Device",
       "User",
       "Email",
@@ -181,7 +172,6 @@ export default function AllRequestsReport() {
     ];
     const rows = filteredRows.map((r) => [
       r.source === "dropoff" ? "Drop-off" : "Pickup",
-      r.category ?? "",
       r.device ?? "",
       r.name ?? "",
       r.email ?? "",
@@ -200,57 +190,52 @@ export default function AllRequestsReport() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `all-requests-report-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.download = `${fileSlug}-${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-  }, [filteredRows]);
+  }, [filteredRows, fileSlug]);
 
   const handleDownloadPdf = useCallback(async () => {
     const ok = await downloadAdminRequestsReportPdf({
-      title: "All requests",
-      subtitle: `Cross-category view · ${filteredRows.length} of ${records.length} rows.`,
+      title: pdfTitle,
+      subtitle: `Filters applied to ${filteredRows.length} of ${records.length} loaded records.`,
       rows: filteredRows,
-      includeCategoryColumn: true,
-      fileBase: "all-requests-report",
+      includeCategoryColumn: false,
+      fileBase: fileSlug,
     });
     if (!ok) {
       window.alert("The PDF could not be generated. Please try again.");
     }
-  }, [filteredRows, records.length]);
+  }, [filteredRows, records.length, pdfTitle, fileSlug]);
 
   return (
     <AdminReportsLayout
-      title="All requests"
+      title={title}
       onBack={() => navigate("/admin/dashboard")}
-      onDownload={handleDownload}
+      onDownload={handleDownloadCsv}
       onDownloadPdf={handleDownloadPdf}
       fillViewport
       itemSelectOptions={itemSelectOptions}
       userSelectOptions={userSelectOptions}
       showStatusFilter
-      showCategoryFilter
-      showRequestSourceFilter
       onFilterApply={setFilterCriteria}
-      onFilterReset={() => setFilterCriteria({ ...EMPTY_FILTERS })}
+      onFilterReset={() => setFilterCriteria({ date: "", item: "", user: "", status: "" })}
       summarySlot={<RenovaReportSummaryCards cards={summaryCards} />}
       chartsSlot={<RenovaAdminRequestCharts rows={filteredRows} />}
     >
-      {loading && <div className="muted">Loading requests…</div>}
+      {loading && <div className="muted">Loading…</div>}
       {error && (
         <div className="muted" style={{ color: "#c00" }}>
           {error}
         </div>
       )}
-      {!loading && !error && records.length === 0 && (
-        <div className="muted">No requests found yet.</div>
-      )}
+      {!loading && !error && records.length === 0 && <div className="muted">{emptyMessage}</div>}
       {!loading && !error && records.length > 0 && filteredRows.length === 0 && (
         <div className="muted">No rows match your filters.</div>
       )}
       {!loading && !error && filteredRows.length > 0 && (
         <div className="muted" style={{ marginBottom: 8 }}>
-          Showing {filteredRows.length} of {records.length} request
-          {records.length === 1 ? "" : "s"}
+          Showing {filteredRows.length} of {records.length} request{records.length === 1 ? "" : "s"}
         </div>
       )}
       {!loading &&
@@ -271,14 +256,6 @@ export default function AllRequestsReport() {
                     >
                       {r.source === "dropoff" ? "Drop-off" : "Pickup"}
                     </span>
-                    {r.category && (
-                      <span
-                        className="muted"
-                        style={{ marginLeft: 8, fontWeight: 600, fontSize: 12 }}
-                      >
-                        · {r.category}
-                      </span>
-                    )}
                   </div>
                   <div className="muted">Date: {formatLocalDate(r.createdAt)}</div>
                   <div className="muted">User: {r.name || "—"}</div>

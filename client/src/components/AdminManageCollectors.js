@@ -1,7 +1,10 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminReportsLayout from "./AdminReportsLayout";
 import BasicModal from "./BasicModal";
+import RenovaReportSummaryCards from "./RenovaReportSummaryCards";
+import RenovaAdminCollectorsCharts from "./RenovaAdminCollectorsCharts";
+import { downloadAdminCollectorsReportPdf } from "../utils/adminCollectorsReportPdf.js";
 import "./AdminPages.css";
 
 const API_URL = "http://localhost:5000/admin/collectors";
@@ -145,6 +148,44 @@ export default function AdminManageCollectors() {
     URL.revokeObjectURL(url);
   }, [filteredCollectors]);
 
+  const summaryCards = useMemo(() => {
+    let active = 0;
+    let deactivated = 0;
+    let sumAccepted = 0;
+    let sumCompleted = 0;
+    for (const c of filteredCollectors) {
+      if (isDeactivated(c)) deactivated += 1;
+      else active += 1;
+      sumAccepted += Number(c.requestsAccepted) || 0;
+      sumCompleted += Number(c.requestsCompleted) || 0;
+    }
+    return [
+      {
+        label: "Collectors",
+        value: filteredCollectors.length,
+        hint:
+          filteredCollectors.length === collectors.length
+            ? "In database"
+            : `${filteredCollectors.length} match search of ${collectors.length}`,
+      },
+      { label: "Active", value: active },
+      { label: "Deactivated", value: deactivated },
+      { label: "Accepted (sum)", value: sumAccepted, hint: "Pickup + drop-off" },
+      { label: "Completed (sum)", value: sumCompleted },
+    ];
+  }, [filteredCollectors, collectors.length]);
+
+  const handleDownloadPdf = useCallback(async () => {
+    const ok = await downloadAdminCollectorsReportPdf({
+      title: "Collectors",
+      rows: filteredCollectors,
+      fileBase: "collectors-report",
+    });
+    if (!ok) {
+      window.alert("The PDF could not be generated. Please try again.");
+    }
+  }, [filteredCollectors]);
+
   const openDeactivateModal = (id) => {
     setActiveId(id);
     setReason("");
@@ -216,12 +257,15 @@ export default function AdminManageCollectors() {
     <AdminReportsLayout
       title="Collectors"
       onDownload={handleDownload}
+      onDownloadPdf={handleDownloadPdf}
       fillViewport
       showFilter={false}
       searchValue={searchTerm}
       onSearchChange={setSearchTerm}
       searchPlaceholder="Search by name, email, or phone"
       onBack={() => navigate("/admin/dashboard")}
+      summarySlot={<RenovaReportSummaryCards cards={summaryCards} />}
+      chartsSlot={<RenovaAdminCollectorsCharts collectors={filteredCollectors} />}
     >
       {loading && <div className="muted">Loading collectors...</div>}
       {error && (
@@ -248,120 +292,125 @@ export default function AdminManageCollectors() {
         </div>
       )}
 
-      <div className="manageList">
-        {!loading &&
-          !error &&
-          filteredCollectors.map((c, idx) => {
-            const id =
-              c._id != null
-                ? String(c._id)
-                : c.collectorId != null && c.collectorId !== ""
-                  ? String(c.collectorId)
-                  : `row-${idx}`;
-            const off = isDeactivated(c);
-            const isExpanded = expandedId === id;
-            return (
-              <div className="manageCard" key={id}>
-                <div className="manageLeft">
-                  <div className="chev">»</div>
-                  <div style={{ flex: 1 }}>
-                    <div className="manageName">
-                      {c.companyName || "—"}
-                      {off && (
-                        <span
-                          style={{
-                            marginLeft: 8,
-                            fontSize: 11,
-                            fontWeight: 700,
-                            color: "#856404",
-                            background: "#fff3cd",
-                            padding: "2px 8px",
-                            borderRadius: 4,
-                          }}
-                        >
-                          Deactivated
-                        </span>
-                      )}
-                    </div>
-                    <div className="manageMeta">Address: {c.address || "—"}</div>
-                    <div className="manageMeta">Phone: {c.phone || "—"}</div>
-                    <div className="manageMeta">
-                      Requests accepted (pickup + drop-off):{" "}
-                      <strong>{c.requestsAccepted ?? 0}</strong>
-                    </div>
-                    <div className="manageMeta">
-                      Requests completed: <strong>{c.requestsCompleted ?? 0}</strong>
-                    </div>
-                    {isExpanded && (
-                      <>
-                        <div className="manageMeta">Email: {c.email || "—"}</div>
-                        <div className="manageMeta">Opening hours: {c.openHr || "—"}</div>
-                        <div className="manageMeta">Collector ID: {c.collectorId || "—"}</div>
-                        <div className="manageMeta">Type: {c.collectorType || "—"}</div>
-                        <div className="manageMeta">
-                          Registered: {formatTimeSince(c.createdAt)}
-                          {c.createdAt && (
-                            <span style={{ opacity: 0.85 }}>
-                              {" "}
-                              ({new Date(c.createdAt).toLocaleDateString()})
-                            </span>
-                          )}
-                        </div>
-                        {off && c.deactivatedAt && (
-                          <div className="manageMeta">
-                            Deactivated: {new Date(c.deactivatedAt).toLocaleString()}
-                          </div>
-                        )}
-                      </>
-                    )}
-                    <div
-                      style={{
-                        marginTop: 6,
-                        cursor: "pointer",
-                        fontSize: 13,
-                        color: "#2c7be5",
-                        fontWeight: 500,
-                      }}
-                      onClick={() => setExpandedId(isExpanded ? null : id)}
-                      role="button"
-                      tabIndex={0}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          setExpandedId(isExpanded ? null : id);
-                        }
-                      }}
-                    >
-                      {isExpanded ? "See less" : "See more"}
-                    </div>
+      {!loading &&
+        !error &&
+        filteredCollectors.map((c, idx) => {
+          const id =
+            c._id != null
+              ? String(c._id)
+              : c.collectorId != null && c.collectorId !== ""
+                ? String(c.collectorId)
+                : `row-${idx}`;
+          const off = isDeactivated(c);
+          const isExpanded = expandedId === id;
+          return (
+            <div className="reportCard" key={id}>
+              <div className="reportCardHeader">
+                <div className="reportCardHeaderMain">
+                  <div className="expandRow">
+                    <strong>{c.companyName || "—"}</strong>
+                  </div>
+                  <div className="muted">Address: {c.address || "—"}</div>
+                  <div className="muted">Phone: {c.phone || "—"}</div>
+                  <div className="muted">
+                    Requests accepted: <strong>{c.requestsAccepted ?? 0}</strong>
+                    {" · "}
+                    Completed: <strong>{c.requestsCompleted ?? 0}</strong>
                   </div>
                 </div>
-
-                {off ? (
-                  <button
-                    type="button"
-                    className="btnReactivate"
-                    disabled={reactivating}
-                    onClick={() => {
-                      setReactivateId(c._id);
-                      setReactivateOpen(true);
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "flex-end",
+                    gap: 8,
+                    flexShrink: 0,
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 700,
+                      padding: "4px 10px",
+                      borderRadius: 999,
+                      background: off ? "#fff3cd" : "#d1fae5",
+                      color: off ? "#856404" : "#047857",
                     }}
                   >
-                    Reactivate
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    className="btnDeactivate"
-                    onClick={() => openDeactivateModal(c._id)}
-                  >
-                    Deactivate
-                  </button>
-                )}
+                    {off ? "Deactivated" : "Active"}
+                  </span>
+                  {off ? (
+                    <button
+                      type="button"
+                      className="btnReactivate"
+                      disabled={reactivating}
+                      onClick={() => {
+                        setReactivateId(c._id);
+                        setReactivateOpen(true);
+                      }}
+                    >
+                      Reactivate
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className="btnDeactivate"
+                      onClick={() => openDeactivateModal(c._id)}
+                    >
+                      Deactivate
+                    </button>
+                  )}
+                </div>
               </div>
-            );
-          })}
-      </div>
+              <button
+                type="button"
+                className="link"
+                style={{
+                  marginTop: 6,
+                  background: "none",
+                  border: "none",
+                  padding: 0,
+                  font: "inherit",
+                  cursor: "pointer",
+                  textAlign: "left",
+                  color: "#0080aa",
+                  fontWeight: 600,
+                }}
+                onClick={() => setExpandedId(isExpanded ? null : id)}
+              >
+                {isExpanded ? "Less information" : "More information"}
+              </button>
+              {isExpanded && (
+                <div
+                  style={{
+                    marginTop: 10,
+                    paddingTop: 12,
+                    borderTop: "1px solid rgba(0, 0, 0, 0.08)",
+                  }}
+                >
+                  <div className="muted">Email: {c.email || "—"}</div>
+                  <div className="muted">Opening hours: {c.openHr || "—"}</div>
+                  <div className="muted">Collector ID: {c.collectorId || "—"}</div>
+                  <div className="muted">Type: {c.collectorType || "—"}</div>
+                  <div className="muted">
+                    Registered: {formatTimeSince(c.createdAt)}
+                    {c.createdAt && (
+                      <span style={{ opacity: 0.85 }}>
+                        {" "}
+                        ({new Date(c.createdAt).toLocaleDateString()})
+                      </span>
+                    )}
+                  </div>
+                  {off && c.deactivatedAt && (
+                    <div className="muted">
+                      Deactivated: {new Date(c.deactivatedAt).toLocaleString()}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
 
       <BasicModal open={deactivateOpen} onClose={() => setDeactivateOpen(false)} width={760}>
         <div className="modalBodyLarge">

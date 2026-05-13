@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import AdminTopbar from "./AdminTopbar";
 import "./AdminPages.css";
 import "./AdminReports.css";
+import "./RenovaRichReport.css";
 
 export default function AdminReportsLayout({
   title,
@@ -35,6 +36,14 @@ export default function AdminReportsLayout({
   showCategoryFilter = false,
   /** Pickup vs drop-off */
   showRequestSourceFilter = false,
+  /** Rich report: summary stat cards (e.g. RenovaReportSummaryCards) */
+  summarySlot = null,
+  /** Rich report: charts row (e.g. RenovaAdminRequestCharts) */
+  chartsSlot = null,
+  /** Primary branded PDF export (collector-style document) */
+  onDownloadPdf = null,
+  /** Defaults to window.print; pass null to hide the print control */
+  onPrint,
 }) {
   const dummyItems = useMemo(() => ["Dish washer", "Air Conditioner", "Laptop"], []);
   const dummyUsers = useMemo(() => ["Faisal Al Wahabi", "Amal Al Abri", "Sulaiman Al Salmi"], []);
@@ -82,12 +91,23 @@ export default function AdminReportsLayout({
     onFilterReset?.();
   };
 
+  const showPrintButton =
+    onPrint !== null &&
+    (typeof onPrint === "function" ||
+      summarySlot != null ||
+      chartsSlot != null ||
+      onDownloadPdf != null);
+
   return (
     <div className={`adminPage${fillViewport ? " adminReportsPageFill" : ""}`}>
       <AdminTopbar />
 
       <div className={`adminBody${fillViewport ? " adminReportsBodyFill" : ""}`}>
-        <div className={`adminCardWrap${fillViewport ? " adminCardWrapFill" : ""}`}>
+        <div
+          className={`adminCardWrap adminReportsPrintRoot${
+            fillViewport ? " adminCardWrapFill" : ""
+          }`}
+        >
           {onBack != null && (
             <div className="reportsBackRow">
               <button type="button" className="reportsBackBtn" onClick={onBack}>
@@ -99,7 +119,7 @@ export default function AdminReportsLayout({
           <div className="reportsHeader">
             <h3 className="reportsTitle">{title}</h3>
 
-            <div className="reportsActions">
+            <div className="reportsActions reportsActionBar">
               {onSearchChange != null && (
                 <form
                   className="searchBox reportsHeaderSearch"
@@ -120,15 +140,38 @@ export default function AdminReportsLayout({
                   />
                 </form>
               )}
-              <button
-                className="downloadBtn"
-                type="button"
-                onClick={() => onDownload?.()}
-              >
-                ⬇ Download
-              </button>
+              {showPrintButton && (
+                <button
+                  className="reportsActionPrint"
+                  type="button"
+                  onClick={typeof onPrint === "function" ? onPrint : () => window.print()}
+                >
+                  Print
+                </button>
+              )}
+              {onDownloadPdf != null && (
+                <button className="reportsActionPdf" type="button" onClick={() => onDownloadPdf()}>
+                  Download PDF
+                </button>
+              )}
+              {onDownload != null && (
+                <button
+                  className={onDownloadPdf != null ? "reportsActionCsv" : "downloadBtn"}
+                  type="button"
+                  onClick={() => onDownload()}
+                >
+                  {onDownloadPdf != null || showPrintButton ? "Download CSV" : "⬇ Download"}
+                </button>
+              )}
             </div>
           </div>
+
+          {summarySlot != null && summarySlot !== false ? (
+            <div className="reportsRichSummary">{summarySlot}</div>
+          ) : null}
+          {chartsSlot != null && chartsSlot !== false ? (
+            <div className="reportsRichCharts">{chartsSlot}</div>
+          ) : null}
 
           {/* Main layout: filter + list (or list only when showFilter is false) */}
           <div

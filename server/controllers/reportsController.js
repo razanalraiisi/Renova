@@ -84,6 +84,9 @@ function roundPct(count, total) {
  * - topUser: collector with most of those requests (lookup → companyName / uname / email)
  * - topCategory: most common among those three on the same set; percentage = count / totalItems
  * - peakMonth: busiest calendar month on that same qualified set
+ * - categoryBreakdown: counts and % for each qualifying category
+ * - collectorsLeaderboard: top collectors (up to 25) on that set
+ * - itemsWithoutCollector: qualifying items with no collectorId
  */
 export const getReportInsights = async (req, res) => {
   try {
@@ -166,6 +169,63 @@ export const getReportInsights = async (req, res) => {
             { $sort: { count: -1 } },
             { $limit: 1 },
           ],
+          /** All category counts on the same qualified set (for admin detail page). */
+          categoryBreakdownFacet: [
+            STAGE_ADD_CAT_KEY,
+            STAGE_QUALIFIED,
+            { $group: { _id: "$catKey", count: { $sum: 1 } } },
+            { $sort: { count: -1 } },
+          ],
+          /** Top collectors on the qualified set (name resolved like topUser). */
+          collectorsLeaderboardFacet: [
+            STAGE_ADD_CAT_KEY,
+            STAGE_QUALIFIED,
+            { $match: { collectorId: { $exists: true, $ne: null } } },
+            { $group: { _id: "$collectorId", count: { $sum: 1 } } },
+            { $sort: { count: -1 } },
+            { $limit: 25 },
+            {
+              $lookup: {
+                from: userColl,
+                localField: "_id",
+                foreignField: "_id",
+                as: "u",
+              },
+            },
+            { $unwind: { path: "$u", preserveNullAndEmptyArrays: true } },
+            {
+              $project: {
+                _id: 0,
+                count: 1,
+                name: {
+                  $let: {
+                    vars: {
+                      raw: {
+                        $ifNull: [
+                          "$u.companyName",
+                          { $ifNull: ["$u.uname", { $ifNull: ["$u.email", ""] }] },
+                        ],
+                      },
+                    },
+                    in: { $trim: { input: { $toString: "$$raw" }, chars: " \t\n" } },
+                  },
+                },
+              },
+            },
+          ],
+          withoutCollectorFacet: [
+            STAGE_ADD_CAT_KEY,
+            STAGE_QUALIFIED,
+            {
+              $match: {
+                $or: [
+                  { collectorId: { $exists: false } },
+                  { collectorId: null },
+                ],
+              },
+            },
+            { $count: "c" },
+          ],
         },
       },
     ];
@@ -193,11 +253,35 @@ export const getReportInsights = async (req, res) => {
 
     const peakMonth = formatPeakMonth(facetRow?.peakMonthFacet?.[0]);
 
+    const catRows = facetRow?.categoryBreakdownFacet ?? [];
+    const categoryBreakdown = catRows.map((row) => {
+      const c = row?.count != null ? Number(row.count) : 0;
+      const key = row?._id != null ? String(row._id) : "";
+      return {
+        name: key,
+        count: c,
+        percentage: roundPct(c, totalItems),
+      };
+    });
+
+    const lbRows = facetRow?.collectorsLeaderboardFacet ?? [];
+    const collectorsLeaderboard = lbRows.map((row) => ({
+      name: row?.name ? String(row.name) : "",
+      count: row?.count != null ? Number(row.count) : 0,
+    }));
+
+    const withoutDoc = facetRow?.withoutCollectorFacet?.[0];
+    const itemsWithoutCollector =
+      withoutDoc?.c != null ? Number(withoutDoc.c) : 0;
+
     res.json({
       totalItems,
       topUser,
       topCategory,
       peakMonth,
+      categoryBreakdown,
+      collectorsLeaderboard,
+      itemsWithoutCollector,
     });
   } catch (err) {
     console.error(err);

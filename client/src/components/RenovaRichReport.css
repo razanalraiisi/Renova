@@ -1,0 +1,170 @@
+/* Shared admin + collector-aligned report chrome (teal #0080aa, soft cards). */
+
+.renovaReportStatGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.renovaReportStatCard {
+  background: #fff;
+  border-radius: 16px;
+  padding: 14px 16px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  min-width: 0;
+}
+
+.renovaReportStatLabel {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748b;
+  margin-bottom: 6px;
+}
+
+.renovaReportStatValue {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.2;
+}
+
+.renovaReportStatHint {
+  margin-top: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+.renovaReportChartsRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.renovaReportChartCard {
+  background: #fff;
+  border-radius: 16px;
+  padding: 16px 18px 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  min-width: 0;
+}
+
+.renovaReportChartTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0080aa;
+  margin: 0 0 10px 0;
+}
+
+.renovaReportChartBody {
+  position: relative;
+  height: 220px;
+  max-width: 100%;
+}
+
+.reportsActionBar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.reportsActionPrint,
+.reportsActionPdf,
+.reportsActionCsv {
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 8px 14px;
+  line-height: 1.2;
+  border: none;
+}
+
+.reportsActionPrint {
+  background: #fff;
+  color: #0080aa;
+  border: 1px solid #0080aa;
+}
+
+.reportsActionPrint:hover {
+  background: rgba(0, 128, 170, 0.06);
+}
+
+.reportsActionPdf {
+  background: #0080aa;
+  color: #fff;
+  border: 1px solid #0080aa;
+}
+
+.reportsActionPdf:hover:not(:disabled) {
+  background: #006d90;
+}
+
+.reportsActionCsv {
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+}
+
+.reportsActionCsv:hover:not(:disabled) {
+  background: #e2e8f0;
+}
+
+.reportsActionPrint:disabled,
+.reportsActionPdf:disabled,
+.reportsActionCsv:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.reportsRichSummary {
+  margin-bottom: 4px;
+}
+
+.reportsRichCharts {
+  margin-bottom: 8px;
+}
+
+.adminReportsPrintRoot {
+  /* marker for print CSS */
+}
+
+@media print {
+  .adminPage .navbar,
+  .adminPage nav.navbar {
+    display: none !important;
+  }
+
+  .adminReportsPrintRoot .reportsActionBar,
+  .adminReportsPrintRoot .reportsBackRow,
+  .adminReportsPrintRoot .filterCol,
+  .adminReportsPrintRoot .filterTopRow,
+  .adminReportsPrintRoot .viewMoreBtn {
+    display: none !important;
+  }
+
+  .adminPage {
+    background: #fff !important;
+  }
+
+  .adminBody {
+    padding: 0 !important;
+  }
+
+  .adminReportsPrintRoot {
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  .renovaReportChartBody {
+    height: 200px;
+  }
+}

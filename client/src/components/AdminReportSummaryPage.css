@@ -1,0 +1,103 @@
+.reportSummaryScope {
+  font-size: 13px;
+  line-height: 1.45;
+  color: #4b5563;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 20px;
+}
+
+.reportSummarySection {
+  margin-bottom: 28px;
+  scroll-margin-top: 96px;
+}
+
+.reportSummarySectionTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 10px 0;
+  padding-bottom: 6px;
+  border-bottom: 2px solid #0080aa;
+}
+
+.reportSummaryHighlight {
+  animation: reportSummaryFlash 1.6s ease-out 1;
+  border-radius: 10px;
+}
+
+@keyframes reportSummaryFlash {
+  0% {
+    box-shadow: 0 0 0 3px rgba(0, 128, 170, 0.45);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 128, 170, 0);
+  }
+}
+
+.reportSummaryTableWrap {
+  overflow-x: auto;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.reportSummaryTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.reportSummaryTable th,
+.reportSummaryTable td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.reportSummaryTable th {
+  background: #f8fafc;
+  font-weight: 700;
+  color: #374151;
+}
+
+.reportSummaryTable tr:last-child td {
+  border-bottom: none;
+}
+
+.reportSummaryMetricGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.reportSummaryMetric {
+  border: 1px solid var(--admin-border, #e5e7eb);
+  border-radius: 10px;
+  padding: 14px;
+  background: var(--admin-card, #fff);
+}
+
+.reportSummaryMetricLabel {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #6b7280;
+  margin-bottom: 6px;
+}
+
+.reportSummaryMetricValue {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #1f2937;
+}
+
+.reportSummaryMetricSub {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 4px;
+  font-weight: 600;
+}

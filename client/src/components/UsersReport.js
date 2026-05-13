@@ -1,6 +1,9 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminReportsLayout from "./AdminReportsLayout";
+import RenovaReportSummaryCards from "./RenovaReportSummaryCards";
+import RenovaAdminUsersCharts from "./RenovaAdminUsersCharts";
+import { downloadAdminUsersReportPdf } from "../utils/adminUsersReportPdf.js";
 
 const API_URL = "http://localhost:5000/admin/users";
 const UPLOADS_BASE = "http://localhost:5000/uploads";
@@ -102,10 +105,35 @@ export default function UsersReport() {
   const hasMoreUsers = filteredUsers.length > visibleCount;
   const remainingCount = filteredUsers.length - visibleCount;
 
+  const summaryCards = useMemo(() => {
+    return [
+      { label: "Total in database", value: users.length },
+      {
+        label: "Matching filter",
+        value: filteredUsers.length,
+        hint: searchTerm.trim() ? `Search: "${searchTerm.trim()}"` : "No search filter",
+      },
+      { label: "Listed on screen", value: visibleUsers.length, hint: hasMoreUsers ? "Use View more" : "All matches visible" },
+    ];
+  }, [users.length, filteredUsers.length, searchTerm, visibleUsers.length, hasMoreUsers]);
+
+  const handleDownloadPdf = useCallback(async () => {
+    const ok = await downloadAdminUsersReportPdf({
+      title: "Users report",
+      rows: filteredUsers,
+      fileBase: "users-report",
+    });
+    if (!ok) {
+      window.alert("The PDF could not be generated. Please try again.");
+    }
+  }, [filteredUsers]);
+
   return (
     <AdminReportsLayout
       title="Users report"
+      onBack={() => navigate("/admin/dashboard")}
       onDownload={handleDownload}
+      onDownloadPdf={handleDownloadPdf}
       showFilter={false}
       fillViewport
       searchValue={searchTerm}
@@ -120,30 +148,9 @@ export default function UsersReport() {
         hasMoreUsers ? `View more (${remainingCount} more)` : "View more"
       }
       viewMoreDisabled={!hasMoreUsers}
+      summarySlot={<RenovaReportSummaryCards cards={summaryCards} />}
+      chartsSlot={<RenovaAdminUsersCharts users={filteredUsers} />}
     >
-      <div style={{ alignSelf: "flex-start", margin: "0 0 8px 0" }}>
-        <button
-          type="button"
-          onClick={() => navigate("/admin/dashboard")}
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 4,
-            padding: "3px 8px",
-            fontSize: 12,
-            fontWeight: 600,
-            color: "#0080AA",
-            background: "transparent",
-            border: "1px solid #0080AA",
-            borderRadius: 4,
-            cursor: "pointer",
-            lineHeight: 1.2,
-          }}
-        >
-          ← Back
-        </button>
-      </div>
-
       {loading && <div className="muted">Loading users...</div>}
       {error && <div className="muted" style={{ color: "#c00" }}>{error}</div>}
       {!loading && !error && users.length === 0 && (

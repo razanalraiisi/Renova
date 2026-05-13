@@ -15,6 +15,7 @@ import {
 } from "reactstrap";
 import "./AdminDashboard.css";
 import { downloadInsightsReportPdf } from "../utils/insightsReportPdf.js";
+import { summarizeAdminRequestRows, statusDistributionForChart } from "../utils/adminRequestReportStats.js";
 
 // Chart.js
 import {
@@ -66,12 +67,35 @@ const SideCard = ({ title, lines = [], buttonText = "View", onClick }) => {
 const API_STATS = "http://localhost:5000/admin/stats";
 const API_CHART_DATA = "http://localhost:5000/admin/chart-data";
 const API_INSIGHTS = "http://localhost:5000/api/reports/insights";
+const API_ALL_REQUESTS = "http://localhost:5000/admin/report-requests-all";
+const API_COLLECTORS = "http://localhost:5000/admin/collectors";
+
+/** Same bucketing as manage-collectors “Collectors by type” bar chart. */
+function buildCollectorsByTypeBarData(collectors) {
+  const list = Array.isArray(collectors) ? collectors : [];
+  const map = new Map();
+  for (const c of list) {
+    const t = (c.collectorType && String(c.collectorType).trim()) || "Unspecified";
+    map.set(t, (map.get(t) || 0) + 1);
+  }
+  const entries = [...map.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10);
+  if (entries.length === 0) {
+    return { labels: ["—"], data: [0] };
+  }
+  return {
+    labels: entries.map(([k]) => (k.length > 18 ? `${k.slice(0, 16)}…` : k)),
+    data: entries.map(([, v]) => v),
+  };
+}
 
 const defaultInsights = () => ({
   totalItems: 0,
   topUser: { name: "", count: 0 },
   topCategory: { name: "", count: 0, percentage: 0 },
   peakMonth: "",
+  categoryBreakdown: [],
+  collectorsLeaderboard: [],
+  itemsWithoutCollector: 0,
 });
 
 function formatCategoryLabel(key) {
@@ -141,6 +165,36 @@ const AdminDashboard = () => {
     fetchChartData();
   }, []);
 
+  const [allRequestRecords, setAllRequestRecords] = useState([]);
+  const [collectorRecords, setCollectorRecords] = useState([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      try {
+        const [resReq, resCol] = await Promise.all([
+          fetch(API_ALL_REQUESTS),
+          fetch(API_COLLECTORS),
+        ]);
+        const reqData = resReq.ok ? await resReq.json().catch(() => []) : [];
+        const colData = resCol.ok ? await resCol.json().catch(() => []) : [];
+        if (cancelled) return;
+        setAllRequestRecords(Array.isArray(reqData) ? reqData : []);
+        setCollectorRecords(Array.isArray(colData) ? colData : []);
+      } catch (err) {
+        console.error("Failed to load dashboard report feeds", err);
+        if (!cancelled) {
+          setAllRequestRecords([]);
+          setCollectorRecords([]);
+        }
+      }
+    };
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const [insights, setInsights] = useState(() => defaultInsights());
   const [insightsLoading, setInsightsLoading] = useState(true);
 
@@ -162,6 +216,11 @@ const AdminDashboard = () => {
               percentage: data.topCategory?.percentage ?? 0,
             },
             peakMonth: data.peakMonth ?? "",
+            categoryBreakdown: Array.isArray(data.categoryBreakdown) ? data.categoryBreakdown : [],
+            collectorsLeaderboard: Array.isArray(data.collectorsLeaderboard)
+              ? data.collectorsLeaderboard
+              : [],
+            itemsWithoutCollector: data.itemsWithoutCollector ?? 0,
           });
         }
       } catch (err) {
@@ -201,6 +260,41 @@ const AdminDashboard = () => {
     const disp = statsLoading ? 0 : stats.disposals;
     const rec = statsLoading ? 0 : stats.recycles;
     const upc = statsLoading ? 0 : stats.upcycles;
+
+    const reqStats = summarizeAdminRequestRows(allRequestRecords);
+    const statusDist = statusDistributionForChart(reqStats);
+    const allRequestsStatusSlide = {
+      title: "Request status (all requests)",
+      type: "pie",
+      data: {
+        labels: statusDist.labels,
+        datasets: [
+          {
+            data: statusDist.data,
+            backgroundColor: statusDist.colors,
+            borderColor: "#ffffff",
+            borderWidth: 2,
+          },
+        ],
+      },
+    };
+
+    const typeBar = buildCollectorsByTypeBarData(collectorRecords);
+    const collectorsByTypeSlide = {
+      title: "Collectors by type",
+      type: "bar",
+      data: {
+        labels: typeBar.labels,
+        datasets: [
+          {
+            label: "Collectors",
+            data: typeBar.data,
+            backgroundColor: "#0080AA",
+            borderRadius: 6,
+          },
+        ],
+      },
+    };
 
     return [
       {
@@ -278,8 +372,18 @@ const AdminDashboard = () => {
           ],
         },
       },
+      allRequestsStatusSlide,
+      collectorsByTypeSlide,
     ];
-  }, [chartData, stats.disposals, stats.recycles, stats.upcycles, statsLoading]);
+  }, [
+    chartData,
+    stats.disposals,
+    stats.recycles,
+    stats.upcycles,
+    statsLoading,
+    allRequestRecords,
+    collectorRecords,
+  ]);
 
   const next = () =>
     !animating && setActiveIndex((i) => (i + 1) % chartSlides.length);
@@ -442,7 +546,13 @@ const AdminDashboard = () => {
               </button>
             </div>
             <div className="report-summary-cards">
-              <div className="report-summary-card">
+              <button
+                type="button"
+                className="report-summary-card"
+                disabled={insightsLoading}
+                aria-label="Open report summary details: top collector"
+                onClick={() => navigate("/admin/reports/report-summary?section=collector")}
+              >
                 <div className="report-summary-card-title">Top Collector</div>
                 <div className="report-summary-card-value">
                   {insightsLoading ? (
@@ -462,8 +572,14 @@ const AdminDashboard = () => {
                     </>
                   )}
                 </div>
-              </div>
-              <div className="report-summary-card">
+              </button>
+              <button
+                type="button"
+                className="report-summary-card"
+                disabled={insightsLoading}
+                aria-label="Open report summary details: top category"
+                onClick={() => navigate("/admin/reports/report-summary?section=category")}
+              >
                 <div className="report-summary-card-title">Top Category</div>
                 <div className="report-summary-card-value">
                   {insightsLoading ? (
@@ -485,8 +601,14 @@ const AdminDashboard = () => {
                     </>
                   )}
                 </div>
-              </div>
-              <div className="report-summary-card">
+              </button>
+              <button
+                type="button"
+                className="report-summary-card"
+                disabled={insightsLoading}
+                aria-label="Open report summary details: total items"
+                onClick={() => navigate("/admin/reports/report-summary?section=total")}
+              >
                 <div className="report-summary-card-title">Total Items</div>
                 <div className="report-summary-card-value">
                   {insightsLoading ? (
@@ -502,7 +624,7 @@ const AdminDashboard = () => {
                     </>
                   )}
                 </div>
-              </div>
+              </button>
             </div>
           </section>
 

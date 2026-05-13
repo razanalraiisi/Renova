@@ -1390,8 +1390,9 @@
 /* =========================
    ADMIN PAGE BACKGROUND UPGRADE
 ========================= */
+/* Admin E-Waste Library (/admin/devices) — match app shell (App.css .appBG) */
 .ewaste-container.admin {
-  background: linear-gradient(135deg, #f4f7ff, #eef2ff);
+  background: #f5f5f5;
   padding-bottom: 60px;
 }
 

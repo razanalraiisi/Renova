@@ -1,8 +1,13 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminTopbar from "./AdminTopbar";
 import "./AdminPages.css";
 import "./AdminReports.css";
+import "./RenovaRichReport.css";
+import RenovaReportSummaryCards from "./RenovaReportSummaryCards";
+import RenovaAdminRequestCharts from "./RenovaAdminRequestCharts";
+import { summarizeAdminRequestRows } from "../utils/adminRequestReportStats.js";
+import { downloadAdminRequestsReportPdf } from "../utils/adminRequestReportPdf.js";
 
 const API_PICKUPS = "http://localhost:5000/api/pickups/all";
 
@@ -75,13 +80,50 @@ export default function DisposalsRecyclesUpcyclesReport() {
     downloadCsv(headers, requests.map(toRow), `upcycles-report-${new Date().toISOString().slice(0, 10)}.csv`);
   }, [requests]);
 
-  const ReportSection = ({ title, onDownload, children }) => (
-    <div className="adminCardWrap" style={{ marginBottom: 32 }}>
+  const summaryCards = useMemo(() => {
+    const s = summarizeAdminRequestRows(requests);
+    return [
+      { label: "Total records", value: s.total, hint: "Pickup feed (legacy combined view)" },
+      { label: "Accepted", value: s.accepted },
+      { label: "Completed", value: s.completed },
+      { label: "Pending", value: s.pending },
+    ];
+  }, [requests]);
+
+  const handlePdfSection = useCallback(
+    async (title, fileBase) => {
+      const ok = await downloadAdminRequestsReportPdf({
+        title,
+        subtitle: "Data source: /api/pickups/all (same list shown in each section below).",
+        rows: requests,
+        includeCategoryColumn: false,
+        fileBase,
+      });
+      if (!ok) {
+        window.alert("The PDF could not be generated. Please try again.");
+      }
+    },
+    [requests]
+  );
+
+  const ReportSection = ({ title, onDownloadCsv, pdfTitle, fileSlug, children }) => (
+    <div className="adminCardWrap adminReportsPrintRoot" style={{ marginBottom: 32 }}>
       <div className="reportsHeader">
         <h3 className="reportsTitle">{title}</h3>
-        <div className="reportsActions">
-          <button className="downloadBtn" type="button" onClick={onDownload} disabled={loading || requests.length === 0}>
-            ⬇ Download
+        <div className="reportsActions reportsActionBar">
+          <button className="reportsActionPrint" type="button" onClick={() => window.print()}>
+            Print
+          </button>
+          <button className="reportsActionPdf" type="button" onClick={() => handlePdfSection(pdfTitle, fileSlug)}>
+            Download PDF
+          </button>
+          <button
+            className="reportsActionCsv"
+            type="button"
+            onClick={onDownloadCsv}
+            disabled={loading || requests.length === 0}
+          >
+            Download CSV
           </button>
         </div>
       </div>
@@ -97,7 +139,9 @@ export default function DisposalsRecyclesUpcyclesReport() {
       ? emptyMsg
       : requests.map((r) => (
           <div className="reportCard" key={`${sectionKey}-${r._id}`}>
-            <div className="expandRow"><strong>{r.device || "—"}</strong></div>
+            <div className="expandRow">
+              <strong>{r.device || "—"}</strong>
+            </div>
             <div className="muted">Name: {r.name || "—"}</div>
             <div className="muted">Email: {r.email || "—"}</div>
             <div className="muted">Phone: {r.phone || "—"}</div>
@@ -136,13 +180,30 @@ export default function DisposalsRecyclesUpcyclesReport() {
         {error && <div className="muted" style={{ padding: 16, color: "#c00" }}>{error}</div>}
         {!loading && !error && (
           <>
-            <ReportSection title="Disposals Report" onDownload={handleDownloadDisposals}>
+            <RenovaReportSummaryCards cards={summaryCards} />
+            <RenovaAdminRequestCharts rows={requests} />
+            <ReportSection
+              title="Disposals Report"
+              onDownloadCsv={handleDownloadDisposals}
+              pdfTitle="Disposals (pickups feed)"
+              fileSlug="disposals-report"
+            >
               {renderList("disposals")}
             </ReportSection>
-            <ReportSection title="Recycles Report" onDownload={handleDownloadRecycles}>
+            <ReportSection
+              title="Recycles Report"
+              onDownloadCsv={handleDownloadRecycles}
+              pdfTitle="Recycles (pickups feed)"
+              fileSlug="recycles-report"
+            >
               {renderList("recycles")}
             </ReportSection>
-            <ReportSection title="Upcycles Report" onDownload={handleDownloadUpcycles}>
+            <ReportSection
+              title="Upcycles Report"
+              onDownloadCsv={handleDownloadUpcycles}
+              pdfTitle="Upcycles (pickups feed)"
+              fileSlug="upcycles-report"
+            >
               {renderList("upcycles")}
             </ReportSection>
           </>
