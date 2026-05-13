@@ -28,10 +28,13 @@ const PickupRequest = () => {
   // ✅ ADDED: image error state
   const [imageError, setImageError] = useState("");
 
+  const [customCategory, setCustomCategory] = useState("");
+  const [isBroadcastToAllCollectors, setIsBroadcastToAllCollectors] = useState(false);
+
   const allCategories = [
     "Small Electronics","Large Electronics","Home Appliances (Small)","Home Appliances (Large)","IT & Office Equipment",
     "Kitchen & Cooking Appliances","Entertainment Devices","Personal Care Electronics","Tools & Outdoor Equipment",
-    "Lighting Equipment","Medical & Fitness Devices","Batteries & Accessories"
+    "Lighting Equipment","Medical & Fitness Devices","Batteries & Accessories","Other"
   ];
 
   useEffect(() => {
@@ -55,6 +58,18 @@ const PickupRequest = () => {
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleCategoryChange = (e) => {
+    const selectedCategory = e.target.value;
+    setForm({ ...form, deviceCategory: selectedCategory });
+
+    if (selectedCategory === "Other") {
+      setIsBroadcastToAllCollectors(true);
+    } else {
+      setIsBroadcastToAllCollectors(false);
+      setCustomCategory("");
+    }
   };
 
   const handlePhoneChange = (e) => {
@@ -102,6 +117,13 @@ const PickupRequest = () => {
       newErrors.phone = "Enter valid Omani number (8 digits, starts with 2, 7, or 9)";
     }
     if (!form.deviceCategory.trim()) newErrors.deviceCategory = "Category is required";
+    
+    if (form.deviceCategory === "Other") {
+      if (!customCategory.trim()) {
+        newErrors.customCategory = "Please enter a custom category";
+      }
+    }
+    
     if (!form.device.trim()) newErrors.device = "Device is required";
     if (!form.condition.trim()) newErrors.condition = "Condition is required";
     if (!form.address.trim()) newErrors.address = "Address is required";
@@ -138,6 +160,8 @@ const PickupRequest = () => {
     const formData = new FormData();
     Object.keys(form).forEach(key => formData.append(key, form[key]));
     formData.append("category", category);
+    if (customCategory) formData.append("customCategory", customCategory);
+    formData.append("isBroadcastToAllCollectors", isBroadcastToAllCollectors);
     if (image) formData.append("image", image);
 
     try {
@@ -163,6 +187,8 @@ const PickupRequest = () => {
         });
         setImage(null);
         setImageError("");
+        setCustomCategory("");
+        setIsBroadcastToAllCollectors(false);
       } else {
         alert(result.message || "Error submitting request");
       }
@@ -219,11 +245,25 @@ const PickupRequest = () => {
         <input name="phone" placeholder="Phone" style={styles.input} value={form.phone} onChange={handlePhoneChange} />
         {errors.phone && <p style={styles.error}>{errors.phone}</p>}
 
-        <select name="deviceCategory" style={styles.input} onChange={handleChange}>
+        <select name="deviceCategory" style={styles.input} onChange={handleCategoryChange}>
           <option value="">Select Category</option>
           {allCategories.map((cat, i) => <option key={i}>{cat}</option>)}
         </select>
         {errors.deviceCategory && <p style={styles.error}>{errors.deviceCategory}</p>}
+
+        {form.deviceCategory === "Other" && (
+          <>
+            <input
+              type="text"
+              name="customCategory"
+              placeholder="e.g., Furniture with electronics, Custom gadget"
+              style={styles.input}
+              value={customCategory}
+              onChange={(e) => setCustomCategory(e.target.value)}
+            />
+            {errors.customCategory && <p style={styles.error}>{errors.customCategory}</p>}
+          </>
+        )}
 
         <input name="device" placeholder="Device" style={styles.input} onChange={handleChange} />
         {errors.device && <p style={styles.error}>{errors.device}</p>}

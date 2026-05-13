@@ -6,6 +6,14 @@ const pickupSchema = new mongoose.Schema({
   phone: String,
   address: String,
   deviceCategory: String,
+  customCategory: {
+    type: String,
+    default: null
+  },
+  isBroadcastToAllCollectors: {
+    type: Boolean,
+    default: false
+  },
   device: String,
   condition: String,
   rejectReason: String,
