@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Navbar, NavbarBrand } from "reactstrap";
-import { FaArrowLeft, FaUser, FaClipboardList, FaSignOutAlt, FaBell, FaMoon, FaSun, FaCalendarAlt } from "react-icons/fa"; // Added FaCalendarAlt
+import { FaArrowLeft, FaUser, FaClipboardList, FaSignOutAlt, FaBell, FaMoon, FaSun, FaCalendarAlt, FaFlag } from "react-icons/fa"; // Added FaFlag
 import { useDispatch, useSelector } from "react-redux";
 import { updateUser, resetUser, resetState } from "../features/UserSlice.js";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as Yup from "yup";
-import { Box, Card, CardContent, Typography, Divider, Snackbar, Alert, Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField } from "@mui/material"; // Added TextField
+import { Box, Card, CardContent, Typography, Divider, Snackbar, Alert, Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField } from "@mui/material";
 import logo from "../assets/logo.png";
 import "./Components.css";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+
 const UserDash = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -32,6 +33,14 @@ const UserDash = () => {
   const [rescheduleOpen, setRescheduleOpen] = useState(false);
   const [rescheduleData, setRescheduleData] = useState({ id: null, type: "", newDate: "" });
 
+  // --- Report Collector States ---
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportData, setReportData] = useState({
+    requestId: "",
+    collectorName: "",
+    reason: "",
+  });
+
   // Notifications
   const [notifOpen, setNotifOpen] = useState(false);
   const [openId, setOpenId] = useState(null);
@@ -40,6 +49,7 @@ const UserDash = () => {
   const [searchTerm, setSearchTerm] = useState("");
 
   const defaultValues = { uname: user?.uname || "", phone: user?.phone || "" };
+
   const schema = Yup.object().shape({
     uname: Yup.string().required("Full Name is required"),
     phone: Yup.string()
@@ -55,13 +65,19 @@ const UserDash = () => {
   useEffect(() => {
     const root = document.documentElement;
     const apply = (value) => root.setAttribute("data-theme", value);
+
     if (theme === "System") {
       const media = window.matchMedia("(prefers-color-scheme: dark)");
+
       const applySystem = () => apply(media.matches ? "dark" : "light");
+
       applySystem();
+
       media.addEventListener("change", applySystem);
+
       return () => media.removeEventListener("change", applySystem);
     }
+
     apply(theme.toLowerCase());
   }, [theme]);
 
@@ -74,7 +90,12 @@ const UserDash = () => {
 
   useEffect(() => {
     if (isSuccess) {
-      setSnackbar({ open: true, message: message || "Profile updated successfully!", severity: "success" });
+      setSnackbar({
+        open: true,
+        message: message || "Profile updated successfully!",
+        severity: "success"
+      });
+
       setTimeout(() => {
         dispatch(resetState());
         fetchRequests();
@@ -84,21 +105,48 @@ const UserDash = () => {
 
   const fetchRequests = async () => {
     if (!user?._id) return;
+
     setLoadingRequests(true);
+
     try {
       const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+
       if (!token) return;
 
-      const pickupRes = await fetch("http://localhost:5000/api/pickups/user/requests", { headers: { Authorization: `Bearer ${token}` } });
+      const pickupRes = await fetch(
+        "http://localhost:5000/api/pickups/user/requests",
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
       const pickupData = await pickupRes.json();
-      let pickupRequests = Array.isArray(pickupData) ? pickupData : pickupData.requests || [];
 
-      const dropOffRes = await fetch("http://localhost:5000/api/dropoffs/user/requests", { headers: { Authorization: `Bearer ${token}` } });
+      let pickupRequests = Array.isArray(pickupData)
+        ? pickupData
+        : pickupData.requests || [];
+
+      const dropOffRes = await fetch(
+        "http://localhost:5000/api/dropoffs/user/requests",
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
       const dropOffData = await dropOffRes.json();
-      let dropOffRequests = Array.isArray(dropOffData) ? dropOffData : dropOffData.requests || [];
 
-      const allRequests = [...pickupRequests, ...dropOffRequests].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-      if (JSON.stringify(allRequests) !== JSON.stringify(requests)) setRequests(allRequests);
+      let dropOffRequests = Array.isArray(dropOffData)
+        ? dropOffData
+        : dropOffData.requests || [];
+
+      const allRequests = [...pickupRequests, ...dropOffRequests].sort(
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+      );
+
+      if (JSON.stringify(allRequests) !== JSON.stringify(requests)) {
+        setRequests(allRequests);
+      }
+
     } catch (err) {
       console.error(err);
       setRequests([]);
@@ -107,76 +155,172 @@ const UserDash = () => {
     }
   };
 
-  useEffect(() => { fetchRequests(); }, [user]);
+  useEffect(() => {
+    fetchRequests();
+  }, [user]);
 
-  const handleCancel = (id) => { setCancelTargetId(id); setCancelConfirmOpen(true); };
+  const handleCancel = (id) => {
+    setCancelTargetId(id);
+    setCancelConfirmOpen(true);
+  };
 
   const confirmCancel = async () => {
     const id = cancelTargetId;
+
     setCancelConfirmOpen(false);
     setCancelTargetId(null);
 
     const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-    if (!token) { setSnackbar({ open: true, message: "Authentication required.", severity: "error" }); return; }
+
+    if (!token) {
+      setSnackbar({
+        open: true,
+        message: "Authentication required.",
+        severity: "error"
+      });
+      return;
+    }
 
     const request = requests.find(r => r._id === id);
-    if (!request) { setSnackbar({ open: true, message: "Request not found.", severity: "error" }); return; }
+
+    if (!request) {
+      setSnackbar({
+        open: true,
+        message: "Request not found.",
+        severity: "error"
+      });
+      return;
+    }
 
     const endpoint = request.requestType === "DropOff"
       ? `http://localhost:5000/api/dropoffs/cancel/${id}`
       : `http://localhost:5000/api/pickups/cancel/${id}`;
 
     try {
-      const res = await fetch(endpoint, { method: "PUT", headers: { Authorization: `Bearer ${token}` } });
+      const res = await fetch(endpoint, {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
       if (res.ok) {
-        setRequests(prev => prev.map(req => req._id === id ? { ...req, status: "Canceled" } : req));
-        setSnackbar({ open: true, message: "Request canceled successfully!", severity: "success" });
+        setRequests(prev =>
+          prev.map(req =>
+            req._id === id
+              ? { ...req, status: "Canceled" }
+              : req
+          )
+        );
+
+        setSnackbar({
+          open: true,
+          message: "Request canceled successfully!",
+          severity: "success"
+        });
+
       } else {
         const error = await res.json();
-        setSnackbar({ open: true, message: error.message || "Failed to cancel request.", severity: "error" });
+
+        setSnackbar({
+          open: true,
+          message: error.message || "Failed to cancel request.",
+          severity: "error"
+        });
       }
+
     } catch (err) {
       console.error(err);
-      setSnackbar({ open: true, message: "Server error.", severity: "error" });
+
+      setSnackbar({
+        open: true,
+        message: "Server error.",
+        severity: "error"
+      });
     }
   };
 
   const handleTryAgain = async (requestId) => {
     const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-    if (!token) return setSnackbar({ open: true, message: "You must be logged in", severity: "error" });
+
+    if (!token) {
+      return setSnackbar({
+        open: true,
+        message: "You must be logged in",
+        severity: "error"
+      });
+    }
 
     const request = requests.find(r => r._id === requestId);
-    if (!request) return setSnackbar({ open: true, message: "Request not found", severity: "error" });
+
+    if (!request) {
+      return setSnackbar({
+        open: true,
+        message: "Request not found",
+        severity: "error"
+      });
+    }
 
     try {
       const endpoint = request.requestType === "DropOff"
         ? `http://localhost:5000/api/dropoffs/try-again/${requestId}`
         : `http://localhost:5000/api/pickups/try-again/${requestId}`;
 
-      const res = await fetch(endpoint, { method: "PUT", headers: { Authorization: `Bearer ${token}` } });
+      const res = await fetch(endpoint, {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
       if (res.ok) {
-        setSnackbar({ open: true, message: "We are looking for a new collector!", severity: "success" });
+        setSnackbar({
+          open: true,
+          message: "We are looking for a new collector!",
+          severity: "success"
+        });
+
         fetchRequests();
+
       } else {
         const error = await res.json();
-        setSnackbar({ open: true, message: error.message || "Failed to try again", severity: "error" });
+
+        setSnackbar({
+          open: true,
+          message: error.message || "Failed to try again",
+          severity: "error"
+        });
       }
+
     } catch (err) {
       console.error(err);
-      setSnackbar({ open: true, message: "Server error", severity: "error" });
+
+      setSnackbar({
+        open: true,
+        message: "Server error",
+        severity: "error"
+      });
     }
   };
 
   // --- Reschedule Logic ---
   const openRescheduleModal = (req) => {
-    setRescheduleData({ id: req._id, type: req.requestType, newDate: "" });
+    setRescheduleData({
+      id: req._id,
+      type: req.requestType,
+      newDate: ""
+    });
+
     setRescheduleOpen(true);
   };
 
   const handleRescheduleSubmit = async () => {
-    if (!rescheduleData.newDate) return setSnackbar({ open: true, message: "Please select a date", severity: "warning" });
+    if (!rescheduleData.newDate) {
+      return setSnackbar({
+        open: true,
+        message: "Please select a date",
+        severity: "warning"
+      });
+    }
 
     const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+
     const endpoint = rescheduleData.type === "DropOff"
       ? `http://localhost:5000/api/dropoffs/reschedule/${rescheduleData.id}`
       : `http://localhost:5000/api/pickups/reschedule/${rescheduleData.id}`;
@@ -184,43 +328,141 @@ const UserDash = () => {
     try {
       const res = await fetch(endpoint, {
         method: "PUT",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ newDate: rescheduleData.newDate })
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          newDate: rescheduleData.newDate
+        })
       });
 
       if (res.ok) {
-        setSnackbar({ open: true, message: "Rescheduled successfully!", severity: "success" });
+        setSnackbar({
+          open: true,
+          message: "Rescheduled successfully!",
+          severity: "success"
+        });
+
         setRescheduleOpen(false);
+
         fetchRequests();
+
       } else {
         const error = await res.json();
-        setSnackbar({ open: true, message: error.message || "Failed to reschedule", severity: "error" });
+
+        setSnackbar({
+          open: true,
+          message: error.message || "Failed to reschedule",
+          severity: "error"
+        });
       }
+
     } catch (err) {
-      setSnackbar({ open: true, message: "Server error", severity: "error" });
+      setSnackbar({
+        open: true,
+        message: "Server error",
+        severity: "error"
+      });
+    }
+  };
+
+  // --- Report Collector Logic ---
+  const handleReportSubmit = async () => {
+    if (!reportData.reason.trim()) {
+      return setSnackbar({
+        open: true,
+        message: "Please enter your complaint",
+        severity: "warning",
+      });
+    }
+
+    try {
+      const token =
+        localStorage.getItem("token") ||
+        sessionStorage.getItem("token");
+
+      const res = await fetch(
+        "http://localhost:5000/api/reports/create",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(reportData),
+        }
+      );
+
+      if (res.ok) {
+        setSnackbar({
+          open: true,
+          message: "Report submitted successfully",
+          severity: "success",
+        });
+
+        setReportOpen(false);
+
+        setReportData({
+          requestId: "",
+          collectorName: "",
+          reason: "",
+        });
+
+      } else {
+        const error = await res.json();
+
+        setSnackbar({
+          open: true,
+          message: error.message || "Failed to submit report",
+          severity: "error",
+        });
+      }
+
+    } catch (err) {
+      console.error(err);
+
+      setSnackbar({
+        open: true,
+        message: "Server error",
+        severity: "error",
+      });
     }
   };
 
   const handleLogout = () => {
     dispatch(resetUser());
+
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+
     sessionStorage.removeItem("token");
     sessionStorage.removeItem("user");
+
     navigate("/");
   };
 
   const toggleTheme = () => {
     const next = isDarkEffective ? "Light" : "Dark";
+
     setTheme(next);
+
     localStorage.setItem("userTheme", next);
+
     setNotifOpen(false);
   };
 
   const onSubmit = async (data) => {
     if (!user?._id) return;
-    const payload = { ...data, uname: user?.uname || data.uname, _id: user._id };
+
+    const payload = {
+      ...data,
+      uname: user?.uname || data.uname,
+      _id: user._id
+    };
+
     await dispatch(updateUser(payload));
+
     fetchRequests();
   };
 
@@ -229,6 +471,7 @@ const UserDash = () => {
     if (status === "Accepted") return "#28a745";
     if (status === "Rejected") return "#dc3545";
     if (status === "Canceled") return "#6c757d";
+
     return "#9e9e9e";
   };
 
@@ -236,140 +479,360 @@ const UserDash = () => {
     req.device.toLowerCase().includes(searchTerm.toLowerCase()) ||
     req.requestType.toLowerCase().includes(searchTerm.toLowerCase())
   );
-const downloadRequestsReport = () => {
-  if (!requests || requests.length === 0) {
-    setSnackbar({
-      open: true,
-      message: "No requests to download",
-      severity: "warning",
+
+  const downloadRequestsReport = () => {
+    if (!requests || requests.length === 0) {
+      setSnackbar({
+        open: true,
+        message: "No requests to download",
+        severity: "warning",
+      });
+
+      return;
+    }
+
+    const headers = [["Device", "Type", "Status", "Date", "Collector"]];
+
+    const rows = requests.map((req) => [
+      req.device || "-",
+      req.requestType || "-",
+      req.status || "-",
+      new Date(req.createdAt).toLocaleDateString(),
+      req.collectorName || "-",
+    ]);
+
+    const doc = new jsPDF();
+
+    doc.text("My Requests Report", 14, 15);
+
+    autoTable(doc, {
+      head: headers,
+      body: rows,
+      startY: 25,
     });
-    return;
-  }
 
-  const headers = [["Device", "Type", "Status", "Date", "Collector"]];
+    doc.save("my_requests_report.pdf");
+  };
 
-  const rows = requests.map((req) => [
-    req.device || "-",
-    req.requestType || "-",
-    req.status || "-",
-    new Date(req.createdAt).toLocaleDateString(),
-    req.collectorName || "-",
-  ]);
-
-  // Create PDF
-  const doc = new jsPDF();
-  doc.text("My Requests Report", 14, 15);
-
-  autoTable(doc, {
-    head: headers,
-    body: rows,
-    startY: 25,
-  });
-
-  doc.save("my_requests_report.pdf");
-};
   return (
     <div className="dashboard-page">
       <div style={{ padding: "10px 30px" }}>
-        <FaArrowLeft style={{ color: "#0080AA", cursor: "pointer", fontSize: 22 }} onClick={() => navigate("/start")} />
+        <FaArrowLeft
+          style={{
+            color: "#0080AA",
+            cursor: "pointer",
+            fontSize: 22
+          }}
+          onClick={() => navigate("/start")}
+        />
       </div>
 
       <div className="dashboard-container">
         <div className="sidebar">
           <div className="profile-box">
-            {user?.pic ? <img src={user.pic} alt="profile" className="avatar-img" /> : <div className="avatar"></div>}
+            {user?.pic ? (
+              <img src={user.pic} alt="profile" className="avatar-img" />
+            ) : (
+              <div className="avatar"></div>
+            )}
+
             <strong>{user?.uname || "User"}</strong>
+
             <div className="email">{user?.email}</div>
           </div>
-          <div className={activeTab === "profile" ? "menu-item active" : "menu-item"} onClick={() => setActiveTab("profile")}><FaUser /> My Profile</div>
-          <div className={activeTab === "requests" ? "menu-item active" : "menu-item"} onClick={() => setActiveTab("requests")}><FaClipboardList /> My Requests</div>
-          <button className="logout-btn" onClick={handleLogout}><FaSignOutAlt /> Logout</button>
+
+          <div
+            className={activeTab === "profile" ? "menu-item active" : "menu-item"}
+            onClick={() => setActiveTab("profile")}
+          >
+            <FaUser /> My Profile
+          </div>
+
+          <div
+            className={activeTab === "requests" ? "menu-item active" : "menu-item"}
+            onClick={() => setActiveTab("requests")}
+          >
+            <FaClipboardList /> My Requests
+          </div>
+
+          <button className="logout-btn" onClick={handleLogout}>
+            <FaSignOutAlt /> Logout
+          </button>
         </div>
 
         <div className="content">
           {activeTab === "profile" && (
             <form onSubmit={handleSubmit(onSubmit)}>
               <div className="section-title">Profile Information</div>
+
               <div className="form-group">
                 <label>Full Name</label>
+
                 <input type="text" value={user?.uname || ""} disabled />
+
                 <input type="hidden" {...register("uname")} />
-                {errors.uname && <p className="error">{errors.uname.message}</p>}
+
+                {errors.uname && (
+                  <p className="error">{errors.uname.message}</p>
+                )}
               </div>
+
               <div className="form-group">
                 <label>Email</label>
+
                 <input value={user?.email || ""} disabled />
               </div>
+
               <div className="form-group">
                 <label>Phone</label>
+
                 <input {...register("phone")} />
-                {errors.phone && <p className="error">{errors.phone.message}</p>}
+
+                {errors.phone && (
+                  <p className="error">{errors.phone.message}</p>
+                )}
               </div>
-              <button type="submit" className="save-btn">{isLoading ? "Saving..." : "Save Changes"}</button>
+
+              <button type="submit" className="save-btn">
+                {isLoading ? "Saving..." : "Save Changes"}
+              </button>
             </form>
           )}
 
           {activeTab === "requests" && (
             <>
-              <div className="section-title" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div
+                className="section-title"
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center"
+                }}
+              >
                 My Requests
-                <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                  <input type="text" placeholder="Search requests..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{ padding: "6px 10px", borderRadius: 6, border: "1px solid #ccc", fontSize: 14, width: 180 }} />
-                  {searchTerm && (<button onClick={() => setSearchTerm("")} style={{ border: "none", background: "#ccc", borderRadius: "50%", width: 20, height: 20, cursor: "pointer", fontWeight: "bold", lineHeight: "16px", padding: 0 }}>×</button>)}
+
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 4
+                  }}
+                >
+                  <input
+                    type="text"
+                    placeholder="Search requests..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    style={{
+                      padding: "6px 10px",
+                      borderRadius: 6,
+                      border: "1px solid #ccc",
+                      fontSize: 14,
+                      width: 180
+                    }}
+                  />
+
+                  {searchTerm && (
+                    <button
+                      onClick={() => setSearchTerm("")}
+                      style={{
+                        border: "none",
+                        background: "#ccc",
+                        borderRadius: "50%",
+                        width: 20,
+                        height: 20,
+                        cursor: "pointer",
+                        fontWeight: "bold",
+                        lineHeight: "16px",
+                        padding: 0
+                      }}
+                    >
+                      ×
+                    </button>
+                  )}
                 </div>
+
                 <button
-  onClick={downloadRequestsReport}
-  style={{
-    padding: "6px 12px",
-    backgroundColor: "#0080AA",
-    color: "white",
-    border: "none",
-    borderRadius: 6,
-    cursor: "pointer",
-    fontSize: 13,
-    marginLeft: 10
-  }}
->
-  Download Report
-</button>
+                  onClick={downloadRequestsReport}
+                  style={{
+                    padding: "6px 12px",
+                    backgroundColor: "#0080AA",
+                    color: "white",
+                    border: "none",
+                    borderRadius: 6,
+                    cursor: "pointer",
+                    fontSize: 13,
+                    marginLeft: 10
+                  }}
+                >
+                  Download Report
+                </button>
               </div>
 
-              {loadingRequests ? (<p>Loading requests...</p>) : filteredRequests.length === 0 ? (<p>You don’t have any requests yet.</p>) : (
+              {loadingRequests ? (
+                <p>Loading requests...</p>
+              ) : filteredRequests.length === 0 ? (
+                <p>You don’t have any requests yet.</p>
+              ) : (
                 filteredRequests.map((req) => (
-                  <div key={req._id} style={{ display: "flex", alignItems: "center", borderBottom: "1px solid #ddd", padding: "20px 0", gap: "20px" }}>
-                    <img src={req.image ? `http://localhost:5000/uploads/${req.image}` : "https://via.placeholder.com/100"} style={{ width: 100, height: 100, objectFit: "contain", backgroundColor: "#f7f7f7", borderRadius: 8 }} />
+                  <div
+                    key={req._id}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      borderBottom: "1px solid #ddd",
+                      padding: "20px 0",
+                      gap: "20px"
+                    }}
+                  >
+                    <img
+                      src={
+                        req.image
+                          ? `http://localhost:5000/uploads/${req.image}`
+                          : "https://via.placeholder.com/100"
+                      }
+                      style={{
+                        width: 100,
+                        height: 100,
+                        objectFit: "contain",
+                        backgroundColor: "#f7f7f7",
+                        borderRadius: 8
+                      }}
+                    />
+
                     <div style={{ flex: 1 }}>
                       <h4 style={{ margin: 0 }}>{req.device}</h4>
-                      <div style={{ fontSize: 13, color: "#555", fontWeight: "bold" }}>Type: <span style={{ color: '#1976D2' }}>{req.requestType}</span></div>
-                      <div style={{ fontSize: 13, color: "#666" }}>Request Date: {new Date(req.createdAt).toLocaleDateString()}</div>
-                      {req.status === "Accepted" && req.collectorName && <div style={{ fontSize: 13, color: "#28a745" }}>Collector: {req.collectorName}</div>}
-                      <div style={{ fontSize: 13, color: getStatusColor(req.status), fontWeight: "bold" }}>
-                        Status: {req.status === "Canceled" && req.rejectReason ? "Rejected" : req.status}
+
+                      <div
+                        style={{
+                          fontSize: 13,
+                          color: "#555",
+                          fontWeight: "bold"
+                        }}
+                      >
+                        Type:{" "}
+                        <span style={{ color: '#1976D2' }}>
+                          {req.requestType}
+                        </span>
                       </div>
-                      <div style={{ marginTop: 8, display: "flex", gap: 10 }}>
+
+                      <div style={{ fontSize: 13, color: "#666" }}>
+                        Request Date:{" "}
+                        {new Date(req.createdAt).toLocaleDateString()}
+                      </div>
+
+                      {req.status === "Accepted" && req.collectorName && (
+                        <div style={{ fontSize: 13, color: "#28a745" }}>
+                          Collector: {req.collectorName}
+                        </div>
+                      )}
+
+                      <div
+                        style={{
+                          fontSize: 13,
+                          color: getStatusColor(req.status),
+                          fontWeight: "bold"
+                        }}
+                      >
+                        Status:{" "}
+                        {req.status === "Canceled" && req.rejectReason
+                          ? "Rejected"
+                          : req.status}
+                      </div>
+
+                      <div
+                        style={{
+                          marginTop: 8,
+                          display: "flex",
+                          gap: 10,
+                          justifyContent: "flex-end",
+                          alignItems: "center",
+                          flexWrap: "wrap"
+                        }}
+                      >
 
                         {/* ✅ PENDING → CANCEL & RESCHEDULE */}
                         {req.status === "Pending" && (
                           <>
-                            <button className="btn-cancel" onClick={() => handleCancel(req._id)} style={{ padding: '6px 12px', cursor: 'pointer' }}>
+                            <button
+                              className="btn-cancel"
+                              onClick={() => handleCancel(req._id)}
+                              style={{
+                                padding: '6px 12px',
+                                cursor: 'pointer'
+                              }}
+                            >
                               Cancel
                             </button>
-                            <button onClick={() => openRescheduleModal(req)} style={{ padding: '6px 12px', cursor: 'pointer', backgroundColor: '#0080AA', color: 'white', border: 'none', borderRadius: '2px', marginLeft: 'auto' }}>
+
+                            <button
+                              onClick={() => openRescheduleModal(req)}
+                              style={{
+                                padding: '6px 12px',
+                                cursor: 'pointer',
+                                backgroundColor: '#0080AA',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '2px',
+                                marginLeft: 'auto'
+                              }}
+                            >
                               Reschedule
                             </button>
                           </>
                         )}
 
-                        {/* ✅ ACCEPTED → ONLY RESCHEDULE */}
+                        {/* ✅ ACCEPTED → RESCHEDULE + REPORT */}
                         {req.status === "Accepted" && (
-                          <button onClick={() => openRescheduleModal(req)} style={{ padding: '6px 12px', cursor: 'pointer', backgroundColor: '#0080AA', color: 'white', border: 'none', borderRadius: '4px' }}>
-                            Reschedule
-                          </button>
+                          <>
+                            <button
+                              onClick={() => openRescheduleModal(req)}
+                              style={{
+                                padding: '6px 12px',
+                                cursor: 'pointer',
+                                backgroundColor: '#0080AA',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '4px'
+                              }}
+                            >
+                              Reschedule
+                            </button>
+
+                            <button
+                              onClick={() => {
+                                setReportData({
+                                  requestId: req._id,
+                                  collectorName: req.collectorName,
+                                  reason: "",
+                                });
+
+                                setReportOpen(true);
+                              }}
+                              style={{
+                                padding: '6px 12px',
+                                cursor: 'pointer',
+                                backgroundColor: '#dc3545',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '4px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px'
+                              }}
+                            >
+                              <FaFlag />
+                              Report Collector
+                            </button>
+                          </>
                         )}
 
                         {/* ✅ REJECTED → TRY AGAIN */}
                         {req.status === "Rejected" && (
-                          <button className="btn-tryagain" onClick={() => handleTryAgain(req._id)}>
+                          <button
+                            className="btn-tryagain"
+                            onClick={() => handleTryAgain(req._id)}
+                          >
                             Try Again
                           </button>
                         )}
@@ -385,38 +848,141 @@ const downloadRequestsReport = () => {
       </div>
 
       {/* Reschedule Dialog */}
-      <Dialog open={rescheduleOpen} onClose={() => setRescheduleOpen(false)}>
+      <Dialog
+        open={rescheduleOpen}
+        onClose={() => setRescheduleOpen(false)}
+      >
         <DialogTitle>Reschedule Request</DialogTitle>
+
         <DialogContent sx={{ pt: 2 }}>
-          <Typography variant="body2" sx={{ mb: 2 }}>Select a new date for your {rescheduleData.type}.</Typography>
+          <Typography variant="body2" sx={{ mb: 2 }}>
+            Select a new date for your {rescheduleData.type}.
+          </Typography>
+
           <TextField
             type="date"
             fullWidth
             InputLabelProps={{ shrink: true }}
             value={rescheduleData.newDate}
-            onChange={(e) => setRescheduleData({ ...rescheduleData, newDate: e.target.value })}
-            inputProps={{ min: new Date().toISOString().split("T")[0] }} // Prevent past dates
+            onChange={(e) =>
+              setRescheduleData({
+                ...rescheduleData,
+                newDate: e.target.value
+              })
+            }
+            inputProps={{
+              min: new Date().toISOString().split("T")[0]
+            }}
           />
         </DialogContent>
+
         <DialogActions>
-          <Button onClick={() => setRescheduleOpen(false)}>Cancel</Button>
-          <Button onClick={handleRescheduleSubmit} variant="contained" color="primary">Confirm</Button>
+          <Button onClick={() => setRescheduleOpen(false)}>
+            Cancel
+          </Button>
+
+          <Button
+            onClick={handleRescheduleSubmit}
+            variant="contained"
+            color="primary"
+          >
+            Confirm
+          </Button>
         </DialogActions>
       </Dialog>
 
       {/* Cancel Confirmation Dialog */}
-      <Dialog open={cancelConfirmOpen} onClose={() => setCancelConfirmOpen(false)}>
+      <Dialog
+        open={cancelConfirmOpen}
+        onClose={() => setCancelConfirmOpen(false)}
+      >
         <DialogTitle>Cancel Request</DialogTitle>
-        <DialogContent>Are you sure you want to cancel this request?</DialogContent>
+
+        <DialogContent>
+          Are you sure you want to cancel this request?
+        </DialogContent>
+
         <DialogActions>
-          <Button onClick={() => setCancelConfirmOpen(false)}>No</Button>
-          <Button onClick={confirmCancel} variant="contained" color="error">Yes, Cancel</Button>
+          <Button onClick={() => setCancelConfirmOpen(false)}>
+            No
+          </Button>
+
+          <Button
+            onClick={confirmCancel}
+            variant="contained"
+            color="error"
+          >
+            Yes, Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Report Collector Dialog */}
+      <Dialog
+        open={reportOpen}
+        onClose={() => setReportOpen(false)}
+      >
+        <DialogTitle>Report Collector</DialogTitle>
+
+        <DialogContent sx={{ pt: 2, minWidth: 400 }}>
+          <Typography variant="body2" sx={{ mb: 2 }}>
+            Your feedback helps us improve the service.
+          </Typography>
+
+          <TextField
+            fullWidth
+            multiline
+            rows={4}
+            label="Describe the issue"
+            placeholder="Example: The collector was late or behaved unprofessionally..."
+            value={reportData.reason}
+            onChange={(e) =>
+              setReportData({
+                ...reportData,
+                reason: e.target.value,
+              })
+            }
+          />
+        </DialogContent>
+
+        <DialogActions>
+          <Button onClick={() => setReportOpen(false)}>
+            Cancel
+          </Button>
+
+          <Button
+            onClick={handleReportSubmit}
+            variant="contained"
+            color="error"
+          >
+            Submit Report
+          </Button>
         </DialogActions>
       </Dialog>
 
       {/* Snackbar */}
-      <Snackbar open={snackbar.open} autoHideDuration={3000} onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}>
-        <Alert onClose={() => setSnackbar(prev => ({ ...prev, open: false }))} severity={snackbar.severity} sx={{ width: '100%' }}>{snackbar.message}</Alert>
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={() =>
+          setSnackbar(prev => ({
+            ...prev,
+            open: false
+          }))
+        }
+      >
+        <Alert
+          onClose={() =>
+            setSnackbar(prev => ({
+              ...prev,
+              open: false
+            }))
+          }
+          severity={snackbar.severity}
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
       </Snackbar>
     </div>
   );

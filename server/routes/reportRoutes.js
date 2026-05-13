@@ -1,8 +1,15 @@
 import express from "express";
-import { getReportInsights } from "../controllers/reportsController.js";
+import {
+  getReportInsights,
+  createReport
+} from "../controllers/reportsController.js";
 
 const router = express.Router();
 
+// CREATE REPORT
+router.post("/create", createReport);
+
+// INSIGHTS
 router.get("/insights", getReportInsights);
 
 export default router;

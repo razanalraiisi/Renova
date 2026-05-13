@@ -204,3 +204,33 @@ export const getReportInsights = async (req, res) => {
     res.status(500).json({ message: "Server error." });
   }
 };
+export const createReport = async (req, res) => {
+  try {
+    const {
+      requestId,
+      collectorName,
+      reason
+    } = req.body;
+
+    const report = {
+      requestId,
+      collectorName,
+      reason,
+      createdAt: new Date(),
+    };
+
+    console.log("NEW REPORT:", report);
+
+    res.status(201).json({
+      message: "Report submitted successfully",
+      report,
+    });
+
+  } catch (err) {
+    console.error(err);
+
+    res.status(500).json({
+      message: "Server error",
+    });
+  }
+};
