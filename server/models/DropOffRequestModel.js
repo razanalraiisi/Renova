@@ -14,6 +14,14 @@ const dropOffSchema = new mongoose.Schema({
     required: true
   },
   deviceCategory: String,
+  customCategory: {
+    type: String,
+    default: null
+  },
+  isBroadcastToAllCollectors: {
+    type: Boolean,
+    default: false
+  },
   device: {
     type: String,
     required: true

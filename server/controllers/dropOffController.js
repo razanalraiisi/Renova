@@ -13,7 +13,9 @@ export const createDropOffRequest = async (req, res) => {
       condition,
       dateTime,
       address,
-      category
+      category,
+      customCategory,
+      isBroadcastToAllCollectors
     } = req.body;
 
     const image = req.file ? req.file.filename : null;
@@ -35,6 +37,8 @@ export const createDropOffRequest = async (req, res) => {
       category,
       image,
       userId,
+      customCategory: customCategory || null,
+      isBroadcastToAllCollectors: isBroadcastToAllCollectors === 'true' || isBroadcastToAllCollectors === true,
     });
 
     await request.save();
@@ -117,9 +121,18 @@ export const getAllDropOffRequests = async (req, res) => {
       return res.status(404).json({ message: "Collector not found" });
     }
 
+    // Build query: get broadcast requests OR matching category requests
     const requests = await DropOffRequest.find({
-      deviceCategory: { $in: collector.acceptedCategories },
-      status: "Pending"
+      status: "Pending",
+      $or: [
+        // Broadcast requests visible to all collectors
+        { isBroadcastToAllCollectors: true },
+        // Category-matched requests (only if not broadcast)
+        {
+          isBroadcastToAllCollectors: { $ne: true },
+          deviceCategory: { $in: collector.acceptedCategories }
+        }
+      ]
     }).sort({ createdAt: -1 });
 
     res.json(requests);

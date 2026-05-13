@@ -34,6 +34,8 @@ const DropOff = () => {
     collectorId: "",
   });
 
+  const [customCategory, setCustomCategory] = useState("");
+  const [isBroadcastToAllCollectors, setIsBroadcastToAllCollectors] = useState(false);
   const [image, setImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [errors, setErrors] = useState({});
@@ -46,7 +48,7 @@ const DropOff = () => {
   const allCategories = [
     "Small Electronics","Large Electronics","Home Appliances (Small)","Home Appliances (Large)","IT & Office Equipment",
     "Kitchen & Cooking Appliances","Entertainment Devices","Personal Care Electronics","Tools & Outdoor Equipment",
-    "Lighting Equipment","Medical & Fitness Devices","Batteries & Accessories"
+    "Lighting Equipment","Medical & Fitness Devices","Batteries & Accessories","Other"
   ];
 
   // =========================
@@ -169,6 +171,18 @@ const DropOff = () => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  const handleCategoryChange = (e) => {
+    const selectedCategory = e.target.value;
+    setForm({ ...form, deviceCategory: selectedCategory });
+
+    if (selectedCategory === "Other") {
+      setIsBroadcastToAllCollectors(true);
+    } else {
+      setIsBroadcastToAllCollectors(false);
+      setCustomCategory("");
+    }
+  };
+
   const handlePhoneChange = (e) => {
     const value = e.target.value.replace(/\D/g, "");
     setForm({ ...form, phone: value });
@@ -196,6 +210,13 @@ const DropOff = () => {
     }
 
     if (!form.deviceCategory.trim()) newErrors.deviceCategory = "Category is required";
+    
+    if (form.deviceCategory === "Other") {
+      if (!customCategory.trim()) {
+        newErrors.customCategory = "Please enter a custom category";
+      }
+    }
+    
     if (!form.device.trim()) newErrors.device = "Device is required";
     if (!form.condition.trim()) newErrors.condition = "Condition is required";
     if (!form.address.trim()) newErrors.address = "Please select location from map";
@@ -231,6 +252,8 @@ const DropOff = () => {
     Object.keys(form).forEach(key => formData.append(key, form[key]));
     formData.append("category", category);
     formData.append("requestType", "DropOff");
+    if (customCategory) formData.append("customCategory", customCategory);
+    formData.append("isBroadcastToAllCollectors", isBroadcastToAllCollectors);
     if (image) formData.append("image", image);
 
     try {
@@ -258,6 +281,8 @@ const DropOff = () => {
         setImage(null);
         setImagePreview(null);
         setSelectedCenter(null);
+        setCustomCategory("");
+        setIsBroadcastToAllCollectors(false);
         
       } else {
         alert(result.message || "Error submitting request");
@@ -298,7 +323,10 @@ const DropOff = () => {
   };
 
   // Filter collectors by selected category
-  const filteredCollectors = form.deviceCategory
+  // If broadcast mode ("Other" category), show all collectors
+  const filteredCollectors = isBroadcastToAllCollectors
+    ? collectors
+    : form.deviceCategory
     ? collectors.filter(c => 
         c.acceptedCategories && 
         c.acceptedCategories.includes(form.deviceCategory)
@@ -471,7 +499,7 @@ const DropOff = () => {
             name="deviceCategory"
             style={styles.input}
             value={form.deviceCategory}
-            onChange={handleChange}
+            onChange={handleCategoryChange}
           >
             <option value="">Select Category</option>
             {allCategories.map((c, i) => (
@@ -479,6 +507,20 @@ const DropOff = () => {
             ))}
           </select>
           {errors.deviceCategory && <p style={styles.error}>{errors.deviceCategory}</p>}
+
+          {form.deviceCategory === "Other" && (
+            <>
+              <label style={styles.label}>Custom Category *</label>
+              <input
+                type="text"
+                placeholder="e.g., Furniture with electronics, Custom gadget"
+                style={styles.input}
+                value={customCategory}
+                onChange={(e) => setCustomCategory(e.target.value)}
+              />
+              {errors.customCategory && <p style={styles.error}>{errors.customCategory}</p>}
+            </>
+          )}
 
           <label style={styles.label}>Device Name *</label>
           <input
