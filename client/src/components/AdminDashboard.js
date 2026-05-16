@@ -564,9 +564,8 @@ const AdminDashboard = () => {
                       </span>
                       <span className="report-summary-count">
                         {insights.topUser.count > 0
-                          ? `${insights.topUser.count} request${
-                              insights.topUser.count === 1 ? "" : "s"
-                            } (accepted or completed)`
+                          ? `${insights.topUser.count} request${insights.topUser.count === 1 ? "" : "s"
+                          } (accepted or completed)`
                           : "No Recycle / Upcycle / Dispose completions yet"}
                       </span>
                     </>
@@ -589,8 +588,8 @@ const AdminDashboard = () => {
                       <span className="report-summary-primary">
                         {insights.topCategory.count > 0
                           ? `${formatCategoryLabel(insights.topCategory.name)} (${Number(
-                              insights.topCategory.percentage
-                            ).toFixed(1)}%)`
+                            insights.topCategory.percentage
+                          ).toFixed(1)}%)`
                           : "—"}
                       </span>
                       {insights.topCategory.count > 0 ? (
@@ -689,6 +688,12 @@ const AdminDashboard = () => {
             title="Collectors"
             lines={["Total collectors:", statsLoading ? "…" : stats.collectors]}
             onClick={() => navigate("/admin/manage-collectors")}
+          />
+          <SideCard
+            title="User Reports"
+            lines={["View complaints submitted by users"]}
+            buttonText="View Reports"
+            onClick={() => navigate("/admin/user-reports")}
           />
         </Col>
       </Row>

@@ -47,7 +47,7 @@ import PrivacyPolicy from './components/PrivacyPolicy.js';
 import AdminUserPage from './components/AdminUserPage.js';
 import AdminMyRequests from './components/AdminMyRequests.js';
 import DecisionResult from './components/DecisionResult.js';
-
+import AdminReportsPage from "./components/AdminReportsPage";
 // Reports
 import RecyclesReport from "./components/RecyclesReport";
 import DisposalsReport from "./components/DisposalsReport";
@@ -59,7 +59,7 @@ import AdminReportSummaryPage from "./components/AdminReportSummaryPage";
 import AdminThemeSync from "./components/AdminThemeSync.js";
 import CollectorNav from './components/CollectorNav.js';
 import UserNavbar from './components/UserNavBar.js';
-
+import AdminUserReports from './components/AdminUserReports.js';
 function App() {
   const email = useSelector((state) => state.users?.user?.email);
 
@@ -132,10 +132,10 @@ function App() {
             <Route path="/terms" element={<TermsConditions />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/admin/dashboard/graphs" element={<AdminDashboardGraphs />} />
-
+            <Route path="/admin/reports/user-reports" element={<AdminUserReports />} />
             {/* Admin routes */}
             <Route path="/AdminCollectorRequests" element={<AdminCollectorRequests />} />
-
+            <Route path="/admin/reports" element={<AdminReportsPage />} />
             <Route
               path="/admin/dashboard"
               element={
@@ -165,7 +165,6 @@ function App() {
             <Route path="/admin/reports/report-summary" element={<AdminReportSummaryPage />} />
             <Route path="/admin/profile" element={<AdminUserPage />} />
             <Route path="/admin/my-requests" element={<AdminMyRequests />} />
-
           </Routes>
         </Row>
 
