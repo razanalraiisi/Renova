@@ -162,7 +162,7 @@ const CollectorNavbar = () => {
                             {" "}
                             {r.requestType === "DropOff" ? "Drop-off" : "Pickup"} Request for {r.device}
                           </div>
-                          <div className="notif-time">{new Date(r.createdAt).toLocaleDateString()}</div>
+                          <div className="notif-time">{new Date(r.createdAt).toLocaleString()}</div>
                         </div>
                         <div className="notif-message">
                           Condition: {r.condition}
@@ -188,7 +188,7 @@ const CollectorNavbar = () => {
                       <div key={r._id} className="notif-item">
                         <div className="notif-item-top">
                           <div className="notif-item-title">New {r.requestType === "DropOff" ? "Drop-off" : "Pickup"} Request for {r.device}</div>
-                          <div className="notif-time">{new Date(r.createdAt).toLocaleDateString()}</div>
+                          <div className="notif-time">{new Date(r.createdAt).toLocaleString()}</div>
                         </div>
                         <div className="notif-message">Condition: {r.condition}</div>
                         <div className="notif-actions">
