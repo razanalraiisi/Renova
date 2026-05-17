@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FcViewDetails, FcBusinessContact } from "react-icons/fc";
+import { MdSimCardDownload, MdCategory } from "react-icons/md";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+
 import {
   Box,
   Card,
@@ -10,11 +12,12 @@ import {
   Divider,
   IconButton,
   Button,
+  Menu,
+  MenuItem,
 } from '@mui/material';
 
 import { Input } from "reactstrap";
 import './Components.css';
-import { MdSimCardDownload } from "react-icons/md";
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import Chart from 'chart.js/auto';
@@ -22,11 +25,47 @@ import logo from '../assets/logo.png';
 
 const RequestHistory = () => {
   const navigate = useNavigate();
+
   const [openId, setOpenId] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [requests, setRequests] = useState([]);
   const [message, setMessage] = useState({ text: '', type: '' });
   const [collector, setCollector] = useState(null);
+
+  // CATEGORY FILTER STATES
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [activeCategory, setActiveCategory] = useState("All");
+
+  const open = Boolean(anchorEl);
+
+  const categoryOptions = [
+     "All",
+  "Small Electronics",
+  "Large Electronics",
+  "Home Appliances (Small)",
+  "Home Appliances (Large)",
+  "IT & Office Equipment",
+  "Kitchen & Cooking Appliances",
+  "Entertainment Devices",
+  "Personal Care Electronics",
+  "Tools & Outdoor Equipment",
+  "Lighting Equipment",
+  "Medical & Fitness Devices",
+  "Batteries & Accessories",
+  "Other",
+  ];
+
+  const handleMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = (category) => {
+    if (category) {
+      setActiveCategory(category);
+    }
+
+    setAnchorEl(null);
+  };
 
   const fetchRequests = async () => {
     try {
@@ -35,7 +74,7 @@ const RequestHistory = () => {
         JSON.parse(sessionStorage.getItem("user"));
 
       if (!collectorData || !collectorData._id) return;
-      
+
       setCollector(collectorData);
 
       const token =
@@ -52,6 +91,7 @@ const RequestHistory = () => {
           },
         }
       );
+
       const pickupData = await pickupRes.json();
 
       // Fetch drop-off history
@@ -64,11 +104,14 @@ const RequestHistory = () => {
           },
         }
       );
+
       const dropOffData = await dropOffRes.json();
 
       // Combine and sort by createdAt descending
-      const allRequests = [...(Array.isArray(pickupData) ? pickupData : []), ...(Array.isArray(dropOffData) ? dropOffData : [])]
-        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      const allRequests = [
+        ...(Array.isArray(pickupData) ? pickupData : []),
+        ...(Array.isArray(dropOffData) ? dropOffData : [])
+      ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
       setRequests(allRequests);
 
@@ -81,32 +124,48 @@ const RequestHistory = () => {
     fetchRequests();
   }, []);
 
-  const filteredRequests = requests.filter((r) =>
-    (r.device || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (r.status || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (r.requestType || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (r.email || "").toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredRequests = requests.filter((r) => {
+
+    const matchesSearch =
+      (r.device || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (r.status || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (r.requestType || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (r.email || "").toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesCategory =
+      activeCategory === "All" ||
+      (r.deviceCategory || "").toLowerCase() === activeCategory.toLowerCase();
+
+    return matchesSearch && matchesCategory;
+  });
 
   const updateStatus = async (id, newStatus) => {
     try {
       const token =
         localStorage.getItem("token") || sessionStorage.getItem("token");
+
       if (!token) {
-        setMessage({ text: "Login required to update status.", type: "error" });
+        setMessage({
+          text: "Login required to update status.",
+          type: "error"
+        });
         return;
       }
 
       // Find the request to determine its type
       const request = requests.find(r => r._id === id);
+
       if (!request) {
-        setMessage({ text: "Request not found.", type: "error" });
+        setMessage({
+          text: "Request not found.",
+          type: "error"
+        });
         return;
       }
 
-      const endpoint = request.requestType === "DropOff" ? 
-        `http://localhost:5000/api/dropoffs/${newStatus}/${id}` : 
-        `http://localhost:5000/api/pickups/${newStatus}/${id}`;
+      const endpoint = request.requestType === "DropOff"
+        ? `http://localhost:5000/api/dropoffs/${newStatus}/${id}`
+        : `http://localhost:5000/api/pickups/${newStatus}/${id}`;
 
       const res = await fetch(endpoint, {
         method: "PUT",
@@ -118,20 +177,35 @@ const RequestHistory = () => {
 
       if (!res.ok) {
         const err = await res.json();
-        setMessage({ text: err.message || "Failed to update status.", type: "error" });
+
+        setMessage({
+          text: err.message || "Failed to update status.",
+          type: "error"
+        });
+
         return;
       }
 
       const updated = await res.json();
-      setRequests((prev) => prev.map((r) => (r._id === updated._id ? updated : r)));
-      setMessage({ text: `Status updated to ${updated.status}.`, type: "success" });
+
+      setRequests((prev) =>
+        prev.map((r) => (r._id === updated._id ? updated : r))
+      );
+
+      setMessage({
+        text: `Status updated to ${updated.status}.`,
+        type: "success"
+      });
+
     } catch (error) {
       console.error("Error updating status:", error);
-      setMessage({ text: "Error updating status.", type: "error" });
+
+      setMessage({
+        text: "Error updating status.",
+        type: "error"
+      });
     }
   };
-
-
 
   /* DOWNLOAD FUNCTION (NEW) */
   const downloadCSV = () => {
@@ -167,6 +241,7 @@ const RequestHistory = () => {
     ]);
 
     const collectorName = collector?.companyName || "Unknown Collector";
+
     let csvContent =
       "data:text/csv;charset=utf-8," +
       `Collector: ${collectorName}\n\n` +
@@ -175,18 +250,26 @@ const RequestHistory = () => {
         .join("\n");
 
     const encodedUri = encodeURI(csvContent);
+
     const link = document.createElement("a");
 
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "collector_request_history.csv");
+
+    link.setAttribute(
+      "download",
+      "collector_request_history.csv"
+    );
 
     document.body.appendChild(link);
+
     link.click();
+
     document.body.removeChild(link);
   };
 
   /* DOWNLOAD PDF FUNCTION (NEW) */
   const downloadPDF = async () => {
+
     if (filteredRequests.length === 0) {
       alert("No requests to download");
       return;
@@ -194,15 +277,33 @@ const RequestHistory = () => {
 
     // Calculate statistics
     const totalRequests = filteredRequests.length;
-    const acceptedRequests = filteredRequests.filter(r => r.status === "Accepted").length;
-    const completedRequests = filteredRequests.filter(r => r.status === "Completed").length;
-    const pickupRequests = filteredRequests.filter(r => r.requestType === "Pickup").length;
-    const dropoffRequests = filteredRequests.filter(r => r.requestType === "DropOff").length;
+
+    const acceptedRequests =
+      filteredRequests.filter(
+        r => r.status === "Accepted"
+      ).length;
+
+    const completedRequests =
+      filteredRequests.filter(
+        r => r.status === "Completed"
+      ).length;
+
+    const pickupRequests =
+      filteredRequests.filter(
+        r => r.requestType === "Pickup"
+      ).length;
+
+    const dropoffRequests =
+      filteredRequests.filter(
+        r => r.requestType === "DropOff"
+      ).length;
 
     // Create PDF
     const doc = new jsPDF();
+
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
+
     let yPosition = 15;
 
     // Add header background color
@@ -212,48 +313,60 @@ const RequestHistory = () => {
     // Add logo
     try {
       const img = new Image();
+
       img.src = logo;
+
       await new Promise((resolve) => {
         img.onload = () => {
           doc.addImage(img, 'PNG', 12, 5, 12, 12);
           resolve();
         };
       });
+
     } catch (error) {
       console.log("Logo not found, skipping");
     }
 
-    // Title - white text on colored background
+    // Title
     doc.setFont("Helvetica", "bold");
     doc.setFontSize(16);
     doc.setTextColor(255, 255, 255);
+
     doc.text("Collector Request Report", 28, 15);
 
-    // Collector Name - white text
+    // Collector Name
     doc.setFont("Helvetica", "normal");
     doc.setFontSize(10);
-    const collectorName = collector?.companyName || "Unknown Collector";
+
+    const collectorName =
+      collector?.companyName || "Unknown Collector";
+
     doc.text(`Collector: ${collectorName}`, 28, 22);
 
-    // Date and Time - white text
-    doc.setFont("Helvetica", "normal");
+    // Date
     doc.setFontSize(9);
+
     const currentDate = new Date().toLocaleString();
+
     doc.text(`Generated on: ${currentDate}`, 28, 28);
 
     // Reset text color
     doc.setTextColor(0, 0, 0);
+
     yPosition = 42;
 
-    // Summary Statistics Section - No background
+    // Summary Statistics
     doc.setFont("Helvetica", "bold");
     doc.setFontSize(12);
     doc.setTextColor(0, 128, 170);
+
     doc.text("Summary Statistics", 12, yPosition);
+
     yPosition += 8;
 
     doc.setFontSize(9);
     doc.setTextColor(0, 0, 0);
+
     const statsData = [
       [`Total Requests:`, totalRequests.toString()],
       [`Accepted Requests:`, acceptedRequests.toString()],
@@ -263,38 +376,58 @@ const RequestHistory = () => {
     ];
 
     statsData.forEach((stat) => {
+
       doc.setFont("Helvetica", "bold");
       doc.text(stat[0], 15, yPosition);
+
       doc.setFont("Helvetica", "normal");
       doc.text(stat[1], 65, yPosition);
+
       yPosition += 5;
     });
 
     yPosition += 8;
 
-    // Request Type Breakdown Section
+    // Request Type Breakdown
     doc.setFont("Helvetica", "bold");
     doc.setFontSize(11);
     doc.setTextColor(0, 128, 170);
+
     doc.text("Request Type Distribution", 12, yPosition);
+
     yPosition += 7;
 
     doc.setFont("Helvetica", "normal");
     doc.setFontSize(9);
     doc.setTextColor(0, 0, 0);
-    doc.text(`Pickup: ${pickupRequests} (${((pickupRequests / totalRequests) * 100).toFixed(1)}%)`, 15, yPosition);
+
+    doc.text(
+      `Pickup: ${pickupRequests} (${((pickupRequests / totalRequests) * 100).toFixed(1)}%)`,
+      15,
+      yPosition
+    );
+
     yPosition += 5;
-    doc.text(`Drop-off: ${dropoffRequests} (${((dropoffRequests / totalRequests) * 100).toFixed(1)}%)`, 15, yPosition);
+
+    doc.text(
+      `Drop-off: ${dropoffRequests} (${((dropoffRequests / totalRequests) * 100).toFixed(1)}%)`,
+      15,
+      yPosition
+    );
+
     yPosition += 10;
 
-    // Create Status Distribution Chart - SMALLER SIZE
+    // Create Status Distribution Chart
     try {
+
       const canvas = document.createElement('canvas');
+
       canvas.width = 300;
       canvas.height = 200;
       canvas.style.display = 'none';
+
       document.body.appendChild(canvas);
-      
+
       const ctx = canvas.getContext('2d');
 
       const statusCounts = {
@@ -308,7 +441,10 @@ const RequestHistory = () => {
           labels: ['Accepted', 'Completed'],
           datasets: [
             {
-              data: [statusCounts.Accepted, statusCounts.Completed],
+              data: [
+                statusCounts.Accepted,
+                statusCounts.Completed
+              ],
               backgroundColor: ['#4CAF50', '#2196F3'],
               borderColor: ['#388E3C', '#1976D2'],
               borderWidth: 2,
@@ -328,18 +464,29 @@ const RequestHistory = () => {
             tooltip: {
               callbacks: {
                 label: function(context) {
-                  const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                  const percentage = ((context.parsed / total) * 100).toFixed(1);
+                  const total =
+                    context.dataset.data.reduce((a, b) => a + b, 0);
+
+                  const percentage =
+                    ((context.parsed / total) * 100).toFixed(1);
+
                   return `${context.label}: ${context.parsed} (${percentage}%)`;
                 }
               }
             },
             datalabels: {
               color: '#fff',
-              font: { weight: 'bold', size: 12 },
+              font: {
+                weight: 'bold',
+                size: 12
+              },
               formatter: (value, ctx) => {
-                const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
-                const percentage = ((value / total) * 100).toFixed(1);
+                const total =
+                  ctx.dataset.data.reduce((a, b) => a + b, 0);
+
+                const percentage =
+                  ((value / total) * 100).toFixed(1);
+
                 return `${percentage}%`;
               }
             }
@@ -349,26 +496,43 @@ const RequestHistory = () => {
           {
             id: 'datalabels',
             afterDatasetsDraw(chart) {
-              const {data, ctx} = chart;
+
+              const { data, ctx } = chart;
+
               if (!data.datasets) return;
-              
+
               data.datasets.forEach((dataset, i) => {
-                const {data: values} = dataset;
-                const total = values.reduce((a, b) => a + b, 0);
-                
-                const meta = chart.getDatasetMeta(i);
+
+                const { data: values } = dataset;
+
+                const total =
+                  values.reduce((a, b) => a + b, 0);
+
+                const meta =
+                  chart.getDatasetMeta(i);
+
                 if (!meta.data) return;
-                
+
                 meta.data.forEach((datapoint, index) => {
-                  const {x, y} = datapoint.tooltipPosition();
+
+                  const { x, y } =
+                    datapoint.tooltipPosition();
+
                   const value = values[index];
-                  const percentage = ((value / total) * 100).toFixed(1);
-                  
+
+                  const percentage =
+                    ((value / total) * 100).toFixed(1);
+
                   ctx.fillStyle = 'white';
                   ctx.font = 'bold 11px Arial';
                   ctx.textAlign = 'center';
                   ctx.textBaseline = 'middle';
-                  ctx.fillText(`${percentage}%`, x, y);
+
+                  ctx.fillText(
+                    `${percentage}%`,
+                    x,
+                    y
+                  );
                 });
               });
             }
@@ -376,11 +540,14 @@ const RequestHistory = () => {
         ]
       });
 
-      // Wait for chart to render
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Wait for chart render
+      await new Promise(resolve =>
+        setTimeout(resolve, 500)
+      );
 
       // Convert chart to image
-      const chartImage = canvas.toDataURL('image/png');
+      const chartImage =
+        canvas.toDataURL('image/png');
 
       // Add chart to PDF
       if (yPosition > 200) {
@@ -391,29 +558,39 @@ const RequestHistory = () => {
       doc.setFont("Helvetica", "bold");
       doc.setFontSize(11);
       doc.setTextColor(0, 128, 170);
+
       doc.text("Status Distribution", 12, yPosition);
+
       yPosition += 8;
 
-      // Smaller chart - reduced from 180x80 to 120x60
-      doc.addImage(chartImage, 'PNG', 45, yPosition, 120, 60);
+      doc.addImage(
+        chartImage,
+        'PNG',
+        45,
+        yPosition,
+        120,
+        60
+      );
+
       yPosition += 70;
 
-      // Destroy chart to free memory
+      // Destroy chart
       statusChart.destroy();
-      
-      // Clean up canvas
+
+      // Remove canvas
       document.body.removeChild(canvas);
+
     } catch (error) {
       console.error("Error creating chart:", error);
     }
 
-    // Add new page for table if needed
+    // Add new page if needed
     if (yPosition > 200) {
       doc.addPage();
       yPosition = 15;
     }
 
-    // Prepare table data with user details
+    // Table Data
     const tableData = filteredRequests.map(r => [
       r.device,
       r.deviceCategory,
@@ -422,16 +599,33 @@ const RequestHistory = () => {
       r.phone,
       r.requestType,
       r.status,
-      r.dateTime ? new Date(r.dateTime).toLocaleDateString() : "Not scheduled",
+      r.dateTime
+        ? new Date(r.dateTime).toLocaleDateString()
+        : "Not scheduled",
       new Date(r.createdAt).toLocaleDateString(),
     ]);
 
-    // Add table with improved styling
+    // Table
     autoTable(doc, {
-      head: [['Device', 'Category', 'Name', 'Email', 'Phone', 'Type', 'Status', 'Scheduled', 'Date']],
+      head: [[
+        'Device',
+        'Category',
+        'Name',
+        'Email',
+        'Phone',
+        'Type',
+        'Status',
+        'Scheduled',
+        'Date'
+      ]],
       body: tableData,
       startY: yPosition,
-      margin: { top: 10, right: 10, bottom: 10, left: 10 },
+      margin: {
+        top: 10,
+        right: 10,
+        bottom: 10,
+        left: 10
+      },
       styles: {
         font: 'Helvetica',
         fontSize: 8,
@@ -486,14 +680,21 @@ const RequestHistory = () => {
             flexWrap: 'wrap'
           }}
         >
+
           {message.text && (
             <Box
               sx={{
                 width: '100%',
                 p: 1,
                 borderRadius: 1,
-                backgroundColor: message.type === 'success' ? '#d4edda' : '#f8d7da',
-                color: message.type === 'success' ? '#155724' : '#721c24',
+                backgroundColor:
+                  message.type === 'success'
+                    ? '#d4edda'
+                    : '#f8d7da',
+                color:
+                  message.type === 'success'
+                    ? '#155724'
+                    : '#721c24',
                 mb: 1,
                 fontSize: 13,
               }}
@@ -510,14 +711,51 @@ const RequestHistory = () => {
             Request History
           </Typography>
 
-          <div className="faq-search-wrapper" style={{ margin: 0 }}>
+          <div
+            className="faq-search-wrapper"
+            style={{
+              margin: 0,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8
+            }}
+          >
+
             <Input
               type="text"
               placeholder="Search Requests"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) =>
+                setSearchTerm(e.target.value)
+              }
               className="faq-search-input"
             />
+
+            <IconButton
+              aria-label="category"
+              onClick={handleMenuOpen}
+              className="category-icon-button"
+              size="small"
+            >
+              <MdCategory size={22} />
+            </IconButton>
+
+            <Menu
+              anchorEl={anchorEl}
+              open={open}
+              onClose={() => handleMenuClose(null)}
+            >
+              {categoryOptions.map((cat) => (
+                <MenuItem
+                  key={cat}
+                  selected={activeCategory === cat}
+                  onClick={() => handleMenuClose(cat)}
+                >
+                  {cat}
+                </MenuItem>
+              ))}
+            </Menu>
+
           </div>
 
           <Button
@@ -532,18 +770,23 @@ const RequestHistory = () => {
 
         </Box>
 
-
         <Box sx={{ maxHeight: 420, overflowY: 'auto', pr: 1 }}>
 
           {filteredRequests.length > 0 ? (
+
             filteredRequests.map((r) => {
 
-              const statusClass = String(r.status || "")
-                .toLowerCase()
-                .trim();
+              const statusClass =
+                String(r.status || "")
+                  .toLowerCase()
+                  .trim();
 
               return (
-                <Card key={r._id} sx={{ mb: 2, borderRadius: 3 }}>
+                <Card
+                  key={r._id}
+                  sx={{ mb: 2, borderRadius: 3 }}
+                >
+
                   <CardContent sx={{ display: 'flex', gap: 2 }}>
 
                     <img
@@ -553,6 +796,7 @@ const RequestHistory = () => {
                     />
 
                     <Box sx={{ flex: 1 }}>
+
                       <Typography fontWeight={600}>
                         {r.device}
                       </Typography>
@@ -570,6 +814,7 @@ const RequestHistory = () => {
                           >
 
                             <Box>
+
                               <Typography fontWeight={600}>
                                 <FcViewDetails /> Request Details
                               </Typography>
@@ -579,9 +824,8 @@ const RequestHistory = () => {
                               </Typography>
 
                               <Typography fontSize={14}>
-                                Request Date & Time: {new Date(
-                                  r.createdAt
-                                ).toLocaleString()}
+                                Request Date & Time:
+                                {new Date(r.createdAt).toLocaleString()}
                               </Typography>
 
                               <Typography fontSize={14}>
@@ -597,11 +841,16 @@ const RequestHistory = () => {
                               </Typography>
 
                               <Typography fontSize={14}>
-                                Scheduled Date & Time: {r.dateTime ? new Date(r.dateTime).toLocaleString() : "Not scheduled"}
+                                Scheduled Date & Time:
+                                {r.dateTime
+                                  ? new Date(r.dateTime).toLocaleString()
+                                  : "Not scheduled"}
                               </Typography>
+
                             </Box>
 
                             <Box>
+
                               <Typography fontWeight={600}>
                                 <FcBusinessContact /> User Details
                               </Typography>
@@ -617,6 +866,7 @@ const RequestHistory = () => {
                               <Typography fontSize={14}>
                                 Email: {r.email}
                               </Typography>
+
                             </Box>
 
                           </Box>
@@ -636,9 +886,8 @@ const RequestHistory = () => {
                       ) : (
                         <>
                           <Typography fontSize={14}>
-                            Request Date: {new Date(
-                              r.createdAt
-                            ).toLocaleString()}
+                            Request Date:
+                            {new Date(r.createdAt).toLocaleString()}
                           </Typography>
 
                           <Typography fontSize={14}>
@@ -658,39 +907,57 @@ const RequestHistory = () => {
                           </Typography>
                         </>
                       )}
+
                     </Box>
 
-
                     <div>
+
                       <div className={`history-status ${statusClass}`}>
                         <span>{r.status}</span>
                         <span className="status-dot" />
                       </div>
+
                       {r.status === "Accepted" && (
                         <Button
                           variant="contained"
                           size="small"
-                          sx={{ mt: 1, backgroundColor: '#1976D2', fontWeight: 600 }}
-                          onClick={() => updateStatus(r._id, 'complete')}
+                          sx={{
+                            mt: 1,
+                            backgroundColor: '#1976D2',
+                            fontWeight: 600
+                          }}
+                          onClick={() =>
+                            updateStatus(r._id, 'complete')
+                          }
                         >
                           Mark Completed
                         </Button>
                       )}
+
                     </div>
 
                   </CardContent>
+
                 </Card>
               );
             })
+
           ) : (
+
             <Typography
-              sx={{ textAlign: 'center', mt: 3, color: '#777' }}
+              sx={{
+                textAlign: 'center',
+                mt: 3,
+                color: '#777'
+              }}
             >
               No matching requests found.
             </Typography>
+
           )}
 
         </Box>
+
       </Box>
     </Box>
   );
