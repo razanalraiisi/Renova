@@ -26,14 +26,17 @@ const RequestHistory = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [requests, setRequests] = useState([]);
   const [message, setMessage] = useState({ text: '', type: '' });
+  const [collector, setCollector] = useState(null);
 
   const fetchRequests = async () => {
     try {
-      const collector =
+      const collectorData =
         JSON.parse(localStorage.getItem("user")) ||
         JSON.parse(sessionStorage.getItem("user"));
 
-      if (!collector || !collector._id) return;
+      if (!collectorData || !collectorData._id) return;
+      
+      setCollector(collectorData);
 
       const token =
         localStorage.getItem("token") ||
@@ -41,7 +44,7 @@ const RequestHistory = () => {
 
       // Fetch pickup history
       const pickupRes = await fetch(
-        `http://localhost:5000/api/pickups/history/${collector._id}`,
+        `http://localhost:5000/api/pickups/history/${collectorData._id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -53,7 +56,7 @@ const RequestHistory = () => {
 
       // Fetch drop-off history
       const dropOffRes = await fetch(
-        `http://localhost:5000/api/dropoffs/history/${collector._id}`,
+        `http://localhost:5000/api/dropoffs/history/${collectorData._id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -159,8 +162,10 @@ const RequestHistory = () => {
       new Date(r.createdAt).toLocaleString()
     ]);
 
+    const collectorName = collector?.companyName || "Unknown Collector";
     let csvContent =
       "data:text/csv;charset=utf-8," +
+      `Collector: ${collectorName}\n\n` +
       [headers, ...rows]
         .map(e => e.join(","))
         .join("\n");
@@ -220,11 +225,17 @@ const RequestHistory = () => {
     doc.setTextColor(255, 255, 255);
     doc.text("Collector Request Report", 28, 15);
 
+    // Collector Name - white text
+    doc.setFont("Helvetica", "normal");
+    doc.setFontSize(10);
+    const collectorName = collector?.companyName || "Unknown Collector";
+    doc.text(`Collector: ${collectorName}`, 28, 22);
+
     // Date and Time - white text
     doc.setFont("Helvetica", "normal");
     doc.setFontSize(9);
     const currentDate = new Date().toLocaleString();
-    doc.text(`Generated on: ${currentDate}`, 28, 22);
+    doc.text(`Generated on: ${currentDate}`, 28, 28);
 
     // Reset text color
     doc.setTextColor(0, 0, 0);
