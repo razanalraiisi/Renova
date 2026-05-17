@@ -12,27 +12,27 @@ import logo from "../assets/logo.png";
 import "./Components.css";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-
+ 
 const UserDash = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
   const { user, isSuccess, message, isLoading } = useSelector((state) => state.users);
-
+ 
   const [activeTab, setActiveTab] = useState("profile");
   const [theme, setTheme] = useState(() => localStorage.getItem("userTheme") || "Light");
   const isDarkEffective = theme === "Dark" || (theme === "System" && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
-
+ 
   const [requests, setRequests] = useState([]);
   const [loadingRequests, setLoadingRequests] = useState(true);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
   const [cancelTargetId, setCancelTargetId] = useState(null);
-
+ 
   // --- Reschedule States ---
   const [rescheduleOpen, setRescheduleOpen] = useState(false);
   const [rescheduleData, setRescheduleData] = useState({ id: null, type: "", newDate: "", newTime: "" });
-
+ 
   // --- Report Collector States ---
   const [reportOpen, setReportOpen] = useState(false);
   const [reportData, setReportData] = useState({
@@ -40,54 +40,54 @@ const UserDash = () => {
     collectorName: "",
     reason: "",
   });
-
+ 
   // Notifications
   const [notifOpen, setNotifOpen] = useState(false);
   const [openId, setOpenId] = useState(null);
   const [seenNotifications, setSeenNotifications] = useState([]);
-
+ 
   const [searchTerm, setSearchTerm] = useState("");
-
+ 
   const defaultValues = { uname: user?.uname || "", phone: user?.phone || "" };
-
+ 
   const schema = Yup.object().shape({
     uname: Yup.string().required("Full Name is required"),
     phone: Yup.string()
       .required("Phone is required")
       .matches(/^[279]\d{7}$/, "Phone must be exactly 8 digits and start with 2, 7, or 9"),
   });
-
+ 
   const { register, handleSubmit, formState: { errors }, setValue } = useForm({
     defaultValues,
     resolver: yupResolver(schema),
   });
-
+ 
   useEffect(() => {
     const root = document.documentElement;
     const apply = (value) => root.setAttribute("data-theme", value);
-
+ 
     if (theme === "System") {
       const media = window.matchMedia("(prefers-color-scheme: dark)");
-
+ 
       const applySystem = () => apply(media.matches ? "dark" : "light");
-
+ 
       applySystem();
-
+ 
       media.addEventListener("change", applySystem);
-
+ 
       return () => media.removeEventListener("change", applySystem);
     }
-
+ 
     apply(theme.toLowerCase());
   }, [theme]);
-
+ 
   useEffect(() => {
     if (user && user._id) {
       setValue("uname", user.uname);
       setValue("phone", user.phone);
     }
   }, [user, setValue]);
-
+ 
   useEffect(() => {
     if (isSuccess) {
       setSnackbar({
@@ -95,58 +95,58 @@ const UserDash = () => {
         message: message || "Profile updated successfully!",
         severity: "success"
       });
-
+ 
       setTimeout(() => {
         dispatch(resetState());
         fetchRequests();
       }, 3000);
     }
   }, [isSuccess, message, dispatch]);
-
+ 
   const fetchRequests = async () => {
     if (!user?._id) return;
-
+ 
     setLoadingRequests(true);
-
+ 
     try {
       const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-
+ 
       if (!token) return;
-
+ 
       const pickupRes = await fetch(
         "http://localhost:5000/api/pickups/user/requests",
         {
           headers: { Authorization: `Bearer ${token}` }
         }
       );
-
+ 
       const pickupData = await pickupRes.json();
-
+ 
       let pickupRequests = Array.isArray(pickupData)
         ? pickupData
         : pickupData.requests || [];
-
+ 
       const dropOffRes = await fetch(
         "http://localhost:5000/api/dropoffs/user/requests",
         {
           headers: { Authorization: `Bearer ${token}` }
         }
       );
-
+ 
       const dropOffData = await dropOffRes.json();
-
+ 
       let dropOffRequests = Array.isArray(dropOffData)
         ? dropOffData
         : dropOffData.requests || [];
-
+ 
       const allRequests = [...pickupRequests, ...dropOffRequests].sort(
         (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
       );
-
+ 
       if (JSON.stringify(allRequests) !== JSON.stringify(requests)) {
         setRequests(allRequests);
       }
-
+ 
     } catch (err) {
       console.error(err);
       setRequests([]);
@@ -154,24 +154,24 @@ const UserDash = () => {
       setLoadingRequests(false);
     }
   };
-
+ 
   useEffect(() => {
     fetchRequests();
   }, [user]);
-
+ 
   const handleCancel = (id) => {
     setCancelTargetId(id);
     setCancelConfirmOpen(true);
   };
-
+ 
   const confirmCancel = async () => {
     const id = cancelTargetId;
-
+ 
     setCancelConfirmOpen(false);
     setCancelTargetId(null);
-
+ 
     const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-
+ 
     if (!token) {
       setSnackbar({
         open: true,
@@ -180,9 +180,9 @@ const UserDash = () => {
       });
       return;
     }
-
+ 
     const request = requests.find(r => r._id === id);
-
+ 
     if (!request) {
       setSnackbar({
         open: true,
@@ -191,17 +191,17 @@ const UserDash = () => {
       });
       return;
     }
-
+ 
     const endpoint = request.requestType === "DropOff"
       ? `http://localhost:5000/api/dropoffs/cancel/${id}`
       : `http://localhost:5000/api/pickups/cancel/${id}`;
-
+ 
     try {
       const res = await fetch(endpoint, {
         method: "PUT",
         headers: { Authorization: `Bearer ${token}` }
       });
-
+ 
       if (res.ok) {
         setRequests(prev =>
           prev.map(req =>
@@ -210,26 +210,26 @@ const UserDash = () => {
               : req
           )
         );
-
+ 
         setSnackbar({
           open: true,
           message: "Request canceled successfully!",
           severity: "success"
         });
-
+ 
       } else {
         const error = await res.json();
-
+ 
         setSnackbar({
           open: true,
           message: error.message || "Failed to cancel request.",
           severity: "error"
         });
       }
-
+ 
     } catch (err) {
       console.error(err);
-
+ 
       setSnackbar({
         open: true,
         message: "Server error.",
@@ -237,10 +237,10 @@ const UserDash = () => {
       });
     }
   };
-
+ 
   const handleTryAgain = async (requestId) => {
     const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-
+ 
     if (!token) {
       return setSnackbar({
         open: true,
@@ -248,9 +248,9 @@ const UserDash = () => {
         severity: "error"
       });
     }
-
+ 
     const request = requests.find(r => r._id === requestId);
-
+ 
     if (!request) {
       return setSnackbar({
         open: true,
@@ -258,39 +258,39 @@ const UserDash = () => {
         severity: "error"
       });
     }
-
+ 
     try {
       const endpoint = request.requestType === "DropOff"
         ? `http://localhost:5000/api/dropoffs/try-again/${requestId}`
         : `http://localhost:5000/api/pickups/try-again/${requestId}`;
-
+ 
       const res = await fetch(endpoint, {
         method: "PUT",
         headers: { Authorization: `Bearer ${token}` }
       });
-
+ 
       if (res.ok) {
         setSnackbar({
           open: true,
           message: "We are looking for a new collector!",
           severity: "success"
         });
-
+ 
         fetchRequests();
-
+ 
       } else {
         const error = await res.json();
-
+ 
         setSnackbar({
           open: true,
           message: error.message || "Failed to try again",
           severity: "error"
         });
       }
-
+ 
     } catch (err) {
       console.error(err);
-
+ 
       setSnackbar({
         open: true,
         message: "Server error",
@@ -298,7 +298,7 @@ const UserDash = () => {
       });
     }
   };
-
+ 
   // --- Reschedule Logic ---
   const openRescheduleModal = (req) => {
     setRescheduleData({
@@ -307,10 +307,10 @@ const UserDash = () => {
       newDate: "",
      newTime: ""
     });
-
+ 
     setRescheduleOpen(true);
   };
-
+ 
   const handleRescheduleSubmit = async () => {
   if (!rescheduleData.newDate || !rescheduleData.newTime) {
     return setSnackbar({
@@ -319,13 +319,13 @@ const UserDash = () => {
       severity: "warning"
     });
   }
-
+ 
   const selectedDateTime = new Date(
     `${rescheduleData.newDate}T${rescheduleData.newTime}`
   );
-
+ 
   const now = new Date();
-
+ 
   if (selectedDateTime < now) {
     return setSnackbar({
       open: true,
@@ -333,13 +333,13 @@ const UserDash = () => {
       severity: "error"
     });
   }
-
+ 
     const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-
+ 
     const endpoint = rescheduleData.type === "DropOff"
       ? `http://localhost:5000/api/dropoffs/reschedule/${rescheduleData.id}`
       : `http://localhost:5000/api/pickups/reschedule/${rescheduleData.id}`;
-
+ 
     try {
       const res = await fetch(endpoint, {
         method: "PUT",
@@ -351,28 +351,28 @@ const UserDash = () => {
   newDate: selectedDateTime.toISOString()
 })
       });
-
+ 
       if (res.ok) {
         setSnackbar({
           open: true,
           message: "Rescheduled successfully!",
           severity: "success"
         });
-
+ 
         setRescheduleOpen(false);
-
+ 
         fetchRequests();
-
+ 
       } else {
         const error = await res.json();
-
+ 
         setSnackbar({
           open: true,
           message: error.message || "Failed to reschedule",
           severity: "error"
         });
       }
-
+ 
     } catch (err) {
       setSnackbar({
         open: true,
@@ -381,7 +381,7 @@ const UserDash = () => {
       });
     }
   };
-
+ 
   // --- Report Collector Logic ---
   const handleReportSubmit = async () => {
     if (!reportData.reason.trim()) {
@@ -391,12 +391,12 @@ const UserDash = () => {
         severity: "warning",
       });
     }
-
+ 
     try {
       const token =
         localStorage.getItem("token") ||
         sessionStorage.getItem("token");
-
+ 
       const res = await fetch(
         "http://localhost:5000/api/reports/create",
         {
@@ -408,35 +408,35 @@ const UserDash = () => {
           body: JSON.stringify(reportData),
         }
       );
-
+ 
       if (res.ok) {
         setSnackbar({
           open: true,
           message: "Report submitted successfully",
           severity: "success",
         });
-
+ 
         setReportOpen(false);
-
+ 
         setReportData({
           requestId: "",
           collectorName: "",
           reason: "",
         });
-
+ 
       } else {
         const error = await res.json();
-
+ 
         setSnackbar({
           open: true,
           message: error.message || "Failed to submit report",
           severity: "error",
         });
       }
-
+ 
     } catch (err) {
       console.error(err);
-
+ 
       setSnackbar({
         open: true,
         message: "Server error",
@@ -444,57 +444,57 @@ const UserDash = () => {
       });
     }
   };
-
+ 
   const handleLogout = () => {
     dispatch(resetUser());
-
+ 
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-
+ 
     sessionStorage.removeItem("token");
     sessionStorage.removeItem("user");
-
+ 
     navigate("/");
   };
-
+ 
   const toggleTheme = () => {
     const next = isDarkEffective ? "Light" : "Dark";
-
+ 
     setTheme(next);
-
+ 
     localStorage.setItem("userTheme", next);
-
+ 
     setNotifOpen(false);
   };
-
+ 
   const onSubmit = async (data) => {
     if (!user?._id) return;
-
+ 
     const payload = {
       ...data,
       uname: user?.uname || data.uname,
       _id: user._id
     };
-
+ 
     await dispatch(updateUser(payload));
-
+ 
     fetchRequests();
   };
-
+ 
   const getStatusColor = (status) => {
     if (status === "Pending") return "#ffc107";
     if (status === "Accepted") return "#28a745";
     if (status === "Rejected") return "#dc3545";
     if (status === "Canceled") return "#6c757d";
-
+ 
     return "#9e9e9e";
   };
-
+ 
   const filteredRequests = requests.filter(req =>
     req.device.toLowerCase().includes(searchTerm.toLowerCase()) ||
     req.requestType.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
+ 
   const downloadRequestsReport = () => {
     if (!requests || requests.length === 0) {
       setSnackbar({
@@ -502,12 +502,12 @@ const UserDash = () => {
         message: "No requests to download",
         severity: "warning",
       });
-
+ 
       return;
     }
-
+ 
     const headers = [["Device", "Type", "Status", "Date", "Collector"]];
-
+ 
     const rows = requests.map((req) => [
       req.device || "-",
       req.requestType || "-",
@@ -515,20 +515,20 @@ const UserDash = () => {
       new Date(req.createdAt).toLocaleDateString(),
       req.collectorName || "-",
     ]);
-
+ 
     const doc = new jsPDF();
-
+ 
     doc.text("My Requests Report", 14, 15);
-
+ 
     autoTable(doc, {
       head: headers,
       body: rows,
       startY: 25,
     });
-
+ 
     doc.save("my_requests_report.pdf");
   };
-
+ 
   return (
     <div className="dashboard-page">
       <div style={{ padding: "10px 30px" }}>
@@ -541,7 +541,7 @@ const UserDash = () => {
           onClick={() => navigate("/start")}
         />
       </div>
-
+ 
       <div className="dashboard-container">
         <div className="sidebar">
           <div className="profile-box">
@@ -550,70 +550,70 @@ const UserDash = () => {
             ) : (
               <div className="avatar"></div>
             )}
-
+ 
             <strong>{user?.uname || "User"}</strong>
-
+ 
             <div className="email">{user?.email}</div>
           </div>
-
+ 
           <div
             className={activeTab === "profile" ? "menu-item active" : "menu-item"}
             onClick={() => setActiveTab("profile")}
           >
             <FaUser /> My Profile
           </div>
-
+ 
           <div
             className={activeTab === "requests" ? "menu-item active" : "menu-item"}
             onClick={() => setActiveTab("requests")}
           >
             <FaClipboardList /> My Requests
           </div>
-
+ 
           <button className="logout-btn" onClick={handleLogout}>
             <FaSignOutAlt /> Logout
           </button>
         </div>
-
+ 
         <div className="content">
           {activeTab === "profile" && (
             <form onSubmit={handleSubmit(onSubmit)}>
               <div className="section-title">Profile Information</div>
-
+ 
               <div className="form-group">
                 <label>Full Name</label>
-
+ 
                 <input type="text" value={user?.uname || ""} disabled />
-
+ 
                 <input type="hidden" {...register("uname")} />
-
+ 
                 {errors.uname && (
                   <p className="error">{errors.uname.message}</p>
                 )}
               </div>
-
+ 
               <div className="form-group">
                 <label>Email</label>
-
+ 
                 <input value={user?.email || ""} disabled />
               </div>
-
+ 
               <div className="form-group">
                 <label>Phone</label>
-
+ 
                 <input {...register("phone")} />
-
+ 
                 {errors.phone && (
                   <p className="error">{errors.phone.message}</p>
                 )}
               </div>
-
+ 
               <button type="submit" className="save-btn">
                 {isLoading ? "Saving..." : "Save Changes"}
               </button>
             </form>
           )}
-
+ 
           {activeTab === "requests" && (
             <>
               <div
@@ -625,7 +625,7 @@ const UserDash = () => {
                 }}
               >
                 My Requests
-
+ 
                 <div
                   style={{
                     display: "flex",
@@ -646,7 +646,7 @@ const UserDash = () => {
                       width: 180
                     }}
                   />
-
+ 
                   {searchTerm && (
                     <button
                       onClick={() => setSearchTerm("")}
@@ -666,7 +666,7 @@ const UserDash = () => {
                     </button>
                   )}
                 </div>
-
+ 
                 <button
                   onClick={downloadRequestsReport}
                   style={{
@@ -683,7 +683,7 @@ const UserDash = () => {
                   Download Report
                 </button>
               </div>
-
+ 
               {loadingRequests ? (
                 <p>Loading requests...</p>
               ) : filteredRequests.length === 0 ? (
@@ -714,10 +714,10 @@ const UserDash = () => {
                         borderRadius: 8
                       }}
                     />
-
+ 
                     <div style={{ flex: 1 }}>
                       <h4 style={{ margin: 0 }}>{req.device}</h4>
-
+ 
                       <div
                         style={{
                           fontSize: 13,
@@ -730,7 +730,7 @@ const UserDash = () => {
                           {req.requestType}
                         </span>
                       </div>
-
+ 
                       <div style={{ fontSize: 13, color: "#666" }}>
                         Request Date:{" "}
                         {new Date(req.createdAt).toLocaleDateString()}
@@ -752,7 +752,7 @@ const UserDash = () => {
                           Collector: {req.collectorName}
                         </div>
                       )}
-
+ 
                       <div
                         style={{
                           fontSize: 13,
@@ -765,7 +765,7 @@ const UserDash = () => {
                           ? "Rejected"
                           : req.status}
                       </div>
-
+ 
                       <div
                         style={{
                           marginTop: 8,
@@ -776,7 +776,7 @@ const UserDash = () => {
                           flexWrap: "wrap"
                         }}
                       >
-
+ 
                         {/* ✅ PENDING → CANCEL & RESCHEDULE */}
                         {req.status === "Pending" && (
                           <>
@@ -790,7 +790,7 @@ const UserDash = () => {
                             >
                               Cancel
                             </button>
-
+ 
                             <button
                               onClick={() => openRescheduleModal(req)}
                               style={{
@@ -807,7 +807,7 @@ const UserDash = () => {
                             </button>
                           </>
                         )}
-
+ 
                         {/* ✅ ACCEPTED → RESCHEDULE + REPORT */}
                         {req.status === "Accepted" && (
                           <>
@@ -824,7 +824,7 @@ const UserDash = () => {
                             >
                               Reschedule
                             </button>
-
+ 
                             <button
                               onClick={() => {
                                 setReportData({
@@ -832,7 +832,7 @@ const UserDash = () => {
                                   collectorName: req.collectorName,
                                   reason: "",
                                 });
-
+ 
                                 setReportOpen(true);
                               }}
                               style={{
@@ -852,7 +852,7 @@ const UserDash = () => {
                             </button>
                           </>
                         )}
-
+ 
                         {/* ✅ REJECTED → TRY AGAIN */}
                         {req.status === "Rejected" && (
                           <button
@@ -862,7 +862,7 @@ const UserDash = () => {
                             Try Again
                           </button>
                         )}
-
+ 
                       </div>
                     </div>
                   </div>
@@ -872,14 +872,14 @@ const UserDash = () => {
           )}
         </div>
       </div>
-
+ 
       {/* Reschedule Dialog */}
       <Dialog
         open={rescheduleOpen}
         onClose={() => setRescheduleOpen(false)}
       >
         <DialogTitle>Reschedule Request</DialogTitle>
-
+ 
         <DialogContent sx={{ pt: 2 }}>
           <Typography variant="body2" sx={{ mb: 2 }}>
             Select a new date for your {rescheduleData.type}.
@@ -900,7 +900,7 @@ const UserDash = () => {
   }}
   sx={{ mb: 2 }}
 />
-
+ 
 <TextField
   type="time"
   fullWidth
@@ -914,12 +914,12 @@ const UserDash = () => {
   }
 />
         </DialogContent>
-
+ 
         <DialogActions>
           <Button onClick={() => setRescheduleOpen(false)}>
             Cancel
           </Button>
-
+ 
           <Button
             onClick={handleRescheduleSubmit}
             variant="contained"
@@ -929,23 +929,23 @@ const UserDash = () => {
           </Button>
         </DialogActions>
       </Dialog>
-
+ 
       {/* Cancel Confirmation Dialog */}
       <Dialog
         open={cancelConfirmOpen}
         onClose={() => setCancelConfirmOpen(false)}
       >
         <DialogTitle>Cancel Request</DialogTitle>
-
+ 
         <DialogContent>
           Are you sure you want to cancel this request?
         </DialogContent>
-
+ 
         <DialogActions>
           <Button onClick={() => setCancelConfirmOpen(false)}>
             No
           </Button>
-
+ 
           <Button
             onClick={confirmCancel}
             variant="contained"
@@ -955,19 +955,19 @@ const UserDash = () => {
           </Button>
         </DialogActions>
       </Dialog>
-
+ 
       {/* Report Collector Dialog */}
       <Dialog
         open={reportOpen}
         onClose={() => setReportOpen(false)}
       >
         <DialogTitle>Report Collector</DialogTitle>
-
+ 
         <DialogContent sx={{ pt: 2, minWidth: 400 }}>
           <Typography variant="body2" sx={{ mb: 2 }}>
             Your feedback helps us improve the service.
           </Typography>
-
+ 
           <TextField
             fullWidth
             multiline
@@ -983,12 +983,12 @@ const UserDash = () => {
             }
           />
         </DialogContent>
-
+ 
         <DialogActions>
           <Button onClick={() => setReportOpen(false)}>
             Cancel
           </Button>
-
+ 
           <Button
             onClick={handleReportSubmit}
             variant="contained"
@@ -998,7 +998,7 @@ const UserDash = () => {
           </Button>
         </DialogActions>
       </Dialog>
-
+ 
       {/* Snackbar */}
       <Snackbar
         open={snackbar.open}
@@ -1026,5 +1026,6 @@ const UserDash = () => {
     </div>
   );
 };
-
+ 
 export default UserDash;
+ 
