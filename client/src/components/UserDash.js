@@ -31,7 +31,7 @@ const UserDash = () => {
 
   // --- Reschedule States ---
   const [rescheduleOpen, setRescheduleOpen] = useState(false);
-  const [rescheduleData, setRescheduleData] = useState({ id: null, type: "", newDate: "" });
+  const [rescheduleData, setRescheduleData] = useState({ id: null, type: "", newDate: "", newTime: "" });
 
   // --- Report Collector States ---
   const [reportOpen, setReportOpen] = useState(false);
@@ -304,20 +304,35 @@ const UserDash = () => {
     setRescheduleData({
       id: req._id,
       type: req.requestType,
-      newDate: ""
+      newDate: "",
+     newTime: ""
     });
 
     setRescheduleOpen(true);
   };
 
   const handleRescheduleSubmit = async () => {
-    if (!rescheduleData.newDate) {
-      return setSnackbar({
-        open: true,
-        message: "Please select a date",
-        severity: "warning"
-      });
-    }
+  if (!rescheduleData.newDate || !rescheduleData.newTime) {
+    return setSnackbar({
+      open: true,
+      message: "Please select date and time",
+      severity: "warning"
+    });
+  }
+
+  const selectedDateTime = new Date(
+    `${rescheduleData.newDate}T${rescheduleData.newTime}`
+  );
+
+  const now = new Date();
+
+  if (selectedDateTime < now) {
+    return setSnackbar({
+      open: true,
+      message: "You cannot select a past date/time",
+      severity: "error"
+    });
+  }
 
     const token = localStorage.getItem("token") || sessionStorage.getItem("token");
 
@@ -333,8 +348,8 @@ const UserDash = () => {
           Authorization: `Bearer ${token}`
         },
         body: JSON.stringify({
-          newDate: rescheduleData.newDate
-        })
+  newDate: selectedDateTime.toISOString()
+})
       });
 
       if (res.ok) {
@@ -720,7 +735,18 @@ const UserDash = () => {
                         Request Date:{" "}
                         {new Date(req.createdAt).toLocaleDateString()}
                       </div>
-
+                      {req.scheduledDate && (
+  <div style={{ fontSize: 13, color: "#0080AA", fontWeight: "bold" }}>
+    Scheduled:{" "}
+    {new Date(req.scheduledDate).toLocaleString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit"
+    })}
+  </div>
+)}
                       {req.status === "Accepted" && req.collectorName && (
                         <div style={{ fontSize: 13, color: "#28a745" }}>
                           Collector: {req.collectorName}
@@ -858,22 +884,35 @@ const UserDash = () => {
           <Typography variant="body2" sx={{ mb: 2 }}>
             Select a new date for your {rescheduleData.type}.
           </Typography>
+<TextField
+  type="date"
+  fullWidth
+  InputLabelProps={{ shrink: true }}
+  value={rescheduleData.newDate}
+  onChange={(e) =>
+    setRescheduleData({
+      ...rescheduleData,
+      newDate: e.target.value
+    })
+  }
+  inputProps={{
+    min: new Date().toISOString().split("T")[0]
+  }}
+  sx={{ mb: 2 }}
+/>
 
-          <TextField
-            type="date"
-            fullWidth
-            InputLabelProps={{ shrink: true }}
-            value={rescheduleData.newDate}
-            onChange={(e) =>
-              setRescheduleData({
-                ...rescheduleData,
-                newDate: e.target.value
-              })
-            }
-            inputProps={{
-              min: new Date().toISOString().split("T")[0]
-            }}
-          />
+<TextField
+  type="time"
+  fullWidth
+  InputLabelProps={{ shrink: true }}
+  value={rescheduleData.newTime}
+  onChange={(e) =>
+    setRescheduleData({
+      ...rescheduleData,
+      newTime: e.target.value
+    })
+  }
+/>
         </DialogContent>
 
         <DialogActions>
