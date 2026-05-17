@@ -93,6 +93,8 @@ const NewRecycleRequest = () => {
                           <Typography fontSize={14}>Condition: {r.condition}</Typography>
                           <Typography fontSize={14}>Collection Method: {r.requestType === "DropOff" ? "Drop-off" : "Pickup"}</Typography>
                           <Typography fontSize={14}>Address: {r.address}</Typography>
+                          <Typography fontSize={14}>Electronics Category: {r.deviceCategory}</Typography>
+                          <Typography fontSize={14}>Scheduled Date & Time: {r.dateTime ? new Date(r.dateTime).toLocaleString() : "Not scheduled"}</Typography>
                         </Box>
                         <Box>
                           <Typography fontWeight={600}><FcBusinessContact /> User Details</Typography>
@@ -109,6 +111,8 @@ const NewRecycleRequest = () => {
                     <>
                       <Typography fontSize={14}>Request Date: {new Date(r.createdAt).toLocaleDateString()}</Typography>
                       <Typography fontSize={14}>Condition: {r.condition}</Typography>
+                      <Typography fontSize={14}>Category: {r.deviceCategory}</Typography>
+                      <Typography fontSize={14}>Scheduled: {r.dateTime ? new Date(r.dateTime).toLocaleString() : "Not scheduled"}</Typography>
                       <Typography sx={{ mt: 1, color: '#1976D2', cursor: 'pointer', fontSize: 14 }} onClick={() => setOpenId(r._id)}>
                         More information
                       </Typography>
