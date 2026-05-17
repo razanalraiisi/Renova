@@ -141,9 +141,11 @@ const RequestHistory = () => {
     const headers = [
       "Request ID",
       "Device",
+      "Category",
       "Condition",
       "Status",
       "Request Type",
+      "Scheduled Date & Time",
       "Name",
       "Email",
       "Phone",
@@ -153,9 +155,11 @@ const RequestHistory = () => {
     const rows = filteredRequests.map(r => [
       r._id,
       r.device,
+      r.deviceCategory,
       r.condition,
       r.status,
       r.requestType,
+      r.dateTime ? new Date(r.dateTime).toLocaleString() : "Not scheduled",
       r.name,
       r.email,
       r.phone,
@@ -412,17 +416,19 @@ const RequestHistory = () => {
     // Prepare table data with user details
     const tableData = filteredRequests.map(r => [
       r.device,
+      r.deviceCategory,
       r.name,
       r.email,
       r.phone,
       r.requestType,
       r.status,
+      r.dateTime ? new Date(r.dateTime).toLocaleDateString() : "Not scheduled",
       new Date(r.createdAt).toLocaleDateString(),
     ]);
 
     // Add table with improved styling
     autoTable(doc, {
-      head: [['Device', 'Name', 'Email', 'Phone', 'Type', 'Status', 'Date']],
+      head: [['Device', 'Category', 'Name', 'Email', 'Phone', 'Type', 'Status', 'Scheduled', 'Date']],
       body: tableData,
       startY: yPosition,
       margin: { top: 10, right: 10, bottom: 10, left: 10 },
@@ -445,10 +451,12 @@ const RequestHistory = () => {
         0: { halign: 'left' },
         1: { halign: 'left' },
         2: { halign: 'left' },
-        3: { halign: 'center' },
+        3: { halign: 'left' },
         4: { halign: 'center' },
         5: { halign: 'center' },
         6: { halign: 'center' },
+        7: { halign: 'center' },
+        8: { halign: 'center' },
       },
     });
 
@@ -582,6 +590,14 @@ const RequestHistory = () => {
 
                               <Typography fontSize={14}>
                                 Collection Method: {r.requestType}
+                              </Typography>
+
+                              <Typography fontSize={14}>
+                                Electronics Category: {r.deviceCategory}
+                              </Typography>
+
+                              <Typography fontSize={14}>
+                                Scheduled Date & Time: {r.dateTime ? new Date(r.dateTime).toLocaleString() : "Not scheduled"}
                               </Typography>
                             </Box>
 

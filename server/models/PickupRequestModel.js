@@ -16,6 +16,9 @@ const pickupSchema = new mongoose.Schema({
   },
   device: String,
   condition: String,
+  dateTime: {
+    type: String
+  },
   rejectReason: String,
   requestType: {
     type: String,
