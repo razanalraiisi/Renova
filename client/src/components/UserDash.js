@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Navbar, NavbarBrand } from "reactstrap";
-import { FaArrowLeft, FaUser, FaClipboardList, FaSignOutAlt, FaBell, FaMoon, FaSun, FaCalendarAlt, FaFlag } from "react-icons/fa"; // Added FaFlag
+import { FaArrowLeft, FaUser, FaClipboardList, FaSignOutAlt, FaBell, FaMoon, FaSun, FaCalendarAlt, FaFlag, FaStar } from "react-icons/fa"; 
 import { useDispatch, useSelector } from "react-redux";
 import { updateUser, resetUser, resetState } from "../features/UserSlice.js";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as Yup from "yup";
-import { Box, Card, CardContent, Typography, Divider, Snackbar, Alert, Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField } from "@mui/material";
+import { Box, Card, CardContent, Typography, Divider, Snackbar, Alert, Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Rating } from "@mui/material"; 
 import logo from "../assets/logo.png";
 import "./Components.css";
 import jsPDF from "jspdf";
@@ -40,6 +40,16 @@ const UserDash = () => {
     collectorName: "",
     reason: "",
   });
+
+  // --- Rating States ---
+  const [ratingOpen, setRatingOpen] = useState(false);
+  const [ratingData, setRatingData] = useState({
+    requestId: "",
+    requestType: "",
+    collectorId: "",
+    collectorName: ""
+  });
+  const [ratingValue, setRatingValue] = useState(5);
  
   // Notifications
   const [notifOpen, setNotifOpen] = useState(false);
@@ -110,45 +120,37 @@ const UserDash = () => {
  
     try {
       const token = localStorage.getItem("token") || sessionStorage.getItem("token");
- 
       if (!token) return;
  
-      const pickupRes = await fetch(
-        "http://localhost:5000/api/pickups/user/requests",
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
- 
+      // 1. Fetch Pickups
+      const pickupRes = await fetch("http://localhost:5000/api/pickups/user/requests", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       const pickupData = await pickupRes.json();
+      
+      // Handle both raw array responses and object wrapper envelopes cleanly
+      const pickupRequests = Array.isArray(pickupData) 
+        ? pickupData 
+        : (pickupData && Array.isArray(pickupData.requests) ? pickupData.requests : []);
  
-      let pickupRequests = Array.isArray(pickupData)
-        ? pickupData
-        : pickupData.requests || [];
- 
-      const dropOffRes = await fetch(
-        "http://localhost:5000/api/dropoffs/user/requests",
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
- 
+      // 2. Fetch Dropoffs
+      const dropOffRes = await fetch("http://localhost:5000/api/dropoffs/user/requests", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       const dropOffData = await dropOffRes.json();
+      
+      const dropOffRequests = Array.isArray(dropOffData) 
+        ? dropOffData 
+        : (dropOffData && Array.isArray(dropOffData.requests) ? dropOffData.requests : []);
  
-      let dropOffRequests = Array.isArray(dropOffData)
-        ? dropOffData
-        : dropOffData.requests || [];
- 
+      // 3. Combine safely
       const allRequests = [...pickupRequests, ...dropOffRequests].sort(
         (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
       );
  
-      if (JSON.stringify(allRequests) !== JSON.stringify(requests)) {
-        setRequests(allRequests);
-      }
- 
+      setRequests(allRequests);
     } catch (err) {
-      console.error(err);
+      console.error("Frontend fetch error:", err);
       setRequests([]);
     } finally {
       setLoadingRequests(false);
@@ -348,8 +350,8 @@ const UserDash = () => {
           Authorization: `Bearer ${token}`
         },
         body: JSON.stringify({
-  newDate: selectedDateTime.toISOString()
-})
+          newDate: selectedDateTime.toISOString()
+        })
       });
  
       if (res.ok) {
@@ -444,6 +446,53 @@ const UserDash = () => {
       });
     }
   };
+
+  // --- Rating Logic ---
+  const handleRatingSubmit = async () => {
+    try {
+      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+      
+      const endpoint = ratingData.requestType === "DropOff"
+        ? `http://localhost:5000/api/dropoffs/rate/${ratingData.requestId}`
+        : `http://localhost:5000/api/pickups/rate/${ratingData.requestId}`;
+
+      const res = await fetch(endpoint, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          rating: ratingValue,
+          collectorId: ratingData.collectorId 
+        }),
+      });
+
+      if (res.ok) {
+        setSnackbar({
+          open: true,
+          message: "Thank you for rating the collector!",
+          severity: "success",
+        });
+        setRatingOpen(false);
+        fetchRequests(); 
+      } else {
+        const error = await res.json();
+        setSnackbar({
+          open: true,
+          message: error.message || "Failed to submit rating",
+          severity: "error",
+        });
+      }
+    } catch (err) {
+      console.error(err);
+      setSnackbar({
+        open: true,
+        message: "Server error.",
+        severity: "error",
+      });
+    }
+  };
  
   const handleLogout = () => {
     dispatch(resetUser());
@@ -486,13 +535,14 @@ const UserDash = () => {
     if (status === "Accepted") return "#28a745";
     if (status === "Rejected") return "#dc3545";
     if (status === "Canceled") return "#6c757d";
+    if (status === "Completed") return "#17a2b8"; 
  
     return "#9e9e9e";
   };
  
   const filteredRequests = requests.filter(req =>
-    req.device.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    req.requestType.toLowerCase().includes(searchTerm.toLowerCase())
+    req?.device?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    req?.requestType?.toLowerCase().includes(searchTerm.toLowerCase())
   );
  
   const downloadRequestsReport = () => {
@@ -747,7 +797,7 @@ const UserDash = () => {
     })}
   </div>
 )}
-                      {req.status === "Accepted" && req.collectorName && (
+                      {(req.status === "Accepted" || req.status === "Completed") && req.collectorName && (
                         <div style={{ fontSize: 13, color: "#28a745" }}>
                           Collector: {req.collectorName}
                         </div>
@@ -765,6 +815,14 @@ const UserDash = () => {
                           ? "Rejected"
                           : req.status}
                       </div>
+
+                      {/* Fallback check in case rating field is missing or undefined */}
+                      {req.status === "Completed" && req.rating !== undefined && req.rating !== null && (
+                        <div style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: 13, marginTop: 4 }}>
+                          <span style={{ fontWeight: "bold", color: "#555" }}>Your Rating:</span>
+                          <Rating value={Number(req.rating)} readOnly size="small" />
+                        </div>
+                      )}
  
                       <div
                         style={{
@@ -860,6 +918,37 @@ const UserDash = () => {
                             onClick={() => handleTryAgain(req._id)}
                           >
                             Try Again
+                          </button>
+                        )}
+
+                        {/* ✅ COMPLETED → RATE COLLECTOR */}
+                        {req.status === "Completed" && !req.rating && (
+                          <button
+                            onClick={() => {
+                              setRatingData({
+                                requestId: req._id,
+                                requestType: req.requestType,
+                                collectorId: req.collectorId || "", 
+                                collectorName: req.collectorName || "Collector"
+                              });
+                              setRatingValue(5); 
+                              setRatingOpen(true);
+                            }}
+                            style={{
+                              padding: '6px 12px',
+                              cursor: 'pointer',
+                              backgroundColor: '#ffc107',
+                              color: '#212529',
+                              border: 'none',
+                              borderRadius: '4px',
+                              fontWeight: 'bold',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '6px'
+                            }}
+                          >
+                            <FaStar />
+                            Rate Collector
                           </button>
                         )}
  
@@ -998,6 +1087,37 @@ const UserDash = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Rate Collector Dialog */}
+      <Dialog
+        open={ratingOpen}
+        onClose={() => setRatingOpen(false)}
+      >
+        <DialogTitle>Rate Collector</DialogTitle>
+        <DialogContent sx={{ pt: 2, minWidth: 350, display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+          <Typography variant="body1">
+            How would you rate <strong>{ratingData.collectorName}</strong>?
+          </Typography>
+          <Rating
+            name="collector-rating"
+            value={ratingValue}
+            onChange={(event, newValue) => {
+              setRatingValue(newValue);
+            }}
+            size="large"
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setRatingOpen(false)}>Cancel</Button>
+          <Button
+            onClick={handleRatingSubmit}
+            variant="contained"
+            color="primary"
+          >
+            Submit Rating
+          </Button>
+        </DialogActions>
+      </Dialog>
  
       {/* Snackbar */}
       <Snackbar
@@ -1028,4 +1148,3 @@ const UserDash = () => {
 };
  
 export default UserDash;
- 

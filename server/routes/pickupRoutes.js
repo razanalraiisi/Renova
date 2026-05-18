@@ -38,5 +38,5 @@ router.get("/history/:collectorId", getCollectorHistory);
 router.put("/accept/:id", protect, acceptPickupRequest);
 router.put("/reject/:id", protect, rejectPickupRequest);
 router.put("/complete/:id", protect, completePickupRequest);
-
+//router.put("/rate/:id", protect, ratePickup);
 export default router;

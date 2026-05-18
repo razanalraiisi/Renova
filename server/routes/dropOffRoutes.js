@@ -38,5 +38,5 @@ router.get("/history/:collectorId", protect, getCollectorDropOffHistory);
 router.put("/accept/:id", protect, acceptDropOffRequest);
 router.put("/reject/:id", protect, rejectDropOffRequest);
 router.put("/complete/:id", protect, completeDropOffRequest);
-
+//router.put("/rate/:id", protect, rateDropoff);
 export default router;
