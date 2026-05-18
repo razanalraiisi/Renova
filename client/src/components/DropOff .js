@@ -61,56 +61,74 @@ const DropOff = () => {
   };
 
   const isValidDateTime = (value) => {
-    if (!value) return false;
+  if (!value) return false;
 
-    const dt = new Date(value);
-    const now = new Date();
+  const dt = new Date(value);
+  const now = new Date();
 
-    const isSameDay =
-      dt.getFullYear() === now.getFullYear() &&
-      dt.getMonth() === now.getMonth() &&
-      dt.getDate() === now.getDate();
+  // no past date/time
+  if (dt <= now) return false;
 
-    if (dt <= now || isSameDay) return false;
-    if (isWeekend(dt)) return false;
+  // block Friday & Saturday
+  const day = dt.getDay();
+  if (day === 5 || day === 6) return false;
 
-    const hour = dt.getHours();
-    if (hour < 8 || hour > 17) return false;
+  // allowed hours only
+  const hour = dt.getHours();
+const minutes = dt.getMinutes();
 
-    return true;
-  };
+// allow 08:00 → 17:00 only
+if (
+  hour < 8 ||
+  hour > 17 ||
+  (hour === 17 && minutes > 0)
+) {
+  return false;
+}
+
+  return true;
+};
 
   const getMinDateTime = () => {
-    const d = new Date();
-    d.setDate(d.getDate() + 1);
-    d.setHours(8, 0, 0, 0);
-    return d.toISOString().slice(0, 16);
-  };
+  const now = new Date();
+
+  // if before 8 AM -> allow today at 8
+  if (now.getHours() < 8) {
+    now.setHours(8, 0, 0, 0);
+  } else {
+    // otherwise add 1 hour minimum
+    now.setHours(now.getHours() + 1);
+    now.setMinutes(0);
+    now.setSeconds(0);
+  }
+
+  // format WITHOUT timezone issue
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  const hours = String(now.getHours()).padStart(2, "0");
+  const mins = String(now.getMinutes()).padStart(2, "0");
+
+  return `${year}-${month}-${day}T${hours}:${mins}`;
+};
 
   // =========================
   // 🔥 NEW: HANDLE DATE CHANGE (UI BLOCK)
   // =========================
+const handleDateChange = (e) => {
+  const value = e.target.value;
 
-  const handleDateChange = (e) => {
-    const value = e.target.value;
-    if (!value) return;
+  setForm({
+    ...form,
+    dateTime: value
+  });
 
-    const dt = new Date(value);
-
-    const day = dt.getDay();
-    if (day === 5 || day === 6) {
-      alert("Friday and Saturday are not allowed.");
-      return;
-    }
-
-    const hour = dt.getHours();
-    if (hour < 8 || hour > 17) {
-      alert("Please select time between 08:00 and 17:00.");
-      return;
-    }
-
-    setForm({ ...form, dateTime: value });
-  };
+  // remove old error instantly
+  setErrors((prev) => ({
+    ...prev,
+    dateTime: ""
+  }));
+};
 
   // =========================
   // FETCH COLLECTORS
@@ -556,18 +574,13 @@ const DropOff = () => {
 
           <label style={styles.label}>Date & Time *</label>
           <input
-            type="datetime-local"
-            name="dateTime"
-            style={styles.input}
-            value={form.dateTime}
-            min={new Date(
-              new Date().setDate(new Date().getDate() + 1)
-            ).toISOString().slice(0, 10) + "T08:00"}
-            max={new Date(
-              new Date().setDate(new Date().getDate() + 30)
-            ).toISOString().slice(0, 10) + "T17:00"}
-            onChange={handleDateChange}
-          />
+  type="datetime-local"
+  name="dateTime"
+  style={styles.input}
+  value={form.dateTime}
+  min={getMinDateTime()}
+  onChange={handleDateChange}
+/>
           {errors.dateTime && <p style={styles.error}>{errors.dateTime}</p>}
 
           <label style={styles.label}>Device Image *</label>
