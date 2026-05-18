@@ -28,6 +28,8 @@ const CollectorProfile = () => {
   const [data, setData] = useState({
     companyName: "",
     logo: "",
+    companyDescription: "",
+    websiteUrl: "",
     basicInfo: {
       collectorId: "",
       collectorType: "",
@@ -113,6 +115,8 @@ const CollectorProfile = () => {
       setData({
         companyName: user.companyName || "",
         logo: user.pic || "",
+        companyDescription: user.companyDescription || "",
+        websiteUrl: user.websiteUrl || "",
         basicInfo: {
           collectorId: user.collectorId || "",
           collectorType: user.collectorType || "",
@@ -205,6 +209,20 @@ const CollectorProfile = () => {
       return "Address must be at least 5 characters.";
     }
 
+    if (data.companyDescription && data.companyDescription.trim().length > 300) {
+      return "Description cannot exceed 300 characters.";
+    }
+
+    if (data.websiteUrl && data.websiteUrl.trim()) {
+      const rawUrl = data.websiteUrl.trim();
+      const normalized = rawUrl.match(/^https?:\/\//i) ? rawUrl : `https://${rawUrl}`;
+      try {
+        new URL(normalized);
+      } catch {
+        return "Enter a valid website URL.";
+      }
+    }
+
     // Phone validation
     const phoneRegex = /^[279][0-9]{7}$/;
     if (!phoneRegex.test(phone)) {
@@ -237,6 +255,8 @@ const CollectorProfile = () => {
       openHr: data.basicInfo.workingHours.trim(),
       phone: data.basicInfo.phone.trim(),
       address: data.location.address.trim(),
+      companyDescription: data.companyDescription.trim(),
+      websiteUrl: data.websiteUrl.trim(),
       acceptedCategories: data.acceptedCategories
         .filter((c) => c.checked)
         .map((c) => c.name),
@@ -356,6 +376,27 @@ const CollectorProfile = () => {
                 />
 
                 <input value={data.basicInfo.email} disabled />
+
+                <textarea
+                  value={data.companyDescription}
+                  onChange={(e) => {
+                    setHasChanges(true);
+                    setData((prev) => ({ ...prev, companyDescription: e.target.value }));
+                  }}
+                  placeholder="Brief company description"
+                  rows={3}
+                  style={{ width: "100%", borderRadius: 8, padding: 10, marginTop: 10 }}
+                />
+
+                <input
+                  value={data.websiteUrl}
+                  onChange={(e) => {
+                    setHasChanges(true);
+                    setData((prev) => ({ ...prev, websiteUrl: e.target.value }));
+                  }}
+                  placeholder="Website URL"
+                  style={{ width: "100%", borderRadius: 8, padding: 10, marginTop: 10 }}
+                />
               </>
             ) : (
               <>
@@ -376,6 +417,24 @@ const CollectorProfile = () => {
                 </p>
                 <p>
                   <strong>Email:</strong> {data.basicInfo.email}
+                </p>
+                <p>
+                  <strong>Description:</strong> {data.companyDescription || "—"}
+                </p>
+                <p>
+                  <strong>Website:</strong>{" "}
+                  {data.websiteUrl ? (
+                    <a
+                      href={data.websiteUrl.match(/^https?:\/\//i) ? data.websiteUrl : `https://${data.websiteUrl}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{ color: "#006D90" }}
+                    >
+                      {data.websiteUrl}
+                    </a>
+                  ) : (
+                    "—"
+                  )}
                 </p>
               </>
             )}
