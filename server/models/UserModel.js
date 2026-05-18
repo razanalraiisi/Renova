@@ -20,6 +20,8 @@ const userSchema = new mongoose.Schema({
   openHr: { type: String },
   acceptedCategories: { type: [String], default: [] },
   address: { type: String },
+  companyDescription: { type: String },
+  websiteUrl: { type: String },
   // GEO LOCATION
   location: {
     lat: { type: Number },

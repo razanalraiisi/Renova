@@ -26,6 +26,21 @@ export const UserRegisterSchemaValidation = yup.object().shape({
     .required("Phone number is required")
     .matches(/^[279]\d{7}$/, "Omani number: 8 digits & starts with 2, 7 or 9"),
 
+  companyDescription: yup
+    .string()
+    .trim()
+    .notRequired()
+    .max(300, "Maximum 300 characters"),
+
+  websiteUrl: yup
+    .string()
+    .trim()
+    .notRequired()
+    .matches(
+      /^(|https?:\/\/)?[\w-]+(\.[\w-]+)+([/?#].*)?$/,
+      "Enter a valid website URL"
+    ),
+
   pic: yup
     .string()
     

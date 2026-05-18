@@ -93,6 +93,8 @@ export const registerCollector = async (req, res) => {
       collectorType,
       acceptedCategories = [],
       address,
+      companyDescription,
+      websiteUrl,
       location,
       locationConsent,
       openHr
@@ -117,6 +119,8 @@ export const registerCollector = async (req, res) => {
       collectorType,
       acceptedCategories,
       address,
+      companyDescription,
+      websiteUrl,
       openHr,
       location,
       locationConsent,
@@ -533,17 +537,36 @@ export const getApprovedCollectors = async (req, res) => {
 };
 export const updateUserProfile = async (req, res) => {
   try {
-    const { uname, phone, email } = req.body;
+    const {
+      uname,
+      phone,
+      email,
+      companyName,
+      collectorType,
+      openHr,
+      acceptedCategories,
+      address,
+      companyDescription,
+      websiteUrl,
+    } = req.body;
 
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    // Only allow normal users here
-    if (user.role !== "user") {
-      return res.status(403).json({ message: "Not authorized" });
+    if (user.role === "collector") {
+      user.companyName = companyName || user.companyName;
+      user.collectorType = collectorType || user.collectorType;
+      user.openHr = openHr || user.openHr;
+      user.phone = phone || user.phone;
+      user.acceptedCategories = acceptedCategories || user.acceptedCategories;
+      user.address = address || user.address;
+      user.companyDescription = companyDescription !== undefined ? companyDescription : user.companyDescription;
+      user.websiteUrl = websiteUrl !== undefined ? websiteUrl : user.websiteUrl;
+    } else {
+      user.uname = uname || user.uname;
+      user.phone = phone || user.phone;
+      user.email = email || user.email;
     }
-      user.uname = uname;
-      user.phone = phone;
 
     await user.save();
 
@@ -607,7 +630,7 @@ export const getCollectors = async (req, res) => {
     })
       .sort({ createdAt: -1 })
       .select(
-        "companyName address phone email collectorId collectorType openHr createdAt isApproved deactivatedAt"
+        "companyName address companyDescription websiteUrl phone email collectorId collectorType openHr createdAt isApproved deactivatedAt"
       )
       .lean();
 

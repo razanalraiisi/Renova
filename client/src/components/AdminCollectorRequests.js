@@ -141,13 +141,19 @@ const AdminCollectorRequests = () => {
                   <p style={{color:'#006D90'}}><strong>Type:</strong> {req.collectorType}</p>
                   <p style={{color:'#006D90'}}><strong>Opening Hours:</strong> {req.openHr}</p>
                   <p style={{color:'#006D90'}}><strong>Categories:</strong> {req.acceptedCategories.join(", ")}</p>
-                  <p style={{color:'#006D90'}}><strong>Address:</strong> {req.address}</p>
-                  <p style={{color:'#006D90'}}><strong>Registered On:</strong> {formatDate(req.createdAt)}</p>
-                </div>
-
-                <div>
-                  <h5><FcBusinessContact /> Contact Info</h5>
-                  <p style={{color:'#006D90'}}><strong>Email:</strong> {req.email}</p>
+                      <p style={{color:'#006D90'}}><strong>Description:</strong> {req.companyDescription || "—"}</p>
+                      <p style={{color:'#006D90'}}><strong>Website:</strong> {req.websiteUrl ? (
+                        <a
+                          href={req.websiteUrl.match(/^https?:\/\//i) ? req.websiteUrl : `https://${req.websiteUrl}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          style={{ color: '#006D90' }}
+                        >
+                          {req.websiteUrl}
+                        </a>
+                      ) : (
+                        "—"
+                      )}</p>
                   <p style={{color:'#006D90'}}><strong>Phone:</strong> {req.phone}</p>
                 </div>
               </div>

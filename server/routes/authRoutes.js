@@ -7,9 +7,8 @@ import {
   sendPasswordOtp,
   verifyPasswordOtp,
   resetPassword,
-  updateCollectorProfile,
-  getApprovedCollectors,
   updateUserProfile,
+  getApprovedCollectors,
 } from "../controllers/authController.js";
 import { geocodeAddress } from "../controllers/geocodeController.js";
  
@@ -25,9 +24,8 @@ router.post("/registerUser", registerUser);
 router.post("/registerCollector", registerCollector);
 router.post("/registerAdmin", registerAdmin);
 router.post("/login", login);
-router.put("/updateUser/:id", updateCollectorProfile);
-router.get("/admin/getApprovedCollectors", getApprovedCollectors);
 router.put("/updateUser/:id", updateUserProfile);
+router.get("/admin/getApprovedCollectors", getApprovedCollectors);
  
 // OTP / Forgot Password Routes
 router.post("/forgot-password", sendPasswordOtp);

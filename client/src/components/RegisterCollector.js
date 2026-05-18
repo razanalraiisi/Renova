@@ -25,6 +25,8 @@ const RegisterCollector = () => {
   const [uname, setUname] = useState("");
   const [pic, setPic] = useState("");
   const [phone, setPhone] = useState("");
+  const [companyDescription, setCompanyDescription] = useState("");
+  const [websiteUrl, setWebsiteUrl] = useState("");
   const [isUser, setIsUser] = useState(true);
 
   const [collectorType, setCollectorType] = useState("");
@@ -205,6 +207,8 @@ const RegisterCollector = () => {
       password,
       phone,
       pic: pic.trim() ? pic : DEFAULT_PROFILE_PIC,
+      companyDescription: companyDescription.trim(),
+      websiteUrl: websiteUrl.trim(),
       location: locationForSubmit,
       locationConsent,
     };
@@ -585,6 +589,37 @@ const RegisterCollector = () => {
                           onChange={(e) => setAddress(e.target.value)}
                           className={`form-control ${addressError ? "input-error" : ""}`}
                           placeholder="Address"
+                          style={{ borderRadius: "8px", padding: "10px" }}
+                        />
+                      </ValidationInput>
+                    </Col>
+                  </Row>
+
+                  <Row className="mt-3">
+                    <Col md={12}>
+                      <ValidationInput label="Company Description" error={errors.companyDescription?.message}>
+                        <textarea
+                          {...hookRegister("companyDescription")}
+                          value={companyDescription}
+                          onChange={(e) => setCompanyDescription(e.target.value)}
+                          placeholder="Shortly describe your company's services"
+                          className={`form-control ${errors.companyDescription ? "input-error" : ""}`}
+                          rows={3}
+                          style={{ borderRadius: "8px", padding: "10px" }}
+                        />
+                      </ValidationInput>
+                    </Col>
+                  </Row>
+
+                  <Row className="mt-3">
+                    <Col md={12}>
+                      <ValidationInput label="Website URL" error={errors.websiteUrl?.message}>
+                        <input
+                          {...hookRegister("websiteUrl")}
+                          value={websiteUrl}
+                          onChange={(e) => setWebsiteUrl(e.target.value)}
+                          placeholder="https://your-website.com"
+                          className={`form-control ${errors.websiteUrl ? "input-error" : ""}`}
                           style={{ borderRadius: "8px", padding: "10px" }}
                         />
                       </ValidationInput>

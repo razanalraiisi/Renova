@@ -111,6 +111,8 @@ export default function AdminManageCollectors() {
       "Status",
       "Company Name",
       "Address",
+      "Description",
+      "Website",
       "Phone",
       "Email",
       "Collector ID",
@@ -125,6 +127,8 @@ export default function AdminManageCollectors() {
       isDeactivated(c) ? "Deactivated" : "Active",
       c.companyName ?? "",
       c.address ?? "",
+      c.companyDescription ?? "",
+      c.websiteUrl ?? "",
       c.phone ?? "",
       c.email ?? "",
       c.collectorId ?? "",
@@ -391,8 +395,21 @@ export default function AdminManageCollectors() {
                   <div className="muted">Email: {c.email || "—"}</div>
                   <div className="muted">Opening hours: {c.openHr || "—"}</div>
                   <div className="muted">Collector ID: {c.collectorId || "—"}</div>
-                  <div className="muted">Type: {c.collectorType || "—"}</div>
+                  <div className="muted">Type: {c.collectorType || "—"}</div>                  <div className="muted">Description: {c.companyDescription || "—"}</div>
                   <div className="muted">
+                    Website: {c.websiteUrl ? (
+                      <a
+                        href={c.websiteUrl.match(/^https?:\/\//i) ? c.websiteUrl : `https://${c.websiteUrl}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        style={{ color: "#006D90" }}
+                      >
+                        {c.websiteUrl}
+                      </a>
+                    ) : (
+                      "—"
+                    )}
+                  </div>                  <div className="muted">
                     Registered: {formatTimeSince(c.createdAt)}
                     {c.createdAt && (
                       <span style={{ opacity: 0.85 }}>
