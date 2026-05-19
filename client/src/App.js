@@ -132,7 +132,7 @@ function App() {
             <Route path="/terms" element={<TermsConditions />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/admin/dashboard/graphs" element={<AdminDashboardGraphs />} />
-            <Route path="/admin/reports/user-reports" element={<AdminUserReports />} />
+            <Route path="admin/user-reports" element={<AdminUserReports />} />
             {/* Admin routes */}
             <Route path="/AdminCollectorRequests" element={<AdminCollectorRequests />} />
             <Route path="/admin/reports" element={<AdminReportsPage />} />

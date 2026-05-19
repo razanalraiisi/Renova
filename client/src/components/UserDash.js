@@ -35,11 +35,13 @@ const UserDash = () => {
  
   // --- Report Collector States ---
   const [reportOpen, setReportOpen] = useState(false);
+  const [collectors, setCollectors] = useState([]);
+  const [loadingCollectors, setLoadingCollectors] = useState(false);
   const [reportData, setReportData] = useState({
-  requestId: "",
-  centerName: "",
-  reason: "",
-});
+    requestId: "",
+    collectorId: "",
+    reason: "",
+  });
 
   // --- Rating States ---
   const [ratingOpen, setRatingOpen] = useState(false);
@@ -159,7 +161,23 @@ const UserDash = () => {
  
   useEffect(() => {
     fetchRequests();
+    fetchCollectors();
   }, [user]);
+
+  const fetchCollectors = async () => {
+    try {
+      setLoadingCollectors(true);
+      const res = await fetch("http://localhost:5000/api/reports/collectors");
+      if (res.ok) {
+        const data = await res.json();
+        setCollectors(data.collectors || []);
+      }
+    } catch (err) {
+      console.error("Error fetching collectors:", err);
+    } finally {
+      setLoadingCollectors(false);
+    }
+  };
  
   const handleCancel = (id) => {
     setCancelTargetId(id);
@@ -394,11 +412,19 @@ const UserDash = () => {
       });
     }
  
+    if (!reportData.collectorId) {
+      return setSnackbar({
+        open: true,
+        message: "Please select a recycling center",
+        severity: "warning",
+      });
+    }
+
     try {
       const token =
         localStorage.getItem("token") ||
         sessionStorage.getItem("token");
- 
+
       const res = await fetch(
         "http://localhost:5000/api/reports/create",
         {
@@ -408,34 +434,25 @@ const UserDash = () => {
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
-  ...reportData,
-  userId: user._id
+  requestId: reportData.requestId,
+  collectorId: reportData.collectorId,
+  reason: reportData.reason,
 }),
         }
       );
- 
+
       if (res.ok) {
         setSnackbar({
           open: true,
           message: "Report submitted successfully",
           severity: "success",
         });
- 
+
         setReportOpen(false);
- 
+
         setReportData({
           requestId: "",
-          centerName: "",
-          reason: "",
-        });
- 
-      } else {
-        const error = await res.json();
- 
-        setSnackbar({
-          open: true,
-          message: error.message || "Failed to submit report",
-          severity: "error",
+          collectorId: "",
         });
       }
  
@@ -731,7 +748,7 @@ const UserDash = () => {
     onClick={() => {
       setReportData({
         requestId: "",
-        centerName: "",
+        collectorId: "",
         reason: "",
       });
 
@@ -1070,43 +1087,31 @@ const UserDash = () => {
 
     {/* Center Names Dropdown */}
     <TextField
-  select
-  fullWidth
-  label="Select Recycling Center"
-  value={reportData.collectorName}
-  onChange={(e) =>
-    setReportData({
-      ...reportData,
-      collectorName: e.target.value,
-    })
-  }
-  sx={{ mb: 2 }}
->
-
-  <MenuItem value="Bawsher Waste Center">
-    Bawsher Waste Center
-  </MenuItem>
-
-  <MenuItem value="Beeah">
-    Beeah
-  </MenuItem>
-
-  <MenuItem value="Namaa">
-    Namaa
-  </MenuItem>
-
-  <MenuItem value="Muttrah Recycling Station">
-    Muttrah Recycling Station
-  </MenuItem>
-
-  <MenuItem value="rehamcol">
-    rehamcol
-  </MenuItem>
-
-  <MenuItem value="razanCol">
-    razanCol
-  </MenuItem>
-</TextField>
+      select
+      fullWidth
+      label="Select Recycling Center"
+      value={reportData.collectorId}
+      onChange={(e) =>
+        setReportData({
+          ...reportData,
+          collectorId: e.target.value,
+        })
+      }
+      sx={{ mb: 2 }}
+      disabled={loadingCollectors}
+    >
+      {loadingCollectors ? (
+        <MenuItem disabled>Loading collectors...</MenuItem>
+      ) : collectors.length === 0 ? (
+        <MenuItem disabled>No collectors available</MenuItem>
+      ) : (
+        collectors.map((collector) => (
+          <MenuItem key={collector._id} value={collector._id}>
+            {collector.companyName || collector.uname}
+          </MenuItem>
+        ))
+      )}
+    </TextField>
 
     {/* Reason */}
     <TextField

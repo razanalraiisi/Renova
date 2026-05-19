@@ -16,6 +16,9 @@ const reportSchema = new mongoose.Schema({
   reason: { type: String },
   notes: { type: String },
 
+  collectorId: { type: mongoose.Schema.Types.ObjectId, ref: 'Users' },
+  collectorName: { type: String },
+
   status: { type: String, default: 'open' }, // open | actioned | ignored
   actionTaken: { type: String },
   actionReason: { type: String },
