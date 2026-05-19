@@ -12,7 +12,7 @@ import logo from "../assets/logo.png";
 import "./Components.css";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
- 
+ import { MenuItem } from "@mui/material";
 const UserDash = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -36,10 +36,10 @@ const UserDash = () => {
   // --- Report Collector States ---
   const [reportOpen, setReportOpen] = useState(false);
   const [reportData, setReportData] = useState({
-    requestId: "",
-    collectorName: "",
-    reason: "",
-  });
+  requestId: "",
+  centerName: "",
+  reason: "",
+});
 
   // --- Rating States ---
   const [ratingOpen, setRatingOpen] = useState(false);
@@ -425,7 +425,7 @@ const UserDash = () => {
  
         setReportData({
           requestId: "",
-          collectorName: "",
+          centerName: "",
           reason: "",
         });
  
@@ -720,21 +720,55 @@ const UserDash = () => {
                   )}
                 </div>
  
-                <button
-                  onClick={downloadRequestsReport}
-                  style={{
-                    padding: "6px 12px",
-                    backgroundColor: "#0080AA",
-                    color: "white",
-                    border: "none",
-                    borderRadius: 6,
-                    cursor: "pointer",
-                    fontSize: 13,
-                    marginLeft: 10
-                  }}
-                >
-                  Download Report
-                </button>
+                <div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    gap: 10
+  }}
+>
+  <button
+    onClick={() => {
+      setReportData({
+        requestId: "",
+        centerName: "",
+        reason: "",
+      });
+
+      setReportOpen(true);
+    }}
+    style={{
+      padding: "6px 12px",
+      backgroundColor: "#dc3545",
+      color: "white",
+      border: "none",
+      borderRadius: 6,
+      cursor: "pointer",
+      fontSize: 13,
+      display: "flex",
+      alignItems: "center",
+      gap: 6
+    }}
+  >
+    <FaFlag />
+    Report Center
+  </button>
+
+  <button
+    onClick={downloadRequestsReport}
+    style={{
+      padding: "6px 12px",
+      backgroundColor: "#0080AA",
+      color: "white",
+      border: "none",
+      borderRadius: 6,
+      cursor: "pointer",
+      fontSize: 13
+    }}
+  >
+    Download Report
+  </button>
+</div>
               </div>
  
               {loadingRequests ? (
@@ -885,31 +919,7 @@ const UserDash = () => {
                               Reschedule
                             </button>
  
-                            <button
-                              onClick={() => {
-                                setReportData({
-                                  requestId: req._id,
-                                  collectorName: req.collectorName,
-                                  reason: "",
-                                });
- 
-                                setReportOpen(true);
-                              }}
-                              style={{
-                                padding: '6px 12px',
-                                cursor: 'pointer',
-                                backgroundColor: '#dc3545',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '4px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '6px'
-                              }}
-                            >
-                              <FaFlag />
-                              Report Collector
-                            </button>
+                            
                           </>
                         )}
  
@@ -1046,49 +1056,89 @@ const UserDash = () => {
           </Button>
         </DialogActions>
       </Dialog>
- 
-      {/* Report Collector Dialog */}
-      <Dialog
-        open={reportOpen}
-        onClose={() => setReportOpen(false)}
-      >
-        <DialogTitle>Report Collector</DialogTitle>
- 
-        <DialogContent sx={{ pt: 2, minWidth: 400 }}>
-          <Typography variant="body2" sx={{ mb: 2 }}>
-            Your feedback helps us improve the service.
-          </Typography>
- 
-          <TextField
-            fullWidth
-            multiline
-            rows={4}
-            label="Describe the issue"
-            placeholder="Example: The collector was late or behaved unprofessionally..."
-            value={reportData.reason}
-            onChange={(e) =>
-              setReportData({
-                ...reportData,
-                reason: e.target.value,
-              })
-            }
-          />
-        </DialogContent>
- 
-        <DialogActions>
-          <Button onClick={() => setReportOpen(false)}>
-            Cancel
-          </Button>
- 
-          <Button
-            onClick={handleReportSubmit}
-            variant="contained"
-            color="error"
-          >
-            Submit Report
-          </Button>
-        </DialogActions>
-      </Dialog>
+ {/* Report Collector Dialog */}
+<Dialog
+  open={reportOpen}
+  onClose={() => setReportOpen(false)}
+>
+  <DialogTitle>Report Collector</DialogTitle>
+
+  <DialogContent sx={{ pt: 2, minWidth: 400 }}>
+    <Typography variant="body2" sx={{ mb: 2 }}>
+      Please select the collector and describe the issue.
+    </Typography>
+
+    {/* Center Names Dropdown */}
+    <TextField
+  select
+  fullWidth
+  label="Select Recycling Center"
+  value={reportData.collectorName}
+  onChange={(e) =>
+    setReportData({
+      ...reportData,
+      collectorName: e.target.value,
+    })
+  }
+  sx={{ mb: 2 }}
+>
+
+  <MenuItem value="Bawsher Waste Center">
+    Bawsher Waste Center
+  </MenuItem>
+
+  <MenuItem value="Beeah">
+    Beeah
+  </MenuItem>
+
+  <MenuItem value="Namaa">
+    Namaa
+  </MenuItem>
+
+  <MenuItem value="Muttrah Recycling Station">
+    Muttrah Recycling Station
+  </MenuItem>
+
+  <MenuItem value="rehamcol">
+    rehamcol
+  </MenuItem>
+
+  <MenuItem value="razanCol">
+    razanCol
+  </MenuItem>
+</TextField>
+
+    {/* Reason */}
+    <TextField
+      fullWidth
+      multiline
+      rows={4}
+      label="Describe the issue"
+      placeholder="Example: Staff behavior, late processing, poor handling..."
+      value={reportData.reason}
+      onChange={(e) =>
+        setReportData({
+          ...reportData,
+          reason: e.target.value,
+        })
+      }
+    />
+  </DialogContent>
+
+  <DialogActions>
+    <Button onClick={() => setReportOpen(false)}>
+      Cancel
+    </Button>
+
+    <Button
+      onClick={handleReportSubmit}
+      variant="contained"
+      color="error"
+    >
+      Submit Report
+    </Button>
+  </DialogActions>
+</Dialog>
 
       {/* Rate Collector Dialog */}
       <Dialog
