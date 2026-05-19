@@ -55,6 +55,7 @@ import UpcyclesReport from "./components/UpcyclesReport";
 import UsersReport from "./components/UsersReport";
 import DisposalsRecyclesUpcyclesReport from "./components/DisposalsRecyclesUpcyclesReport";
 import AllRequestsReport from "./components/AllRequestsReport";
+import AiRecommendationReport from "./components/AiRecommendationReport";
 import AdminReportSummaryPage from "./components/AdminReportSummaryPage";
 import AdminThemeSync from "./components/AdminThemeSync.js";
 import CollectorNav from './components/CollectorNav.js';
@@ -163,6 +164,7 @@ function App() {
             <Route path="/admin/reports/collectors" element={<Navigate to="/admin/manage-collectors" replace />} />
             <Route path="/admin/reports/users" element={<UsersReport />} />
             <Route path="/admin/reports/all-requests" element={<AllRequestsReport />} />
+            <Route path="/admin/reports/ai-recommendations" element={<AiRecommendationReport />} />
             <Route path="/admin/reports/report-summary" element={<AdminReportSummaryPage />} />
             <Route path="/admin/profile" element={<AdminUserPage />} />
             <Route path="/admin/my-requests" element={<AdminMyRequests />} />

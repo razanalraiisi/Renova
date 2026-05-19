@@ -14,6 +14,7 @@ import {
 import {
   getAIRecommendation,
 } from "./aiService.js";
+import { logAIRecommendation } from "../services/aiAnalyticsService.js";
 
 import "./Components.css";
 
@@ -155,6 +156,20 @@ const DecideForMe = () => {
             condition
           );
 
+        let analyticsId = null;
+        try {
+          const logged = await logAIRecommendation({
+            aiRecommendation: aiResult.recommendation,
+            itemName: aiResult.detectedDevice,
+            itemCategory: aiResult.detectedDevice,
+            condition,
+            confidenceScore: aiResult.confidence,
+          });
+          analyticsId = logged?._id || null;
+        } catch (logErr) {
+          console.warn("AI analytics log failed:", logErr);
+        }
+
         navigate(
           "/decision-result",
           {
@@ -174,6 +189,8 @@ const DecideForMe = () => {
 
               condition:
                 condition,
+
+              analyticsId,
             },
           }
         );

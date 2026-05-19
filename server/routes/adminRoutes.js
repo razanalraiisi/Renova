@@ -10,6 +10,9 @@ import {
   getDashboardStats,
   getAdminProfile,
   updateAdminProfile,
+  adminVerifyCurrentPasswordAndSendOtp,
+  adminVerifyChangePasswordOtp,
+  adminCompletePasswordChange,
   getCollectorRequestsHistory,
   getAdminNotifications,
 } from "../controllers/authController.js";
@@ -25,6 +28,12 @@ import {
   getAdminAllRequests,
   getCollectorAcceptRejectChart,
 } from "../controllers/dashboardController.js";
+import {
+  createAIRecommendation,
+  finalizeAIRecommendation,
+  getAIRecommendations,
+  getAIRecommendationSummary,
+} from "../controllers/aiRecommendationController.js";
 import { verifyAdmin } from "../middleware/authMiddleware.js";
 import {
   getFAQs,
@@ -40,6 +49,10 @@ router.get("/chart-data", getChartData);
 router.get("/chart-collector-accept-reject", getCollectorAcceptRejectChart);
 router.get("/report-requests", getAdminRequestsByCategory);
 router.get("/report-requests-all", getAdminAllRequests);
+router.get("/ai-recommendations/summary", getAIRecommendationSummary);
+router.get("/ai-recommendations", getAIRecommendations);
+router.post("/ai-recommendations", createAIRecommendation);
+router.patch("/ai-recommendations/:id/finalize", finalizeAIRecommendation);
 router.get("/pendingCollectors", getPendingCollectors);
 router.get("/notifications", getAdminNotifications);
 router.get("/users", getUsers);
@@ -52,6 +65,9 @@ router.post("/rejectCollector/:id", rejectCollector);
 // Admin profile (protected)
 router.get("/profile", verifyAdmin, getAdminProfile);
 router.put("/profile", verifyAdmin, updateAdminProfile);
+router.post("/profile/change-password/verify-current", verifyAdmin, adminVerifyCurrentPasswordAndSendOtp);
+router.post("/profile/change-password/verify-otp", verifyAdmin, adminVerifyChangePasswordOtp);
+router.post("/profile/change-password/complete", verifyAdmin, adminCompletePasswordChange);
 
 // Collector registration requests history (all: pending + approved)
 router.get("/collector-requests-history", getCollectorRequestsHistory);

@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "reactstrap";
+import AdminTopbar from "./AdminTopbar";
+import "./AdminPages.css";
+import "./AdminReports.css";
+import "./Components.css";
 
 const API_URL = "http://localhost:5000/api/reports";
 
@@ -14,7 +18,6 @@ export default function AdminUserReports() {
   const token =
     localStorage.getItem("token") || sessionStorage.getItem("token");
 
-  // Fetch reports
   useEffect(() => {
     const fetchReports = async () => {
       try {
@@ -36,9 +39,8 @@ export default function AdminUserReports() {
     };
 
     fetchReports();
-  }, []);
+  }, [token]);
 
-  // IGNORE
   const handleIgnore = async (id) => {
     await fetch(`${API_URL}/${id}/ignore`, {
       method: "POST",
@@ -52,7 +54,6 @@ export default function AdminUserReports() {
     );
   };
 
-  // DEACTIVATE
   const handleDeactivate = async (id) => {
     await fetch(`${API_URL}/${id}/deactivate`, {
       method: "POST",
@@ -67,84 +68,88 @@ export default function AdminUserReports() {
   };
 
   return (
-    <div style={{ padding: "20px" }}>
-      {/* HEADER */}
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <h3>User & Collector Reports</h3>
+    <div className="adminPage">
+      <AdminTopbar />
 
-        <Button color="secondary" onClick={() => navigate("/admin/dashboard")}>
-          Back
-        </Button>
-      </div>
-
-      {/* STATES */}
-      {loading && <p>Loading reports...</p>}
-      {error && <p style={{ color: "red" }}>{error}</p>}
-
-      {!loading && reports.length === 0 && (
-        <p>No reports found.</p>
-      )}
-
-      {/* REPORTS */}
-      <div style={{ marginTop: 20 }}>
-        {reports.map((r) => (
-          <div
-            key={r._id}
-            style={{
-              border: "1px solid #ddd",
-              padding: "15px",
-              borderRadius: "8px",
-              marginBottom: "10px",
-              background: "#fff",
-            }}
-          >
-            <h5>
-              Report Type: {r.type || "unknown"} | Status: {r.status}
-            </h5>
-
-            <p><strong>Reporter:</strong> {r.reporterName || "Unknown"} ({r.reporterRole})</p>
-
-            <p>
-              <strong>Reported:</strong>{" "}
-              {r.reportedName || "Unknown"} ({r.reportedRole})
-            </p>
-
-            <p>
-              <strong>Reason:</strong> {r.reason}
-            </p>
-
-            <p>
-              <strong>Request ID:</strong> {r.requestId || "—"}
-            </p>
-
-            <p style={{ fontSize: 12, color: "#666" }}>
-              {r.createdAt
-                ? new Date(r.createdAt).toLocaleString()
-                : "—"}
-            </p>
-
-            {/* ACTION BUTTONS */}
-            <div style={{ marginTop: "10px", display: "flex", gap: "10px" }}>
-              <Button
-                color="danger"
-                size="sm"
-                onClick={() => handleDeactivate(r._id)}
-                disabled={r.status !== "open"}
+      <div className="adminBody">
+        <div className="adminCardWrap adminUserReportsWrap">
+          <div className="adminUserReportsHeader">
+            <div className="reportsBackRow adminUserReportsBackRow">
+              <button
+                type="button"
+                className="reportsBackBtn"
+                onClick={() => navigate("/admin/dashboard")}
               >
-                Deactivate
-              </Button>
-
-              <Button
-                color="secondary"
-                size="sm"
-                onClick={() => handleIgnore(r._id)}
-                disabled={r.status !== "open"}
-              >
-                Ignore
-              </Button>
+                ← Back
+              </button>
             </div>
+            <h3 className="adminUserReportsTitle">User &amp; Collector Reports</h3>
           </div>
-        ))}
+
+          {loading && <p className="muted">Loading reports…</p>}
+          {error && <p style={{ color: "red" }}>{error}</p>}
+
+          {!loading && reports.length === 0 && (
+            <p className="muted">No reports found.</p>
+          )}
+
+          <div className="adminUserReportsList">
+            {reports.map((r) => (
+              <div
+                key={r._id}
+                className="reportCard adminUserReportCard"
+              >
+                <h5>
+                  Report Type: {r.type || "unknown"} | Status: {r.status}
+                </h5>
+
+                <p>
+                  <strong>Reporter:</strong> {r.reporterName || "Unknown"} (
+                  {r.reporterRole})
+                </p>
+
+                <p>
+                  <strong>Reported:</strong>{" "}
+                  {r.reportedName || "Unknown"} ({r.reportedRole})
+                </p>
+
+                <p>
+                  <strong>Reason:</strong> {r.reason}
+                </p>
+
+                <p>
+                  <strong>Request ID:</strong> {r.requestId || "—"}
+                </p>
+
+                <p className="muted" style={{ fontSize: 12 }}>
+                  {r.createdAt
+                    ? new Date(r.createdAt).toLocaleString()
+                    : "—"}
+                </p>
+
+                <div className="adminUserReportActions">
+                  <Button
+                    color="danger"
+                    size="sm"
+                    onClick={() => handleDeactivate(r._id)}
+                    disabled={r.status !== "open"}
+                  >
+                    Deactivate
+                  </Button>
+
+                  <Button
+                    color="secondary"
+                    size="sm"
+                    onClick={() => handleIgnore(r._id)}
+                    disabled={r.status !== "open"}
+                  >
+                    Ignore
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );

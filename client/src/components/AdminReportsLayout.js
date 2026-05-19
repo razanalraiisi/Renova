@@ -32,10 +32,17 @@ export default function AdminReportsLayout({
   onFilterReset,
   /** Adds a Status dropdown (Pending / Accepted / Rejected / Completed) */
   showStatusFilter = false,
-  /** Request category: Dispose / Recycle / Upcycle */
+  /** Request category: Dispose / Recycle / Upcycle (or custom options) */
   showCategoryFilter = false,
+  categoryFilterLabel = "Category",
+  categoryFilterOptions = null,
   /** Pickup vs drop-off */
   showRequestSourceFilter = false,
+  /** AI analytics: recommendation type filter */
+  showAiRecommendationFilter = false,
+  /** AI analytics: followed / ignored / pending */
+  showFollowedFilter = false,
+  itemFilterLabel = "Item",
   /** Rich report: summary stat cards (e.g. RenovaReportSummaryCards) */
   summarySlot = null,
   /** Rich report: charts row (e.g. RenovaAdminRequestCharts) */
@@ -57,6 +64,8 @@ export default function AdminReportsLayout({
   const [status, setStatus] = useState("");
   const [requestCategory, setRequestCategory] = useState("");
   const [requestSource, setRequestSource] = useState("");
+  const [aiRecommendation, setAiRecommendation] = useState("");
+  const [followedFilter, setFollowedFilter] = useState("");
 
   /** When parent omits `searchValue`, keep query locally so typing always updates the field and notifies the parent. */
   const [localSearchDraft, setLocalSearchDraft] = useState("");
@@ -70,6 +79,15 @@ export default function AdminReportsLayout({
     onSearchChange?.(v);
   };
 
+  const defaultCategoryOptions = [
+    { value: "", label: "All" },
+    { value: "Dispose", label: "Dispose" },
+    { value: "Recycle", label: "Recycle" },
+    { value: "Upcycle", label: "Upcycle" },
+  ];
+
+  const categoryOptions = categoryFilterOptions ?? defaultCategoryOptions;
+
   const apply = () => {
     onFilterApply?.({
       date,
@@ -78,6 +96,8 @@ export default function AdminReportsLayout({
       status,
       category: requestCategory,
       source: requestSource,
+      recommendation: aiRecommendation,
+      followed: followedFilter,
     });
   };
 
@@ -88,6 +108,8 @@ export default function AdminReportsLayout({
     setStatus("");
     setRequestCategory("");
     setRequestSource("");
+    setAiRecommendation("");
+    setFollowedFilter("");
     onFilterReset?.();
   };
 
@@ -208,7 +230,7 @@ export default function AdminReportsLayout({
                     </div>
 
                     <div className="filterRow">
-                      <div className="filterFieldLabel">Item:</div>
+                      <div className="filterFieldLabel">{itemFilterLabel}:</div>
                       <select
                         className="filterInput"
                         value={item}
@@ -258,16 +280,49 @@ export default function AdminReportsLayout({
 
                     {showCategoryFilter && (
                       <div className="filterRow">
-                        <div className="filterFieldLabel">Category:</div>
+                        <div className="filterFieldLabel">{categoryFilterLabel}:</div>
                         <select
                           className="filterInput"
                           value={requestCategory}
                           onChange={(e) => setRequestCategory(e.target.value)}
                         >
+                          {categoryOptions.map((opt) => (
+                            <option key={opt.value || "all"} value={opt.value}>
+                              {opt.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+
+                    {showAiRecommendationFilter && (
+                      <div className="filterRow">
+                        <div className="filterFieldLabel">Recommendation:</div>
+                        <select
+                          className="filterInput"
+                          value={aiRecommendation}
+                          onChange={(e) => setAiRecommendation(e.target.value)}
+                        >
                           <option value="">All</option>
                           <option value="Dispose">Dispose</option>
                           <option value="Recycle">Recycle</option>
                           <option value="Upcycle">Upcycle</option>
+                        </select>
+                      </div>
+                    )}
+
+                    {showFollowedFilter && (
+                      <div className="filterRow">
+                        <div className="filterFieldLabel">Followed:</div>
+                        <select
+                          className="filterInput"
+                          value={followedFilter}
+                          onChange={(e) => setFollowedFilter(e.target.value)}
+                        >
+                          <option value="">All</option>
+                          <option value="yes">Followed</option>
+                          <option value="no">Ignored</option>
+                          <option value="pending">Pending</option>
                         </select>
                       </div>
                     )}

@@ -4,8 +4,13 @@ import AdminReportsLayout from "./AdminReportsLayout";
 import RenovaReportSummaryCards from "./RenovaReportSummaryCards";
 import RenovaAdminUsersCharts from "./RenovaAdminUsersCharts";
 import { downloadAdminUsersReportPdf } from "../utils/adminUsersReportPdf.js";
+import {
+  findMostActiveUser,
+  filterRequestsForUsers,
+} from "../utils/adminUsersReportStats.js";
 
 const API_URL = "http://localhost:5000/admin/users";
+const API_REQUESTS = "http://localhost:5000/admin/report-requests-all";
 const UPLOADS_BASE = "http://localhost:5000/uploads";
 const PAGE_SIZE = 10;
 
@@ -46,6 +51,7 @@ function profileImageSrc(pic) {
 export default function UsersReport() {
   const navigate = useNavigate();
   const [users, setUsers] = useState([]);
+  const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -56,13 +62,23 @@ export default function UsersReport() {
     const fetchUsers = async () => {
       try {
         setError(null);
-        const res = await fetch(API_URL);
-        if (!res.ok) throw new Error("Failed to load users");
-        const data = await res.json();
-        setUsers(data);
+        const [usersRes, requestsRes] = await Promise.all([
+          fetch(API_URL),
+          fetch(API_REQUESTS),
+        ]);
+        if (!usersRes.ok) throw new Error("Failed to load users");
+        const data = await usersRes.json();
+        setUsers(Array.isArray(data) ? data : []);
+        if (requestsRes.ok) {
+          const reqData = await requestsRes.json();
+          setRequests(Array.isArray(reqData) ? reqData : []);
+        } else {
+          setRequests([]);
+        }
       } catch (err) {
         setError(err.message || "Something went wrong");
         setUsers([]);
+        setRequests([]);
       } finally {
         setLoading(false);
       }
@@ -78,6 +94,11 @@ export default function UsersReport() {
   const filteredUsers = searchTerm.trim()
     ? users.filter((u) => matchesSearch(u, searchTerm))
     : users;
+
+  const filteredRequests = useMemo(
+    () => filterRequestsForUsers(filteredUsers, requests),
+    [filteredUsers, requests]
+  );
 
   const handleDownload = useCallback(() => {
     const headers = ["Name", "Email", "Phone", "User ID", "Created At"];
@@ -106,7 +127,16 @@ export default function UsersReport() {
   const remainingCount = filteredUsers.length - visibleCount;
 
   const summaryCards = useMemo(() => {
+    const mostActive = findMostActiveUser(filteredUsers, filteredRequests);
     return [
+      {
+        label: "Most Active User",
+        value: mostActive.name,
+        hint:
+          mostActive.count > 0
+            ? `${mostActive.count} request${mostActive.count === 1 ? "" : "s"}`
+            : "No requests yet",
+      },
       { label: "Total in database", value: users.length },
       {
         label: "Matching filter",
@@ -115,7 +145,7 @@ export default function UsersReport() {
       },
       { label: "Listed on screen", value: visibleUsers.length, hint: hasMoreUsers ? "Use View more" : "All matches visible" },
     ];
-  }, [users.length, filteredUsers.length, searchTerm, visibleUsers.length, hasMoreUsers]);
+  }, [filteredUsers, filteredRequests, users.length, searchTerm, visibleUsers.length, hasMoreUsers]);
 
   const handleDownloadPdf = useCallback(async () => {
     const ok = await downloadAdminUsersReportPdf({
@@ -149,7 +179,9 @@ export default function UsersReport() {
       }
       viewMoreDisabled={!hasMoreUsers}
       summarySlot={<RenovaReportSummaryCards cards={summaryCards} />}
-      chartsSlot={<RenovaAdminUsersCharts users={filteredUsers} />}
+      chartsSlot={
+        <RenovaAdminUsersCharts users={filteredUsers} requests={filteredRequests} />
+      }
     >
       {loading && <div className="muted">Loading users...</div>}
       {error && <div className="muted" style={{ color: "#c00" }}>{error}</div>}

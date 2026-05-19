@@ -522,3 +522,109 @@
 [data-admin-theme="dark"] .au-cancel-btn:hover {
   background: #4a4e52;
 }
+
+/* Change password (profile card) */
+.au-pw-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.au-pw-lock-icon {
+  font-size: 28px;
+  color: #0080aa;
+}
+
+.au-pw-fields {
+  margin-top: 8px;
+}
+
+.au-pw-step-label {
+  margin: 0 0 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #0080aa;
+}
+
+.au-pw-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.au-pw-input-wrap .au-input {
+  width: 100%;
+  padding-right: 40px;
+}
+
+.au-pw-toggle {
+  position: absolute;
+  right: 8px;
+  background: none;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.au-pw-toggle:hover {
+  color: #0080aa;
+}
+
+.au-otp-input {
+  letter-spacing: 0.25em;
+  font-weight: 600;
+  max-width: 200px;
+}
+
+.au-pw-hint {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.au-pw-msg {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.au-pw-msg--success {
+  background: #e6f7fb;
+  color: #0080aa;
+}
+
+.au-pw-msg--error {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+[data-admin-theme="dark"] .au-pw-step-label,
+[data-admin-theme="dark"] .au-pw-lock-icon {
+  color: #7dd3e8;
+}
+
+[data-admin-theme="dark"] .au-pw-hint {
+  color: #9aa0a6;
+}
+
+[data-admin-theme="dark"] .au-pw-msg--success {
+  background: #0f3d4a;
+  color: #7dd3e8;
+}
+
+[data-admin-theme="dark"] .au-pw-msg--error {
+  background: #3d1f1f;
+  color: #f87171;
+}
+
+[data-admin-theme="dark"] .au-pw-toggle {
+  color: #9aa0a6;
+}
+
+[data-admin-theme="dark"] .au-pw-toggle:hover {
+  color: #7dd3e8;
+}

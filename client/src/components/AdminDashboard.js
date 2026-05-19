@@ -69,6 +69,7 @@ const API_CHART_DATA = "http://localhost:5000/admin/chart-data";
 const API_INSIGHTS = "http://localhost:5000/api/reports/insights";
 const API_ALL_REQUESTS = "http://localhost:5000/admin/report-requests-all";
 const API_COLLECTORS = "http://localhost:5000/admin/collectors";
+const API_AI_SUMMARY = "http://localhost:5000/admin/ai-recommendations/summary";
 
 /** Same bucketing as manage-collectors “Collectors by type” bar chart. */
 function buildCollectorsByTypeBarData(collectors) {
@@ -198,6 +199,14 @@ const AdminDashboard = () => {
   const [insights, setInsights] = useState(() => defaultInsights());
   const [insightsLoading, setInsightsLoading] = useState(true);
 
+  const [aiSummary, setAiSummary] = useState({
+    totalUses: 0,
+    mostSuggestedAction: "—",
+    followRatePercent: 0,
+    uniqueUsers: 0,
+  });
+  const [aiSummaryLoading, setAiSummaryLoading] = useState(true);
+
   useEffect(() => {
     const fetchInsights = async () => {
       try {
@@ -230,6 +239,28 @@ const AdminDashboard = () => {
       }
     };
     fetchInsights();
+  }, []);
+
+  useEffect(() => {
+    const fetchAiSummary = async () => {
+      try {
+        const res = await fetch(API_AI_SUMMARY);
+        if (res.ok) {
+          const data = await res.json();
+          setAiSummary({
+            totalUses: data.totalUses ?? 0,
+            mostSuggestedAction: data.mostSuggestedAction ?? "—",
+            followRatePercent: data.followRatePercent ?? 0,
+            uniqueUsers: data.uniqueUsers ?? 0,
+          });
+        }
+      } catch (err) {
+        console.error("Failed to load AI recommendation summary", err);
+      } finally {
+        setAiSummaryLoading(false);
+      }
+    };
+    fetchAiSummary();
   }, []);
 
   const handleDownloadInsightsPdf = useCallback(() => {
@@ -717,7 +748,17 @@ const AdminDashboard = () => {
             buttonText="View Reports"
             onClick={() => navigate("/admin/user-reports")}
           />
-          
+          <SideCard
+            title="Decide For Me History"
+            lines={[
+              `Total AI uses: ${aiSummaryLoading ? "…" : aiSummary.totalUses}`,
+              `Most suggested: ${aiSummaryLoading ? "…" : aiSummary.mostSuggestedAction}`,
+              `Follow rate: ${aiSummaryLoading ? "…" : `${aiSummary.followRatePercent}%`}`,
+              `Unique users: ${aiSummaryLoading ? "…" : aiSummary.uniqueUsers}`,
+            ]}
+            buttonText="View Analytics"
+            onClick={() => navigate("/admin/reports/ai-recommendations")}
+          />
         </Col>
       </Row>
       

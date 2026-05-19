@@ -2,6 +2,67 @@
   margin-bottom: 10px;
 }
 
+.adminUserReportsWrap {
+  padding: 20px 24px;
+}
+
+.adminUserReportsHeader {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.adminUserReportsBackRow {
+  margin-bottom: 0;
+  justify-self: start;
+}
+
+.adminUserReportsTitle {
+  grid-column: 2;
+  margin: 0;
+  text-align: center;
+  font-weight: 800;
+  font-size: 1.17rem;
+  color: #006d90;
+}
+
+.adminUserReportsList {
+  margin-top: 8px;
+}
+
+.adminUserReportCard {
+  margin-bottom: 10px;
+}
+
+.adminUserReportActions {
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
+}
+
+@media (max-width: 640px) {
+  .adminUserReportsHeader {
+    grid-template-columns: 1fr;
+    justify-items: stretch;
+  }
+
+  .adminUserReportsBackRow {
+    justify-self: stretch;
+  }
+
+  .adminUserReportsBackRow .reportsBackBtn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .adminUserReportsTitle {
+    grid-column: 1;
+    order: -1;
+  }
+}
+
 .reportsBackBtn {
   display: inline-flex;
   align-items: center;

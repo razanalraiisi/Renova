@@ -7,6 +7,7 @@ export default function AdminReportsPage() {
   const cards = [
     { title: "Users Report", path: "/admin/reports/users" },
     { title: "All Requests", path: "/admin/reports/all-requests" },
+    { title: "Decide For Me History", path: "/admin/reports/ai-recommendations" },
     { title: "Recycles", path: "/admin/reports/recycles" },
     { title: "Disposals", path: "/admin/reports/disposals" },
     { title: "Upcycles", path: "/admin/reports/upcycles" },

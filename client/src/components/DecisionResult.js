@@ -8,6 +8,7 @@ import upcycleImg from "../assets/Upcycle.png";
 import disposeImg from "../assets/Dispose.png";
 
 import "./Components.css";
+import { finalizeAIRecommendation } from "../services/aiAnalyticsService.js";
 
 
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
@@ -28,7 +29,7 @@ const DecisionResult = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { recommendation, condition, detectedDevice, confidence } =
+  const { recommendation, condition, detectedDevice, confidence, analyticsId } =
     location.state || {};
 
   
@@ -441,12 +442,26 @@ const DecisionResult = () => {
 
 
 
-const handlePickup = () => {
+const recordFinalChoice = async (userFinalChoice, requestMethod) => {
+  if (!analyticsId) return;
+  try {
+    await finalizeAIRecommendation(analyticsId, {
+      userFinalChoice,
+      requestMethod,
+    });
+  } catch (err) {
+    console.warn("AI analytics finalize failed:", err);
+  }
+};
+
+const handlePickup = (cardName) => {
+  const finalChoice = cardName || recommendation;
+  recordFinalChoice(finalChoice, "pickup");
   navigate("/PickupRequest", {
     state: {
       fromDecision: true,
       lockCollector: true,
-      recommendation,
+      recommendation: finalChoice,
       assignedCollectorId: matchedCollector?._id || matchedCollector?.collectorId || null,
       assignedCollectorName: matchedCollector?.companyName || null,
       collectorLat: matchedCollector?.location?.lat || null,
@@ -455,12 +470,14 @@ const handlePickup = () => {
   });
 };
 
-const handleDropOff = () => {
+const handleDropOff = (cardName) => {
+  const finalChoice = cardName || recommendation;
+  recordFinalChoice(finalChoice, "dropoff");
   navigate("/DropOff", {
     state: {
       fromDecision: true,
       lockCollector: true,
-      category: recommendation || "DropOff",
+      category: finalChoice || "DropOff",
       assignedCollectorId: matchedCollector?._id || matchedCollector?.collectorId || null,
       assignedCollectorName: matchedCollector?.companyName || null,
       collectorLat: matchedCollector?.location?.lat || null,
@@ -730,14 +747,14 @@ const handleDropOff = () => {
                 <div className="dr-cardButtons">
                   <button
                     className="dr-cardButton dr-pickupBtn"
-                    onClick={handlePickup}
+                    onClick={() => handlePickup(card.name)}
                     disabled={loadingCollectors}
                   >
                     Pick Up
                   </button>
                   <button
                     className="dr-cardButton dr-dropoffBtn"
-                    onClick={handleDropOff}
+                    onClick={() => handleDropOff(card.name)}
                     disabled={loadingCollectors}
                   >
                     Drop Off

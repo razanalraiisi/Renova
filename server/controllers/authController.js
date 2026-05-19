@@ -833,6 +833,126 @@ export const updateAdminProfile = async (req, res) => {
   }
 };
 
+/** Step 1: verify current password and email OTP (logged-in admin). */
+export const adminVerifyCurrentPasswordAndSendOtp = async (req, res) => {
+  try {
+    const currentPassword = req.body?.currentPassword;
+    if (!currentPassword) {
+      return res.status(400).json({ message: "Current password is required." });
+    }
+
+    const admin = await User.findById(req.user._id);
+    if (!admin || admin.role !== "admin") {
+      return res.status(404).json({ message: "Admin not found." });
+    }
+
+    const match = await bcrypt.compare(String(currentPassword), admin.password);
+    if (!match) {
+      return res.status(400).json({ message: "Current password is incorrect." });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    admin.otp = otp;
+    admin.otpExpires = new Date(Date.now() + 5 * 60 * 1000);
+    await admin.save();
+
+    const html = `
+      <div style="font-family: Arial; padding: 20px;">
+        <h2 style="color:#0080AA;">Change your password</h2>
+        <p>Use this verification code to confirm your ReNova admin password change:</p>
+        <h1 style="letter-spacing: 5px;">${otp}</h1>
+        <p>This code expires in <strong>5 minutes</strong>.</p>
+      </div>
+    `;
+
+    try {
+      await sendEmail(admin.email, "ReNova admin password change code", html);
+    } catch (mailErr) {
+      admin.otp = undefined;
+      admin.otpExpires = undefined;
+      await admin.save();
+      console.error(mailErr);
+      return res.status(503).json({
+        message: mailErr.message || "Could not send email. Check server email settings.",
+      });
+    }
+
+    res.json({
+      message: "Current password verified. Check your email for a 6-digit code.",
+      email: admin.email,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error." });
+  }
+};
+
+/** Step 2: verify OTP for admin password change. */
+export const adminVerifyChangePasswordOtp = async (req, res) => {
+  try {
+    const otp = String(req.body?.otp || "").trim();
+    if (!otp || otp.length !== 6) {
+      return res.status(400).json({ message: "OTP must be 6 digits." });
+    }
+
+    const admin = await User.findById(req.user._id);
+    if (!admin || admin.role !== "admin") {
+      return res.status(404).json({ message: "Admin not found." });
+    }
+
+    if (String(admin.otp || "") !== otp) {
+      return res.status(400).json({ message: "Invalid code." });
+    }
+
+    if (!admin.otpExpires || new Date(admin.otpExpires).getTime() < Date.now()) {
+      return res.status(400).json({ message: "Code has expired. Verify your current password again." });
+    }
+
+    res.json({ message: "Code verified. You can set a new password." });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error." });
+  }
+};
+
+/** Step 3: set new password after OTP verified (session still valid via otp on user). */
+export const adminCompletePasswordChange = async (req, res) => {
+  try {
+    const newPassword = req.body?.newPassword;
+    if (!newPassword) {
+      return res.status(400).json({ message: "New password is required." });
+    }
+
+    const admin = await User.findById(req.user._id);
+    if (!admin || admin.role !== "admin") {
+      return res.status(404).json({ message: "Admin not found." });
+    }
+
+    if (!admin.otp || !admin.otpExpires || new Date(admin.otpExpires).getTime() < Date.now()) {
+      return res.status(400).json({
+        message: "Verification expired. Start again from your current password.",
+      });
+    }
+
+    const isSamePassword = await bcrypt.compare(newPassword, admin.password);
+    if (isSamePassword) {
+      return res.status(400).json({
+        message: "New password cannot be the same as the current password.",
+      });
+    }
+
+    admin.password = await bcrypt.hash(newPassword, 10);
+    admin.otp = null;
+    admin.otpExpires = null;
+    await admin.save();
+
+    res.json({ message: "Password has been changed successfully." });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error." });
+  }
+};
+
 // --------------------
 // Admin: all collector registration requests (history: pending + approved + deactivated)
 // --------------------
