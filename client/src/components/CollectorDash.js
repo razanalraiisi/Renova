@@ -38,7 +38,7 @@ const CollectorDash = () => {
   const [monthData, setMonthData] = useState(months.map(() => ({ accepted: 0, rejected: 0, completed: 0 })));
   const [categoryCounts, setCategoryCounts] = useState([]);
 
-  // ✅ NEW STATES (same as NewRecycleRequest)
+  
   const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
   const [cancelTargetRequest, setCancelTargetRequest] = useState(null);
 
@@ -156,7 +156,7 @@ const CollectorDash = () => {
     }, 15000);
 
     return () => clearInterval(interval);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  
   }, []);
 
   const total = categoryCounts.reduce((sum, item) => sum + item.value, 0);
@@ -368,7 +368,7 @@ const CollectorDash = () => {
                       Accept
                     </Button>
 
-                    {/* ✅ UPDATED REJECT BUTTON */}
+                   
                     <Button
                       size="small"
                       variant="contained"
@@ -388,7 +388,7 @@ const CollectorDash = () => {
           </Box>
         </Box>
 
-        {/* ✅ NEW DIALOG (same as NewRecycleRequest) */}
+      
         <Dialog
           open={cancelConfirmOpen}
           onClose={() => setCancelConfirmOpen(false)}

@@ -82,7 +82,7 @@ const DecisionResult = () => {
       }
     );
 
-    // Cleanup
+    
     return () => {
       console.log(" [GEOLOCATION] Component unmounting");
     };
@@ -489,7 +489,7 @@ const handleDropOff = () => {
         lat: 23.6150,
         lng: 58.5450,
       },
-      acceptedCategories: ["Recycle", "Dispose", "Repair", "Upcycle"],
+      acceptedCategories: ["Recycle", "Dispose", "Upcycle"],
       isApproved: true,
     };
     
@@ -692,10 +692,6 @@ const handleDropOff = () => {
                       <span>Recommended Collector</span>
                     </div>
                     <p className="dr-collectorName">{collectorName}</p>
-                    <div className="dr-ratingSection">
-                      <FaStar className="dr-starIcon" />
-                      <span className="dr-rating">5.0</span>
-                    </div>
                     <p className="dr-collectorDistance">
                       {collectorDistance} km away
                     </p>

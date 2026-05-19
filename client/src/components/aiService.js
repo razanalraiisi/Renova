@@ -279,7 +279,7 @@ export const getAIRecommendation =
       const loadedModel =
         await loadModel();
 
-      // Create image
+      
       const img =
         document.createElement(
           "img"

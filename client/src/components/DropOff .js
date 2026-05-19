@@ -10,7 +10,7 @@ import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
 import logo from "../assets/logo.png";
 
-// FIX MARKER ICON
+
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconUrl: markerIcon,
@@ -51,9 +51,7 @@ const DropOff = () => {
     "Lighting Equipment","Medical & Fitness Devices","Batteries & Accessories","Other"
   ];
 
-  // =========================
-  // DATE / TIME RULES (OMAN FIX)
-  // =========================
+  
 
   const isWeekend = (date) => {
     const day = date.getDay();
@@ -66,18 +64,18 @@ const DropOff = () => {
   const dt = new Date(value);
   const now = new Date();
 
-  // no past date/time
+  
   if (dt <= now) return false;
 
-  // block Friday & Saturday
+  
   const day = dt.getDay();
   if (day === 5 || day === 6) return false;
 
-  // allowed hours only
+  
   const hour = dt.getHours();
 const minutes = dt.getMinutes();
 
-// allow 08:00 → 17:00 only
+
 if (
   hour < 8 ||
   hour > 17 ||
@@ -92,17 +90,17 @@ if (
   const getMinDateTime = () => {
   const now = new Date();
 
-  // if before 8 AM -> allow today at 8
+ 
   if (now.getHours() < 8) {
     now.setHours(8, 0, 0, 0);
   } else {
-    // otherwise add 1 hour minimum
+    
     now.setHours(now.getHours() + 1);
     now.setMinutes(0);
     now.setSeconds(0);
   }
 
-  // format WITHOUT timezone issue
+  
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, "0");
   const day = String(now.getDate()).padStart(2, "0");
@@ -112,9 +110,7 @@ if (
   return `${year}-${month}-${day}T${hours}:${mins}`;
 };
 
-  // =========================
-  // HANDLE DATE CHANGE
-  // =========================
+  
 
 const handleDateChange = (e) => {
   const value = e.target.value;
@@ -130,9 +126,7 @@ const handleDateChange = (e) => {
   }));
 };
 
-  // =========================
-  // FETCH COLLECTORS
-  // =========================
+  
 
   const fetchCollectors = async () => {
     setLoadingCollectors(true);
@@ -187,9 +181,7 @@ const handleDateChange = (e) => {
         collectorId: collector._id,
       }));
 
-      // IMPORTANT FIX
-      // if collector already chosen from previous page
-      // disable broadcast
+      
       setIsBroadcastToAllCollectors(false);
     }
   }, [location.state]);
@@ -198,9 +190,7 @@ const handleDateChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // =========================
-  // CATEGORY CHANGE
-  // =========================
+  
 
   const handleCategoryChange = (e) => {
     const selectedCategory = e.target.value;
@@ -210,8 +200,7 @@ const handleDateChange = (e) => {
       deviceCategory: selectedCategory
     });
 
-    // KEEP OTHER CATEGORY LOGIC INTACT
-    // BUT ONLY BROADCAST IF NO COLLECTOR WAS CHOSEN
+   
     if (selectedCategory === "Other" && !form.collectorId) {
       setIsBroadcastToAllCollectors(true);
     } else {
@@ -225,9 +214,7 @@ const handleDateChange = (e) => {
     setForm({ ...form, phone: value });
   };
 
-  // =========================
-  // VALIDATION
-  // =========================
+  
 
   const validate = () => {
     let newErrors = {};
@@ -286,9 +273,6 @@ const handleDateChange = (e) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  // =========================
-  // SUBMIT
-  // =========================
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -381,9 +365,7 @@ formData.append("collectorId", form.collectorId || "");
     }
   };
 
-  // =========================
-  // MARKER CLICK
-  // =========================
+  
 
   const handleMarkerClick = (collector) => {
     setSelectedCenter({
@@ -401,9 +383,7 @@ formData.append("collectorId", form.collectorId || "");
       collectorId: collector._id,
     }));
 
-    // IMPORTANT FIX
-    // once collector selected manually
-    // disable broadcasting completely
+
     setIsBroadcastToAllCollectors(false);
   };
 
@@ -423,9 +403,7 @@ formData.append("collectorId", form.collectorId || "");
     }
   };
 
-  // =========================
-  // FILTER COLLECTORS
-  // =========================
+  
 
   const filteredCollectors = isBroadcastToAllCollectors
     ? collectors
@@ -606,7 +584,7 @@ formData.append("collectorId", form.collectorId || "");
         </div>
 
         <h2 style={styles.headerTitle}>
-          ♻️ Schedule Your Drop-Off
+           Schedule Your Drop-Off
         </h2>
 
         <p style={styles.headerSubtitle}>
@@ -624,7 +602,7 @@ formData.append("collectorId", form.collectorId || "");
                 fontWeight: "bold"
               }}
             >
-              Hi {form.name}! 😊 Let’s get your drop-off ready!
+              Hi {form.name}!  Let’s get your drop-off ready!
             </p>
           )}
 
@@ -857,7 +835,7 @@ formData.append("collectorId", form.collectorId || "");
                 styles.button.backgroundColor)
             }
           >
-            ✓ Confirm Drop-Off
+             Confirm Drop-Off
           </button>
 
           {selectedCenter && (
@@ -868,7 +846,7 @@ formData.append("collectorId", form.collectorId || "");
                   color: "#0080AA"
                 }}
               >
-                📍 Selected Center
+                 Selected Center
               </strong>
               <br />
 
@@ -884,11 +862,11 @@ formData.append("collectorId", form.collectorId || "");
                 <br />
 
                 <span style={{ fontSize: "13px" }}>
-                  📍 {selectedCenter.address}
+                   {selectedCenter.address}
                   <br />
-                  📞 {selectedCenter.phone}
+                   {selectedCenter.phone}
                   <br />
-                  🕒 {selectedCenter.hours}
+                   {selectedCenter.hours}
                 </span>
               </div>
             </div>
