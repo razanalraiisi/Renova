@@ -246,6 +246,20 @@ const AdminDashboard = () => {
     }
   }, [insights, insightsLoading]);
 
+  const ratingStats = useMemo(() => {
+  if (!Array.isArray(allRequestRecords)) {
+    return { avgRating: 0, totalRated: 0 };
+  }
+
+  const rated = allRequestRecords.filter(r => typeof r.rating === "number");
+
+  const total = rated.reduce((sum, r) => sum + r.rating, 0);
+
+  return {
+    avgRating: rated.length ? (total / rated.length).toFixed(1) : 0,
+    totalRated: rated.length
+  };
+}, [allRequestRecords]);
   const chartSlides = useMemo(() => {
     const d = chartData;
     const empty7 = [0, 0, 0, 0, 0, 0, 0];
@@ -462,6 +476,14 @@ const AdminDashboard = () => {
             lines={["Total users registered:", statsLoading ? "…" : stats.totalUsers]}
             onClick={() => navigate("/admin/reports/users")}
           />
+          <SideCard
+  title="Collector Ratings"
+  lines={[
+    `Average rating: ${ratingStats.avgRating} ⭐`,
+    `Total rated requests: ${ratingStats.totalRated}`
+  ]}
+  onClick={() => navigate("/admin/reports/ratings")}
+/>
           <SideCard
             title="E-Waste Library"
             onClick={() => navigate("/admin/devices")}
@@ -695,8 +717,10 @@ const AdminDashboard = () => {
             buttonText="View Reports"
             onClick={() => navigate("/admin/user-reports")}
           />
+          
         </Col>
       </Row>
+      
     </div>
   );
 };

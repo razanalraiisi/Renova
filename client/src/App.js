@@ -60,6 +60,7 @@ import AdminThemeSync from "./components/AdminThemeSync.js";
 import CollectorNav from './components/CollectorNav.js';
 import UserNavbar from './components/UserNavBar.js';
 import AdminUserReports from './components/AdminUserReports.js';
+import AdminRatings from './components/AdminRatings.js';
 function App() {
   const email = useSelector((state) => state.users?.user?.email);
 
@@ -152,7 +153,7 @@ function App() {
                 </AdminLayout>
               }
             />
-
+            <Route path="/admin/reports/ratings" element={<AdminRatings />} />
             <Route path="/admin/collectors-requests" element={<AdminCollectorRequests />} />
             <Route path="/admin/manage-collectors" element={<AdminManageCollectors />} />
             <Route path="/admin/reports/recycles" element={<RecyclesReport />} />
