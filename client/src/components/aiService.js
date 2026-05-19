@@ -3,7 +3,7 @@ import "@tensorflow/tfjs";
 
 let model = null;
 
-// Load model once
+
 const loadModel = async () => {
 
   if (!model) {
@@ -19,7 +19,7 @@ const loadModel = async () => {
   return model;
 };
 
-// Allowed electronics keywords
+
 const electronicsMap = {
 
   Laptop: [
@@ -134,7 +134,7 @@ const electronicsMap = {
   ],
 };
 
-// NON-electronics to reject
+
 const bannedObjects = [
 
   "wallet",
@@ -159,7 +159,7 @@ const bannedObjects = [
   "person",
 ];
 
-// Find best electronics match
+
 const detectElectronic =
   (predictions) => {
 
@@ -175,12 +175,12 @@ const detectElectronic =
       const confidence =
         prediction.probability * 100;
 
-      // Ignore weak predictions
+      
       if (confidence < 20) {
         continue;
       }
 
-      // Reject banned objects
+      
       const isBanned =
         bannedObjects.some(
           (bad) =>
@@ -191,7 +191,7 @@ const detectElectronic =
         continue;
       }
 
-      // Rename labels if mapped
+      
       for (
         const device
         in electronicsMap
@@ -220,8 +220,7 @@ const detectElectronic =
         }
       }
 
-      // If not renamed,
-      // use original MobileNet label
+      
       return {
 
         detectedDevice:
@@ -248,7 +247,7 @@ const detectElectronic =
     };
 };
 
-// Recommendation logic
+
 const getRecommendation =
   (condition) => {
 
@@ -268,7 +267,7 @@ const getRecommendation =
     }
 };
 
-// Main AI function
+
 export const getAIRecommendation =
   async (
     imageFile,
@@ -291,7 +290,7 @@ export const getAIRecommendation =
           imageFile
         );
 
-      // Wait for load
+      
       await new Promise(
         (resolve) => {
 
@@ -300,7 +299,7 @@ export const getAIRecommendation =
         }
       );
 
-      // Predict image
+      
       const predictions =
         await loadedModel.classify(
           img
@@ -311,7 +310,7 @@ export const getAIRecommendation =
         predictions
       );
 
-      // Detect electronic
+      
       const result =
         detectElectronic(
           predictions

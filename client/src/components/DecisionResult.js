@@ -9,11 +9,9 @@ import disposeImg from "../assets/Dispose.png";
 
 import "./Components.css";
 
-// ============================================
-// HAVERSINE FORMULA FOR DISTANCE CALCULATION
-// ============================================
+
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
-  const R = 6371; // Earth's radius in km
+  const R = 6371; 
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLon = ((lon2 - lon1) * Math.PI) / 180;
   const a =
@@ -33,9 +31,7 @@ const DecisionResult = () => {
   const { recommendation, condition, detectedDevice, confidence } =
     location.state || {};
 
-  // ============================================
-  // STATE MANAGEMENT
-  // ============================================
+  
   const [userLat, setUserLat] = useState(null);
   const [userLng, setUserLng] = useState(null);
   const [geolocationError, setGeolocationError] = useState(null);
@@ -43,30 +39,28 @@ const DecisionResult = () => {
   const [matchedCollector, setMatchedCollector] = useState(null);
   const [loadingCollectors, setLoadingCollectors] = useState(true);
 
-  // ============================================
-  // PHASE 3: DETECT USER LOCATION ON MOUNT
-  // ============================================
+
   useEffect(() => {
-    console.log("🌍 [GEOLOCATION] Starting geolocation detection...");
+    console.log(" [GEOLOCATION] Starting geolocation detection...");
     
     if (!navigator.geolocation) {
-      console.warn("❌ [GEOLOCATION] Geolocation not supported");
+      console.warn(" [GEOLOCATION] Geolocation not supported");
       setGeolocationError("Geolocation not supported - use Test Mode");
       setLoadingCollectors(false);
       return;
     }
 
-    // Request location - let browser handle the permission dialog naturally
+    
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
-        console.log("✅ [GEOLOCATION] Location detected:", { latitude, longitude });
+        console.log(" [GEOLOCATION] Location detected:", { latitude, longitude });
         setUserLat(latitude);
         setUserLng(longitude);
-        setGeolocationError(null); // Clear any previous errors
+        setGeolocationError(null); 
       },
       (error) => {
-        console.warn("❌ [GEOLOCATION] Error:", error.message, "Code:", error.code);
+        console.warn(" [GEOLOCATION] Error:", error.message, "Code:", error.code);
         
         let message = "Location not available - use Test Mode to continue";
         if (error.code === 1) {
@@ -79,33 +73,31 @@ const DecisionResult = () => {
         
         setGeolocationError(message);
         setLoadingCollectors(false);
-        console.warn("⚠️ [GEOLOCATION] Fallback message set:", message);
+        console.warn(" [GEOLOCATION] Fallback message set:", message);
       },
       {
         enableHighAccuracy: false,
-        timeout: 10000, // Give more time for user to approve
+        timeout: 10000, 
         maximumAge: 0
       }
     );
 
     // Cleanup
     return () => {
-      console.log("🧹 [GEOLOCATION] Component unmounting");
+      console.log(" [GEOLOCATION] Component unmounting");
     };
   }, []);
 
-  // ============================================
-  // PHASE 4 & 5: FETCH COLLECTORS & MATCH
-  // ============================================
+  
   useEffect(() => {
-    console.log("📍 [COLLECTOR] Effect triggered:", { userLat, userLng, recommendation, hasError: !!geolocationError });
+    console.log(" [COLLECTOR] Effect triggered:", { userLat, userLng, recommendation, hasError: !!geolocationError });
     
-    // Only proceed if we have BOTH location and recommendation
+    
     if (userLat !== null && userLng !== null && recommendation) {
-      console.log("✅ [COLLECTOR] All required data present - fetching collectors...");
+      console.log(" [COLLECTOR] All required data present - fetching collectors...");
       fetchAndMatchCollectors();
     } else {
-      console.log("⏳ [COLLECTOR] Waiting for location or recommendation...", { 
+      console.log(" [COLLECTOR] Waiting for location or recommendation...", { 
         hasLat: userLat !== null, 
         hasLng: userLng !== null, 
         hasRec: !!recommendation 
@@ -115,27 +107,27 @@ const DecisionResult = () => {
 
   const fetchAndMatchCollectors = async () => {
     try {
-      console.log("🔄 [FETCH] Starting collector fetch...");
-      console.log("📍 [FETCH] User location:", { userLat, userLng });
+      console.log(" [FETCH] Starting collector fetch...");
+      console.log(" [FETCH] User location:", { userLat, userLng });
       setLoadingCollectors(true);
 
-      // PHASE 4: Fetch real collectors from database
+      
       let res;
       try {
-        console.log("🌐 [FETCH] Calling API: http://localhost:5000/admin/getApprovedCollectors");
+        console.log(" [FETCH] Calling API: http://localhost:5000/admin/getApprovedCollectors");
         res = await axios.get("http://localhost:5000/admin/getApprovedCollectors");
-        console.log("📥 [FETCH] API Response received! Count:", res.data?.length || 0);
-        console.log("📥 [FETCH] Full response:", res.data);
+        console.log(" [FETCH] API Response received! Count:", res.data?.length || 0);
+        console.log(" [FETCH] Full response:", res.data);
       } catch (fetchErr) {
-        console.error("❌ [FETCH] API call FAILED:", {
+        console.error(" [FETCH] API call FAILED:", {
           message: fetchErr.message,
           status: fetchErr.response?.status,
           statusText: fetchErr.response?.statusText,
           url: fetchErr.config?.url
         });
-        console.log("📋 [FETCH] Using fallback mock data for testing...");
+        console.log(" [FETCH] Using fallback mock data for testing...");
         
-        // Fallback: use mock data for testing
+        
         res = {
           data: [
             {
@@ -164,24 +156,24 @@ const DecisionResult = () => {
             },
           ]
         };
-        console.log("✅ [FETCH] Mock data loaded - count:", res.data.length);
+        console.log(" [FETCH] Mock data loaded - count:", res.data.length);
       }
 
       if (!res.data || res.data.length === 0) {
-        console.error("❌ [FETCH] No collector data received!");
+        console.error(" [FETCH] No collector data received!");
         setGeolocationError("No collectors available in database");
         return;
       }
 
-      console.log("📋 [FETCH] Total collectors from API:", res.data.length);
+      console.log(" [FETCH] Total collectors from API:", res.data.length);
 
-      // More flexible filtering
+      
       const activeCollectors = res.data.filter((c) => {
         const hasLocation = c.location && typeof c.location.lat === 'number' && typeof c.location.lng === 'number';
         const isApproved = c.isApproved === true || c.isApproved === "true";
         const isNotDeactivated = !c.deactivatedAt;
         
-        console.log(`🔍 [FILTER] Checking ${c.companyName}:`, {
+        console.log(` [FILTER] Checking ${c.companyName}:`, {
           hasLocation,
           lat: c.location?.lat,
           lng: c.location?.lng,
@@ -190,48 +182,48 @@ const DecisionResult = () => {
         });
         
         if (!hasLocation) {
-          console.warn("⚠️ [FILTER] REJECTED - ${c.companyName} missing/invalid location");
+          console.warn(" [FILTER] REJECTED - ${c.companyName} missing/invalid location");
         }
         if (!isApproved) {
-          console.warn(`⚠️ [FILTER] REJECTED - ${c.companyName} not approved`);
+          console.warn(` [FILTER] REJECTED - ${c.companyName} not approved`);
         }
         if (c.deactivatedAt) {
-          console.warn(`⚠️ [FILTER] REJECTED - ${c.companyName} is deactivated`);
+          console.warn(` [FILTER] REJECTED - ${c.companyName} is deactivated`);
         }
         
         return hasLocation && isApproved && isNotDeactivated;
       });
 
-      console.log("✅ [FILTER] PASSED FILTERING:", activeCollectors.length, "collectors");
+      console.log(" [FILTER] PASSED FILTERING:", activeCollectors.length, "collectors");
       activeCollectors.forEach(c => {
         console.log(`  ✓ ${c.companyName} (${c.location.lat}, ${c.location.lng}) - Categories:`, c.acceptedCategories);
       });
       setCollectors(activeCollectors);
 
       if (activeCollectors.length === 0) {
-        console.error("❌ [MATCH] NO ACTIVE COLLECTORS - all were filtered out!");
+        console.error(" [MATCH] NO ACTIVE COLLECTORS - all were filtered out!");
         setGeolocationError("No active collectors found in database");
         return;
       }
 
-      // PHASE 5 & 6: Find nearest collector for recommended category
-      console.log("\n🎯 [MATCH] Starting category matching for recommendation:", recommendation);
+      
+      console.log("\n [MATCH] Starting category matching for recommendation:", recommendation);
       const nearest = findNearestCollector(activeCollectors, recommendation);
       
       if (nearest) {
-        console.log("🎯 [MATCH] SUCCESS! Matched collector:", {
+        console.log(" [MATCH] SUCCESS! Matched collector:", {
           name: nearest.companyName,
           distance: nearest.distance,
           categories: nearest.acceptedCategories
         });
         setMatchedCollector(nearest);
       } else {
-        console.error("❌ [MATCH] FAILED - No compatible collector found for category:", recommendation);
-        console.log("💡 [DEBUG] Recommendation was:", recommendation);
-        console.log("💡 [DEBUG] Available collectors:", activeCollectors.map(c => ({ name: c.companyName, categories: c.acceptedCategories })));
+        console.error(" [MATCH] FAILED - No compatible collector found for category:", recommendation);
+        console.log(" [DEBUG] Recommendation was:", recommendation);
+        console.log(" [DEBUG] Available collectors:", activeCollectors.map(c => ({ name: c.companyName, categories: c.acceptedCategories })));
       }
     } catch (err) {
-      console.error("❌ [ERROR] Unhandled error in fetchAndMatchCollectors:", {
+      console.error(" [ERROR] Unhandled error in fetchAndMatchCollectors:", {
         message: err.message,
         stack: err.stack
       });
@@ -242,11 +234,11 @@ const DecisionResult = () => {
   };
 
   const findNearestCollector = (collectorsList, recommendedCategory) => {
-    console.log("\n🎯 [NEAREST] ═══════════════════════════════════════════");
-    console.log("🎯 [NEAREST] STARTING COLLECTOR MATCHING");
-    console.log("🎯 [NEAREST] Input: Category =", recommendedCategory);
-    console.log("🎯 [NEAREST] Input: Total collectors =", collectorsList.length);
-    console.log("🎯 [NEAREST] Input: User location =", { userLat, userLng });
+    console.log("\n [NEAREST] ═══════════════════════════════════════════");
+    console.log(" [NEAREST] STARTING COLLECTOR MATCHING");
+    console.log(" [NEAREST] Input: Category =", recommendedCategory);
+    console.log(" [NEAREST] Input: Total collectors =", collectorsList.length);
+    console.log(" [NEAREST] Input: User location =", { userLat, userLng });
     
     // Filter collectors that support the recommended category
     const compatibleCollectors = collectorsToMatch(
@@ -254,27 +246,27 @@ const DecisionResult = () => {
       recommendedCategory
     );
 
-    console.log("🎯 [NEAREST] After category filter: Compatible collectors =", compatibleCollectors.length);
+    console.log(" [NEAREST] After category filter: Compatible collectors =", compatibleCollectors.length);
     compatibleCollectors.forEach(c => {
       console.log(`  ✓ ${c.companyName}`);
     });
 
     if (compatibleCollectors.length === 0) {
-      console.error("❌ [NEAREST] NO COMPATIBLE COLLECTORS FOUND!");
-      console.error("🔍 [NEAREST] This means:");
+      console.error(" [NEAREST] NO COMPATIBLE COLLECTORS FOUND!");
+      console.error(" [NEAREST] This means:");
       console.error("  - Either recommendation category is not recognized");
       console.error("  - Or no collectors support this category");
       console.error("  - Or collectors data is malformed");
       return null;
     }
 
-    // Calculate distances for all compatible collectors
+    
     const withDistances = compatibleCollectors.map((collector) => {
       if (!userLat || !userLng) {
-        console.error("❌ [NEAREST] ERROR: User location not set!", { userLat, userLng });
+        console.error(" [NEAREST] ERROR: User location not set!", { userLat, userLng });
         return {
           ...collector,
-          distance: 99999, // Max distance
+          distance: 99999, 
         };
       }
 
@@ -286,50 +278,50 @@ const DecisionResult = () => {
           collector.location.lng
         )
       );
-      console.log(`📍 [DISTANCE] ${collector.companyName}: ${distance} km from user`);
+      console.log(` [DISTANCE] ${collector.companyName}: ${distance} km from user`);
       return {
         ...collector,
         distance,
       };
     });
 
-    // Sort by distance to find NEAREST
+    
     withDistances.sort((a, b) => a.distance - b.distance);
     
     const matched = withDistances[0];
-    console.log(`\n✅ [NEAREST] SELECTED NEAREST COLLECTOR:`);
+    console.log(`\n [NEAREST] SELECTED NEAREST COLLECTOR:`);
     console.log(`  Name: ${matched.companyName}`);
     console.log(`  Distance: ${matched.distance} km`);
     console.log(`  Categories: ${matched.acceptedCategories.join(", ")}`);
-    console.log("🎯 [NEAREST] ═══════════════════════════════════════════\n");
+    console.log(" [NEAREST] ═══════════════════════════════════════════\n");
     
     return matched;
   };
 
   const collectorsToMatch = (collectorsForCategory, recommendedCategory) => {
-    console.log("🏷️ [CATEGORY] Matching category:", recommendedCategory);
-    console.log("🏷️ [CATEGORY] Type of recommendation:", typeof recommendedCategory);
+    console.log(" [CATEGORY] Matching category:", recommendedCategory);
+    console.log(" [CATEGORY] Type of recommendation:", typeof recommendedCategory);
     
     if (!recommendedCategory) {
-      console.error("❌ [CATEGORY] CRITICAL: recommendedCategory is null/undefined!");
+      console.error(" [CATEGORY] CRITICAL: recommendedCategory is null/undefined!");
       return [];
     }
 
     return collectorsForCategory.filter((collector) => {
-      console.log(`\n🏷️ [CATEGORY] Checking collector: ${collector.companyName}`);
+      console.log(`\n [CATEGORY] Checking collector: ${collector.companyName}`);
       
       if (!collector.acceptedCategories) {
-        console.log(`⚠️ [CATEGORY] ${collector.companyName} has NO acceptedCategories field - REJECT`);
+        console.log(` [CATEGORY] ${collector.companyName} has NO acceptedCategories field - REJECT`);
         return false;
       }
 
       if (!Array.isArray(collector.acceptedCategories)) {
-        console.warn(`⚠️ [CATEGORY] ${collector.companyName} acceptedCategories is not an array:`, collector.acceptedCategories);
+        console.warn(` [CATEGORY] ${collector.companyName} acceptedCategories is not an array:`, collector.acceptedCategories);
         return false;
       }
 
       if (collector.acceptedCategories.length === 0) {
-        console.log(`⚠️ [CATEGORY] ${collector.companyName} has empty acceptedCategories - REJECT`);
+        console.log(` [CATEGORY] ${collector.companyName} has empty acceptedCategories - REJECT`);
         return false;
       }
 
@@ -338,15 +330,15 @@ const DecisionResult = () => {
         return lower;
       });
       
-      console.log(`🏷️ [CATEGORY] ${collector.companyName} categories (normalized):`, accepted);
+      console.log(` [CATEGORY] ${collector.companyName} categories (normalized):`, accepted);
 
-      // Map recommendation to collector category - ULTRA FLEXIBLE MATCHING
-      const recLower = String(recommendedCategory).toLowerCase().trim();
-      console.log(`🏷️ [CATEGORY] Recommendation (normalized): "${recLower}"`);
       
-      // STRATEGY 1: Try exact category matching
+      const recLower = String(recommendedCategory).toLowerCase().trim();
+      console.log(` [CATEGORY] Recommendation (normalized): "${recLower}"`);
+      
+      
       if (recLower === "recycle" || recLower.includes("recycle")) {
-        console.log("🔍 [CATEGORY] Strategy: Looking for RECYCLE matches...");
+        console.log(" [CATEGORY] Strategy: Looking for RECYCLE matches...");
         const matches = accepted.some(
           (cat) =>
             cat.includes("recycle") ||
@@ -356,13 +348,13 @@ const DecisionResult = () => {
             cat.includes("electronic waste")
         );
         if (matches) {
-          console.log(`✅ [CATEGORY] ${collector.companyName} MATCHED - accepts recycle`);
+          console.log(` [CATEGORY] ${collector.companyName} MATCHED - accepts recycle`);
           return true;
         }
       }
       
       if (recLower === "upcycle" || recLower.includes("upcycle")) {
-        console.log("🔍 [CATEGORY] Strategy: Looking for UPCYCLE matches...");
+        console.log(" [CATEGORY] Strategy: Looking for UPCYCLE matches...");
         const matches = accepted.some(
           (cat) =>
             cat.includes("upcycle") ||
@@ -374,13 +366,13 @@ const DecisionResult = () => {
             cat.includes("refurb")
         );
         if (matches) {
-          console.log(`✅ [CATEGORY] ${collector.companyName} MATCHED - accepts upcycle`);
+          console.log(` [CATEGORY] ${collector.companyName} MATCHED - accepts upcycle`);
           return true;
         }
       }
       
       if (recLower === "dispose" || recLower.includes("dispose")) {
-        console.log("🔍 [CATEGORY] Strategy: Looking for DISPOSE matches...");
+        console.log(" [CATEGORY] Strategy: Looking for DISPOSE matches...");
         const matches = accepted.some(
           (cat) =>
             cat.includes("dispose") ||
@@ -392,16 +384,15 @@ const DecisionResult = () => {
             cat.includes("electronic waste")
         );
         if (matches) {
-          console.log(`✅ [CATEGORY] ${collector.companyName} MATCHED - accepts dispose`);
+          console.log(` [CATEGORY] ${collector.companyName} MATCHED - accepts dispose`);
           return true;
         }
       }
       
-      // STRATEGY 2: FALLBACK - If exact matching fails, accept ANY collector
-      // because having ANY collector is better than none
-      console.log("🔍 [CATEGORY] Strategy: FALLBACK - accepting any collector with categories");
-      console.log(`💡 [CATEGORY] ${collector.companyName} has categories, so accepting as fallback`);
-      console.log(`✅ [CATEGORY] ${collector.companyName} MATCHED - via FALLBACK (has any categories)`);
+      
+      console.log(" [CATEGORY] Strategy: FALLBACK - accepting any collector with categories");
+      console.log(` [CATEGORY] ${collector.companyName} has categories, so accepting as fallback`);
+      console.log(` [CATEGORY] ${collector.companyName} MATCHED - via FALLBACK (has any categories)`);
       return true;
     });
   };
@@ -423,9 +414,7 @@ const DecisionResult = () => {
     );
   }
 
-  // ============================================
-  // PHASE 2: REORDER CARDS DYNAMICALLY
-  // ============================================
+  
   const allCards = [
     {
       name: "Upcycle",
@@ -444,13 +433,13 @@ const DecisionResult = () => {
     },
   ];
 
-  // Sort cards: recommended first
+ 
   const sortedCards = [
     ...allCards.filter((card) => card.name === recommendation),
     ...allCards.filter((card) => card.name !== recommendation),
   ];
 
-// ONLY NAVIGATION FIX (everything else untouched)
+
 
 const handlePickup = () => {
   navigate("/PickupRequest", {
@@ -481,17 +470,17 @@ const handleDropOff = () => {
 };
 
   const handleDemoMode = () => {
-    console.log("🧪 [DEMO] Activating demo mode with test location and collector");
+    console.log(" [DEMO] Activating demo mode with test location and collector");
     
-    // Use Muscat, Oman as demo location
+    
     const demoLat = 23.6100;
     const demoLng = 58.5400;
     
     setUserLat(demoLat);
     setUserLng(demoLng);
-    setGeolocationError(null); // IMPORTANT: Clear error so matching can proceed
+    setGeolocationError(null); 
     
-    // Create a mock collector for testing
+    
     const mockCollector = {
       _id: "demo-collector-001",
       collectorId: "C001",
@@ -515,12 +504,12 @@ const handleDropOff = () => {
     
     setCollectors([mockCollector]);
     setLoadingCollectors(false);
-    console.log("✅ [DEMO] Demo mode activated with mock collector at", distance, "km");
+    console.log(" [DEMO] Demo mode activated with mock collector at", distance, "km");
   };
 
   return (
     <div className="dr-page">
-      {/* DEBUG PANEL - DEVELOPMENT ONLY */}
+     
       <div style={{
         position: "fixed",
         top: "10px",
@@ -537,16 +526,16 @@ const handleDropOff = () => {
         overflowY: "auto",
         border: "1px solid #0f0"
       }}>
-        <div>🌍 Lat: {userLat ? userLat.toFixed(4) : "null"}</div>
-        <div>🌍 Lng: {userLng ? userLng.toFixed(4) : "null"}</div>
-        <div>📋 Collectors: {collectors.length}</div>
-        <div>🎯 Matched: {matchedCollector?.companyName || "none"}</div>
-        <div>⏳ Loading: {loadingCollectors ? "yes" : "no"}</div>
-        <div>💬 Rec: {recommendation}</div>
-        {geolocationError && <div style={{ color: "#f00" }}>⚠️ {geolocationError}</div>}
+        <div> Lat: {userLat ? userLat.toFixed(4) : "null"}</div>
+        <div> Lng: {userLng ? userLng.toFixed(4) : "null"}</div>
+        <div> Collectors: {collectors.length}</div>
+        <div> Matched: {matchedCollector?.companyName || "none"}</div>
+        <div> Loading: {loadingCollectors ? "yes" : "no"}</div>
+        <div> Rec: {recommendation}</div>
+        {geolocationError && <div style={{ color: "#f00" }}> {geolocationError}</div>}
       </div>
 
-      {/* BACK BUTTON */}
+     
       <div className="dr-backWrapper">
         <FaArrowLeft
           className="dr-backIcon"
@@ -556,7 +545,7 @@ const handleDropOff = () => {
       </div>
 
       <main className="dr-main">
-        {/* DEVICE DETECTION INFO */}
+        
         <div className="dr-detected-section">
           <div className="dr-detected-card">
             <h2 className="dr-detected-title">Detection Result</h2>
@@ -577,7 +566,7 @@ const handleDropOff = () => {
           </div>
         </div>
 
-        {/* GEOLOCATION ERROR MESSAGE - Only show if no location AND not loading */}
+        
         {geolocationError && !userLat && !userLng && (
           <div className="dr-geo-warning">
             <FaExclamationCircle className="dr-warning-icon" />
@@ -596,12 +585,12 @@ const handleDropOff = () => {
                 fontWeight: "bold"
               }}
             >
-              🧪 Use Test Mode
+               Use Test Mode
             </button>
           </div>
         )}
 
-        {/* LOCATION DETECTED - Show when we have location */}
+        
         {userLat && userLng && !geolocationError && (
           <div style={{
             textAlign: "center",
@@ -614,11 +603,11 @@ const handleDropOff = () => {
             fontSize: "0.9rem",
             fontWeight: "500"
           }}>
-            ✅ Location detected • Searching for collectors...
+             Location detected • Searching for collectors...
           </div>
         )}
 
-        {/* DEMO MODE BUTTON (Always visible for quick testing) */}
+        
         {!userLat && !userLng && !geolocationError && (
           <div style={{
             textAlign: "center",
@@ -642,12 +631,12 @@ const handleDropOff = () => {
               onMouseLeave={(e) => e.target.style.opacity = "0.8"}
               title="Use mock location and collector for testing"
             >
-              🧪 Demo Mode (Testing)
+               Demo Mode (Testing)
             </button>
           </div>
         )}
 
-        {/* RECOMMENDATION OPTIONS */}
+        
         <div className="dr-options-header">
           <h2 className="dr-options-title">Choose What to Do</h2>
           <p className="dr-options-subtitle">
@@ -655,7 +644,7 @@ const handleDropOff = () => {
           </p>
         </div>
 
-        {/* CARDS CONTAINER */}
+       
         <div className="dr-cardContainer">
           {sortedCards.map((card, idx) => {
             const isRecommended = card.name === recommendation;
@@ -669,21 +658,21 @@ const handleDropOff = () => {
                   isRecommended ? "dr-highlighted dr-recommended" : ""
                 }`}
               >
-                {/* BADGE - Only for non-recommended cards */}
+               
                 {!isRecommended && (
                   <div className="dr-numberBadge">
                     {isRecommended ? 1 : sortedCards.indexOf(card) + 1}
                   </div>
                 )}
 
-                {/* RECOMMENDED BADGE - For recommended card */}
+                
                 {isRecommended && (
                   <div className="dr-recommendedBadge">
-                    ★ RECOMMENDED
+                     RECOMMENDED
                   </div>
                 )}
 
-                {/* CARD IMAGE */}
+                
                 <div className="dr-cardImageWrapper">
                   <img
                     src={card.img}
@@ -692,15 +681,15 @@ const handleDropOff = () => {
                   />
                 </div>
 
-                {/* CARD TITLE */}
+               
                 <h3 className="dr-cardTitle">{card.name}</h3>
 
-                {/* COLLECTOR INFO - Only for recommended card */}
+                
                 {isRecommended && matchedCollector && (
                   <div className="dr-collectorSection">
                     <div className="dr-collectorHeader">
                       <FaMapMarkerAlt className="dr-locationIcon" />
-                      <span>Matched Collector</span>
+                      <span>Recommended Collector</span>
                     </div>
                     <p className="dr-collectorName">{collectorName}</p>
                     <div className="dr-ratingSection">
@@ -713,7 +702,7 @@ const handleDropOff = () => {
                   </div>
                 )}
 
-                {/* FALLBACK MESSAGE - For recommended card with no collector */}
+                
                 {isRecommended && !matchedCollector && !loadingCollectors && (
                   <div className="dr-noCollectorMessage">
                     <p>No nearby collector available</p>
@@ -723,14 +712,14 @@ const handleDropOff = () => {
                   </div>
                 )}
 
-                {/* LOADING STATE - For recommended card */}
+                
                 {isRecommended && loadingCollectors && (
                   <div className="dr-loadingMessage">
                     <p>Finding nearest collector...</p>
                   </div>
                 )}
 
-                {/* DESCRIPTION - For non-recommended cards */}
+                
                 {!isRecommended && (
                   <p className="dr-cardDescription">
                     {card.name === "Upcycle"
@@ -741,7 +730,7 @@ const handleDropOff = () => {
                   </p>
                 )}
 
-                {/* ACTION BUTTONS */}
+               
                 <div className="dr-cardButtons">
                   <button
                     className="dr-cardButton dr-pickupBtn"
