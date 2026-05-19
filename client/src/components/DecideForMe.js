@@ -54,7 +54,7 @@ const DecideForMe = () => {
     setLoading] =
     useState(false);
 
-  // Get user
+ 
   useEffect(() => {
 
     const storedUser =
@@ -74,7 +74,7 @@ const DecideForMe = () => {
 
   }, []);
 
-  // Upload image
+  
   const handleImageUpload =
     (e) => {
 
@@ -115,7 +115,7 @@ const DecideForMe = () => {
       setImageError(false);
     };
 
-  // Handle AI
+  
   const handleDecision =
     async () => {
 
@@ -207,12 +207,12 @@ const DecideForMe = () => {
 
       </div>
 
-      {/* TITLE */}
+      
       <h2 className="dfm-pageTitle">
         Let AI Decide For You
       </h2>
 
-      {/* MAIN */}
+      
       <main className="dfm-main">
 
         <div className="dfm-card">
