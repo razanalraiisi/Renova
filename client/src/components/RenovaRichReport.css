@@ -62,10 +62,52 @@
   margin: 0 0 10px 0;
 }
 
+.renovaReportChartTotals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 24px;
+  margin: -4px 0 10px 0;
+  font-size: 13px;
+  color: #4b5563;
+}
+
+.renovaReportChartTotals strong {
+  color: #006d90;
+  font-weight: 800;
+}
+
+.renovaReportChartTotalBtn {
+  cursor: pointer;
+  border-radius: 6px;
+  padding: 2px 6px;
+  margin: -2px -6px;
+  transition: background 0.15s ease;
+}
+
+.renovaReportChartTotalBtn:hover {
+  background: rgba(0, 128, 170, 0.1);
+}
+
+.renovaReportChartTotalBtn[data-active] {
+  background: rgba(0, 128, 170, 0.14);
+  outline: 1px solid #0080aa;
+}
+
+.renovaReportChartHint {
+  margin: 0 0 8px 0;
+  font-size: 11px;
+  color: #6b7280;
+  line-height: 1.35;
+}
+
 .renovaReportChartBody {
   position: relative;
   height: 220px;
   max-width: 100%;
+}
+
+.renovaReportChartBody--stackedBar {
+  height: 240px;
 }
 
 .reportsActionBar {
