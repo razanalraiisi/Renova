@@ -290,28 +290,187 @@ export const getReportInsights = async (req, res) => {
 };
 export const createReport = async (req, res) => {
   try {
-    const { requestId, collectorName, reason } = req.body;
+    const { requestId, collectorId, userId, reason } = req.body;
+
+    const reporterId = req.user?._id;
+    const reporterRole = req.user?.role;
+
+    let reportedId = null;
+    let reportedName = null;
+    let reportedRole = null;
+
+    /**
+     * CASE 1: USER reports COLLECTOR
+     */
+    if (collectorId) {
+      const collector = await User.findById(collectorId);
+
+      if (collector) {
+        reportedId = collector._id;
+        reportedName = collector.companyName || collector.uname;
+        reportedRole = "collector";
+      }
+    }
+
+    /**
+     * CASE 2: COLLECTOR reports USER
+     */
+    if (userId) {
+      const user = await User.findById(userId);
+
+      if (user) {
+        reportedId = user._id;
+        reportedName = user.uname || user.email;
+        reportedRole = "user";
+      }
+    }
 
     const report = await Report.create({
       requestId,
-      collectorName,
       reason,
-      userId: req.user?._id, // optional but recommended if auth middleware exists
-      status: "Pending",
-      createdAt: new Date(),
+
+      reporterId,
+      reporterRole,
+
+      reportedId,
+      reportedName,
+      reportedRole,
+
+      status: "open",
     });
 
-    console.log("NEW REPORT SAVED:", report);
-
-    res.status(201).json({
+    return res.status(201).json({
       message: "Report submitted successfully",
       report,
     });
 
   } catch (err) {
     console.error(err);
-    res.status(500).json({
-      message: "Server error",
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+/**
+ * GET /api/reports/collectors
+ * Fetch all approved collectors for the report dropdown
+ */
+export const getAllCollectors = async (req, res) => {
+  try {
+    const collectors = await User.find({ 
+      role: 'collector', 
+      isApproved: true 
+    }).select('_id companyName uname email');
+
+    res.status(200).json({
+      success: true,
+      collectors
     });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch collectors"
+    });
+  }
+};
+
+/**
+ * GET /api/reports/users
+ * Fetch all regular users (not collectors) for reporting
+ */
+export const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find({ 
+      role: 'user'
+    }).select('_id uname email phone');
+
+    res.status(200).json({
+      success: true,
+      users
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch users"
+    });
+  }
+};
+// ===============================
+// ADMIN: GET ALL REPORTS
+// ===============================
+export const getAllReports = async (req, res) => {
+  try {
+    const reports = await Report.find()
+      .sort({ createdAt: -1 })
+      .lean();
+
+    res.json(reports);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to fetch reports" });
+  }
+};
+
+// ===============================
+// ADMIN: IGNORE REPORT
+// ===============================
+export const ignoreReport = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const updated = await Report.findByIdAndUpdate(
+      id,
+      {
+        status: "ignored",
+        actionTaken: "ignored",
+      },
+      { new: true }
+    );
+
+    if (!updated) {
+      return res.status(404).json({ message: "Report not found" });
+    }
+
+    res.json(updated);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to ignore report" });
+  }
+};
+
+// ===============================
+// ADMIN: DEACTIVATE REPORTED USER / COLLECTOR
+// ===============================
+export const deactivateReportedUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const report = await Report.findById(id);
+
+    if (!report) {
+      return res.status(404).json({ message: "Report not found" });
+    }
+
+    if (!report.reportedId) {
+      return res.status(400).json({ message: "No reported user found" });
+    }
+
+    await User.findByIdAndUpdate(report.reportedId, {
+      isActive: false, // make sure this exists in User model
+    });
+
+    await Report.findByIdAndUpdate(id, {
+      status: "actioned",
+      actionTaken: "deactivated",
+    });
+
+    res.json({
+      message: "Account deactivated successfully",
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
   }
 };

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FcViewDetails, FcBusinessContact } from "react-icons/fc";
 import { MdSimCardDownload, MdCategory } from "react-icons/md";
+import { FaFlag } from "react-icons/fa";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 import {
@@ -14,6 +15,13 @@ import {
   Button,
   Menu,
   MenuItem,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Snackbar,
+  Alert,
 } from '@mui/material';
 
 import { Input } from "reactstrap";
@@ -32,9 +40,19 @@ const RequestHistory = () => {
   const [message, setMessage] = useState({ text: '', type: '' });
   const [collector, setCollector] = useState(null);
 
-  
   const [anchorEl, setAnchorEl] = useState(null);
   const [activeCategory, setActiveCategory] = useState("All");
+
+  // --- Report User States ---
+  const [reportOpen, setReportOpen] = useState(false);
+  const [users, setUsers] = useState([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [reportData, setReportData] = useState({
+    requestId: "",
+    userId: "",
+    reason: "",
+  });
 
   const open = Boolean(anchorEl);
 
@@ -120,9 +138,28 @@ const RequestHistory = () => {
     }
   };
 
+  const fetchUsers = async () => {
+    try {
+      setLoadingUsers(true);
+      const res = await fetch("http://localhost:5000/api/reports/users");
+      if (res.ok) {
+        const data = await res.json();
+        setUsers(data.users || []);
+      }
+    } catch (err) {
+      console.error("Error fetching users:", err);
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
+
   useEffect(() => {
     fetchRequests();
+    fetchUsers();
   }, []);
+
+  // --- Report User Dialog UI ---
+  
 
   const filteredRequests = requests.filter((r) => {
 
@@ -205,6 +242,81 @@ const RequestHistory = () => {
       setMessage({
         text: "Error updating status.",
         type: "error"
+      });
+    }
+  };
+
+  // --- Report User Logic ---
+  const handleReportSubmit = async () => {
+    if (!reportData.reason.trim()) {
+      return setSnackbar({
+        open: true,
+        message: "Please enter your complaint",
+        severity: "warning",
+      });
+    }
+
+    if (!reportData.userId) {
+      return setSnackbar({
+        open: true,
+        message: "Please select a user",
+        severity: "warning",
+      });
+    }
+
+    try {
+      const token =
+        localStorage.getItem("token") ||
+        sessionStorage.getItem("token");
+
+      const res = await fetch(
+        "http://localhost:5000/api/reports/create",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+  requestId: reportData.requestId,
+  userId: reportData.userId,
+  reason: reportData.reason,
+}),
+        }
+      );
+
+      if (res.ok) {
+        setSnackbar({
+          open: true,
+          message: "Report submitted successfully",
+          severity: "success",
+        });
+
+        setReportOpen(false);
+
+        setReportData({
+          requestId: "",
+          userId: "",
+          reason: "",
+        });
+
+      } else {
+        const error = await res.json();
+
+        setSnackbar({
+          open: true,
+          message: error.message || "Failed to submit report",
+          severity: "error",
+        });
+      }
+
+    } catch (err) {
+      console.error(err);
+
+      setSnackbar({
+        open: true,
+        message: "Server error",
+        severity: "error",
       });
     }
   };
@@ -705,6 +817,16 @@ const RequestHistory = () => {
           <Button
             variant="outlined"
             size="small"
+            sx={{ ml: 1 }}
+            onClick={() => setReportOpen(true)}
+            startIcon={<FaFlag />}
+          >
+            Report User
+          </Button>
+
+          <Button
+            variant="outlined"
+            size="small"
             sx={{ ml: 'auto' }}
             onClick={downloadPDF}
           >
@@ -902,6 +1024,74 @@ const RequestHistory = () => {
 
         </Box>
 
+        {/* Report User Dialog */}
+        <Dialog
+          open={reportOpen}
+          onClose={() => setReportOpen(false)}
+        >
+          <DialogTitle>Report User</DialogTitle>
+
+          <DialogContent sx={{ pt: 2, minWidth: 400 }}>
+            <Typography variant="body2" sx={{ mb: 2 }}>
+              Please select the user and describe the issue.
+            </Typography>
+
+            <TextField
+              select
+              fullWidth
+              label="Select User"
+              value={reportData.userId}
+              onChange={(e) =>
+                setReportData({ ...reportData, userId: e.target.value })
+              }
+              sx={{ mb: 2 }}
+              disabled={loadingUsers}
+            >
+              {loadingUsers ? (
+                <MenuItem disabled>Loading users...</MenuItem>
+              ) : users.length === 0 ? (
+                <MenuItem disabled>No users available</MenuItem>
+              ) : (
+                users.map((u) => (
+                  <MenuItem key={u._id} value={u._id}>
+                    {u.uname || u.email}
+                  </MenuItem>
+                ))
+              )}
+            </TextField>
+
+            <TextField
+              fullWidth
+              multiline
+              rows={4}
+              label="Describe the issue"
+              value={reportData.reason}
+              onChange={(e) => setReportData({ ...reportData, reason: e.target.value })}
+            />
+          </DialogContent>
+
+          <DialogActions>
+            <Button onClick={() => setReportOpen(false)}>Cancel</Button>
+            <Button onClick={handleReportSubmit} variant="contained" color="error">
+              Submit Report
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Snackbar */}
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={3000}
+          onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
+        >
+          <Alert
+            onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
+            severity={snackbar.severity}
+            sx={{ width: '100%' }}
+          >
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
       </Box>
     </Box>
   );
