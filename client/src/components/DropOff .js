@@ -113,8 +113,9 @@ if (
 };
 
   // =========================
-  // 🔥 NEW: HANDLE DATE CHANGE (UI BLOCK)
+  // HANDLE DATE CHANGE
   // =========================
+
 const handleDateChange = (e) => {
   const value = e.target.value;
 
@@ -123,7 +124,6 @@ const handleDateChange = (e) => {
     dateTime: value
   });
 
-  // remove old error instantly
   setErrors((prev) => ({
     ...prev,
     dateTime: ""
@@ -138,9 +138,11 @@ const handleDateChange = (e) => {
     setLoadingCollectors(true);
     try {
       const res = await axios.get("http://localhost:5000/admin/getApprovedCollectors");
+
       const approvedWithLocation = res.data.filter(
         (c) => c.isApproved && c.location && c.location.lat && c.location.lng
       );
+
       setCollectors(approvedWithLocation);
     } catch (err) {
       console.error("Error fetching collectors:", err);
@@ -161,6 +163,7 @@ const handleDateChange = (e) => {
         email: storedUser.email || "",
         phone: storedUser.phone || "",
       }));
+
       setUserName(storedUser.uname || "");
     }
 
@@ -181,7 +184,13 @@ const handleDateChange = (e) => {
       setForm(prev => ({
         ...prev,
         address: collector.address,
+        collectorId: collector._id,
       }));
+
+      // IMPORTANT FIX
+      // if collector already chosen from previous page
+      // disable broadcast
+      setIsBroadcastToAllCollectors(false);
     }
   }, [location.state]);
 
@@ -189,11 +198,21 @@ const handleDateChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  // =========================
+  // CATEGORY CHANGE
+  // =========================
+
   const handleCategoryChange = (e) => {
     const selectedCategory = e.target.value;
-    setForm({ ...form, deviceCategory: selectedCategory });
 
-    if (selectedCategory === "Other") {
+    setForm({
+      ...form,
+      deviceCategory: selectedCategory
+    });
+
+    // KEEP OTHER CATEGORY LOGIC INTACT
+    // BUT ONLY BROADCAST IF NO COLLECTOR WAS CHOSEN
+    if (selectedCategory === "Other" && !form.collectorId) {
       setIsBroadcastToAllCollectors(true);
     } else {
       setIsBroadcastToAllCollectors(false);
@@ -227,19 +246,33 @@ const handleDateChange = (e) => {
       newErrors.phone = "Enter valid Omani number (8 digits, starts with 2, 7, or 9)";
     }
 
-    if (!form.deviceCategory.trim()) newErrors.deviceCategory = "Category is required";
-    
+    if (!form.deviceCategory.trim()) {
+      newErrors.deviceCategory = "Category is required";
+    }
+
     if (form.deviceCategory === "Other") {
       if (!customCategory.trim()) {
         newErrors.customCategory = "Please enter a custom category";
       }
     }
-    
+
     if (!form.device.trim()) newErrors.device = "Device is required";
-    if (!form.condition.trim()) newErrors.condition = "Condition is required";
-    if (!form.address.trim()) newErrors.address = "Please select location from map";
-    if (!form.collectorId.trim()) newErrors.collectorId = "Please select a collector from map";
-    if (!image) newErrors.image = "Please upload an image of the device";
+
+    if (!form.condition.trim()) {
+      newErrors.condition = "Condition is required";
+    }
+
+    if (!form.address.trim()) {
+      newErrors.address = "Please select location from map";
+    }
+
+    if (!form.collectorId.trim()) {
+      newErrors.collectorId = "Please select a collector from map";
+    }
+
+    if (!image) {
+      newErrors.image = "Please upload an image of the device";
+    }
 
     if (!form.dateTime) {
       newErrors.dateTime = "Date & Time is required";
@@ -249,6 +282,7 @@ const handleDateChange = (e) => {
     }
 
     setErrors(newErrors);
+
     return Object.keys(newErrors).length === 0;
   };
 
@@ -258,33 +292,68 @@ const handleDateChange = (e) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (!validate()) return;
 
-    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+    const token =
+      localStorage.getItem("token") ||
+      sessionStorage.getItem("token");
+
     if (!token) {
       alert("You must be logged in.");
       return;
     }
 
     const formData = new FormData();
-    Object.keys(form).forEach(key => formData.append(key, form[key]));
+
+   Object.entries(form).forEach(([key, value]) => {
+  if (key !== "collectorId") {
+    formData.append(key, value);
+  }
+});
+formData.append("collectorId", form.collectorId || "");
+
     formData.append("category", category);
     formData.append("requestType", "DropOff");
-    if (customCategory) formData.append("customCategory", customCategory);
-    formData.append("isBroadcastToAllCollectors", isBroadcastToAllCollectors);
-    if (image) formData.append("image", image);
 
-    try {
-      const response = await fetch("http://localhost:5000/api/dropoffs/create", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData,
-      });
+    if (customCategory) {
+      formData.append("customCategory", customCategory);
+    }
+
+    const shouldBroadcast =
+  form.deviceCategory === "Other" &&
+  (!form.collectorId || form.collectorId === "");
+
+    formData.append(
+      "isBroadcastToAllCollectors",
+      shouldBroadcast
+    );
+
+    
+    if (image) {
+      formData.append("image", image);
+    }
+        try {
+      const response = await fetch(
+        "http://localhost:5000/api/dropoffs/create",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`
+          },
+          body: formData,
+        }
+      );
 
       const result = await response.json();
 
       if (response.ok) {
-        alert("Drop-Off request submitted successfully to " + selectedCenter.companyName + "!");
+        alert(
+          "Drop-Off request submitted successfully to " +
+            selectedCenter.companyName +
+            "!"
+        );
+
         setForm({
           name: "",
           email: "",
@@ -296,12 +365,13 @@ const handleDateChange = (e) => {
           address: "",
           collectorId: "",
         });
+
         setImage(null);
         setImagePreview(null);
         setSelectedCenter(null);
         setCustomCategory("");
         setIsBroadcastToAllCollectors(false);
-        
+
       } else {
         alert(result.message || "Error submitting request");
       }
@@ -310,6 +380,10 @@ const handleDateChange = (e) => {
       alert("Server error");
     }
   };
+
+  // =========================
+  // MARKER CLICK
+  // =========================
 
   const handleMarkerClick = (collector) => {
     setSelectedCenter({
@@ -326,44 +400,66 @@ const handleDateChange = (e) => {
       address: collector.address,
       collectorId: collector._id,
     }));
+
+    // IMPORTANT FIX
+    // once collector selected manually
+    // disable broadcasting completely
+    setIsBroadcastToAllCollectors(false);
   };
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
+
     if (file) {
       setImage(file);
+
       const reader = new FileReader();
+
       reader.onloadend = () => {
         setImagePreview(reader.result);
       };
+
       reader.readAsDataURL(file);
     }
   };
 
-  // Filter collectors by selected category
-  // If broadcast mode ("Other" category), show all collectors
+  // =========================
+  // FILTER COLLECTORS
+  // =========================
+
   const filteredCollectors = isBroadcastToAllCollectors
     ? collectors
     : form.deviceCategory
-    ? collectors.filter(c => 
-        c.acceptedCategories && 
-        c.acceptedCategories.includes(form.deviceCategory)
+    ? collectors.filter(
+        c =>
+          c.acceptedCategories &&
+          c.acceptedCategories.includes(
+            form.deviceCategory
+          )
       )
     : collectors;
 
   const styles = {
-    page: { 
-      fontFamily: "Segoe UI, Tahoma, Geneva, Verdana, sans-serif",
+    page: {
+      fontFamily:
+        "Segoe UI, Tahoma, Geneva, Verdana, sans-serif",
       minHeight: "100vh",
-      background: "linear-gradient(135deg, #f5f7fa 0%, #c3d2e5 100%)"
+      background:
+        "linear-gradient(135deg, #f5f7fa 0%, #c3d2e5 100%)"
     },
-    navbar: { backgroundColor: "#0080AA", color: "white" },
+
+    navbar: {
+      backgroundColor: "#0080AA",
+      color: "white"
+    },
+
     header: {
       padding: "20px",
       background: "white",
       boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
       marginBottom: "20px"
     },
+
     headerTitle: {
       textAlign: "center",
       color: "#0080AA",
@@ -371,12 +467,14 @@ const handleDateChange = (e) => {
       fontWeight: "bold",
       margin: "15px 0 10px"
     },
+
     headerSubtitle: {
       textAlign: "center",
       color: "#666",
       fontSize: "14px",
       marginBottom: "10px"
     },
+
     mainWrapper: {
       display: "flex",
       justifyContent: "space-between",
@@ -386,6 +484,7 @@ const handleDateChange = (e) => {
       margin: "0 auto",
       flexWrap: "wrap"
     },
+
     formContainer: {
       border: "none",
       borderRadius: "12px",
@@ -395,6 +494,7 @@ const handleDateChange = (e) => {
       boxShadow: "0 8px 24px rgba(0,0,0,0.1)",
       flex: "0 0 auto"
     },
+
     label: {
       display: "block",
       fontWeight: "600",
@@ -402,6 +502,7 @@ const handleDateChange = (e) => {
       marginBottom: "6px",
       fontSize: "13px"
     },
+
     input: {
       width: "100%",
       padding: "11px",
@@ -412,17 +513,20 @@ const handleDateChange = (e) => {
       transition: "all 0.3s",
       boxSizing: "border-box"
     },
+
     inputFocus: {
       borderColor: "#0080AA",
       boxShadow: "0 0 0 3px rgba(0, 128, 170, 0.1)"
     },
-    error: { 
+
+    error: {
       color: "#d32f2f",
       fontSize: "12px",
       marginTop: "-12px",
       marginBottom: "12px",
       fontWeight: "500"
     },
+
     button: {
       backgroundColor: "#0080AA",
       color: "#fff",
@@ -436,9 +540,11 @@ const handleDateChange = (e) => {
       transition: "all 0.3s",
       marginTop: "10px"
     },
+
     buttonHover: {
       backgroundColor: "#005a7a"
     },
+
     imageContainer: {
       marginBottom: "15px",
       padding: "12px",
@@ -449,12 +555,14 @@ const handleDateChange = (e) => {
       cursor: "pointer",
       transition: "all 0.3s"
     },
+
     imagePreview: {
       maxWidth: "100%",
       maxHeight: "120px",
       borderRadius: "6px",
       marginTop: "10px"
     },
+
     collectorInfo: {
       marginTop: "20px",
       padding: "15px",
@@ -463,6 +571,7 @@ const handleDateChange = (e) => {
       background: "#f0f8fc",
       color: "#003d5c"
     },
+
     mapContainer: {
       flex: 1,
       height: "600px",
@@ -476,31 +585,66 @@ const handleDateChange = (e) => {
   return (
     <div style={styles.page}>
       <div style={styles.header}>
-        <div style={{ paddingLeft: "20px", paddingTop: "10px" }}>
+        <div
+          style={{
+            paddingLeft: "20px",
+            paddingTop: "10px"
+          }}
+        >
           <FaArrowLeft
             onClick={() =>
-              location.state?.from ? navigate(location.state.from) : navigate(-1)
+              location.state?.from
+                ? navigate(location.state.from)
+                : navigate(-1)
             }
-            style={{ cursor: "pointer", fontSize: "20px", color: "#0080AA" }}
+            style={{
+              cursor: "pointer",
+              fontSize: "20px",
+              color: "#0080AA"
+            }}
           />
         </div>
-        <h2 style={styles.headerTitle}>♻️ Schedule Your Drop-Off</h2>
-        <p style={styles.headerSubtitle}>Choose a nearby collection center and complete your request</p>
+
+        <h2 style={styles.headerTitle}>
+          ♻️ Schedule Your Drop-Off
+        </h2>
+
+        <p style={styles.headerSubtitle}>
+          Choose a nearby collection center and complete your request
+        </p>
       </div>
 
-      <div style={styles.mainWrapper}>
+            <div style={styles.mainWrapper}>
         <form style={styles.formContainer} onSubmit={handleSubmit}>
           {form.name && (
-            <p style={{ marginBottom: "10px", color: "#0080AA", fontWeight: "bold" }}>
+            <p
+              style={{
+                marginBottom: "10px",
+                color: "#0080AA",
+                fontWeight: "bold"
+              }}
+            >
               Hi {form.name}! 😊 Let’s get your drop-off ready!
             </p>
           )}
 
           <label style={styles.label}>Name</label>
-          <input name="name" placeholder="Name" style={styles.input} value={form.name} readOnly />
-          
+          <input
+            name="name"
+            placeholder="Name"
+            style={styles.input}
+            value={form.name}
+            readOnly
+          />
+
           <label style={styles.label}>Email</label>
-          <input name="email" placeholder="Email" style={styles.input} value={form.email} readOnly />
+          <input
+            name="email"
+            placeholder="Email"
+            style={styles.input}
+            value={form.email}
+            readOnly
+          />
 
           <label style={styles.label}>Phone</label>
           <input
@@ -510,9 +654,14 @@ const handleDateChange = (e) => {
             value={form.phone}
             onChange={handlePhoneChange}
           />
-          {errors.phone && <p style={styles.error}>{errors.phone}</p>}
+          {errors.phone && (
+            <p style={styles.error}>{errors.phone}</p>
+          )}
 
-          <label style={styles.label}>Device Category *</label>
+          <label style={styles.label}>
+            Device Category *
+          </label>
+
           <select
             name="deviceCategory"
             style={styles.input}
@@ -520,27 +669,48 @@ const handleDateChange = (e) => {
             onChange={handleCategoryChange}
           >
             <option value="">Select Category</option>
+
             {allCategories.map((c, i) => (
-              <option key={i} value={c}>{c}</option>
+              <option key={i} value={c}>
+                {c}
+              </option>
             ))}
           </select>
-          {errors.deviceCategory && <p style={styles.error}>{errors.deviceCategory}</p>}
+
+          {errors.deviceCategory && (
+            <p style={styles.error}>
+              {errors.deviceCategory}
+            </p>
+          )}
 
           {form.deviceCategory === "Other" && (
             <>
-              <label style={styles.label}>Custom Category *</label>
+              <label style={styles.label}>
+                Custom Category *
+              </label>
+
               <input
                 type="text"
                 placeholder="e.g., Furniture with electronics, Custom gadget"
                 style={styles.input}
                 value={customCategory}
-                onChange={(e) => setCustomCategory(e.target.value)}
+                onChange={(e) =>
+                  setCustomCategory(e.target.value)
+                }
               />
-              {errors.customCategory && <p style={styles.error}>{errors.customCategory}</p>}
+
+              {errors.customCategory && (
+                <p style={styles.error}>
+                  {errors.customCategory}
+                </p>
+              )}
             </>
           )}
 
-          <label style={styles.label}>Device Name *</label>
+          <label style={styles.label}>
+            Device Name *
+          </label>
+
           <input
             name="device"
             placeholder="e.g., iPhone 12, Laptop"
@@ -548,9 +718,15 @@ const handleDateChange = (e) => {
             value={form.device}
             onChange={handleChange}
           />
-          {errors.device && <p style={styles.error}>{errors.device}</p>}
 
-          <label style={styles.label}>Device Condition *</label>
+          {errors.device && (
+            <p style={styles.error}>{errors.device}</p>
+          )}
+
+          <label style={styles.label}>
+            Device Condition *
+          </label>
+
           <input
             name="condition"
             placeholder="e.g., Working, Broken"
@@ -558,8 +734,17 @@ const handleDateChange = (e) => {
             value={form.condition}
             onChange={handleChange}
           />
-          {errors.condition && <p style={styles.error}>{errors.condition}</p>}
-          <label style={styles.label}>Collection Center *</label>
+
+          {errors.condition && (
+            <p style={styles.error}>
+              {errors.condition}
+            </p>
+          )}
+
+          <label style={styles.label}>
+            Collection Center *
+          </label>
+
           <input
             name="address"
             placeholder="Address (auto-filled from map)"
@@ -567,23 +752,40 @@ const handleDateChange = (e) => {
             value={form.address}
             readOnly
           />
-          {errors.address && <p style={styles.error}>{errors.address}</p>}
-          {errors.collectorId && <p style={styles.error}>{errors.collectorId}</p>}
 
-          {errors.collectorId && <p style={styles.error}>{errors.collectorId}</p>}
+          {errors.address && (
+            <p style={styles.error}>{errors.address}</p>
+          )}
 
-          <label style={styles.label}>Date & Time *</label>
+          {errors.collectorId && (
+            <p style={styles.error}>
+              {errors.collectorId}
+            </p>
+          )}
+
+          <label style={styles.label}>
+            Date & Time *
+          </label>
+
           <input
-  type="datetime-local"
-  name="dateTime"
-  style={styles.input}
-  value={form.dateTime}
-  min={getMinDateTime()}
-  onChange={handleDateChange}
-/>
-          {errors.dateTime && <p style={styles.error}>{errors.dateTime}</p>}
+            type="datetime-local"
+            name="dateTime"
+            style={styles.input}
+            value={form.dateTime}
+            min={getMinDateTime()}
+            onChange={handleDateChange}
+          />
 
-          <label style={styles.label}>Device Image *</label>
+          {errors.dateTime && (
+            <p style={styles.error}>
+              {errors.dateTime}
+            </p>
+          )}
+
+          <label style={styles.label}>
+            Device Image *
+          </label>
+
           <div style={styles.imageContainer}>
             <input
               type="file"
@@ -592,38 +794,100 @@ const handleDateChange = (e) => {
               style={{ display: "none" }}
               id="imageInput"
             />
-            <label htmlFor="imageInput" style={{ cursor: "pointer", display: "block" }}>
-              <FaCamera size={24} style={{ color: "#0080AA", marginBottom: "8px" }} />
-              <p style={{ margin: "0", color: "#0080AA", fontWeight: "600", fontSize: "14px" }}>
+
+            <label
+              htmlFor="imageInput"
+              style={{
+                cursor: "pointer",
+                display: "block"
+              }}
+            >
+              <FaCamera
+                size={24}
+                style={{
+                  color: "#0080AA",
+                  marginBottom: "8px"
+                }}
+              />
+
+              <p
+                style={{
+                  margin: "0",
+                  color: "#0080AA",
+                  fontWeight: "600",
+                  fontSize: "14px"
+                }}
+              >
                 {image ? "Change Image" : "Upload Image"}
               </p>
-              <p style={{ margin: "5px 0 0", color: "#888", fontSize: "12px" }}>
+
+              <p
+                style={{
+                  margin: "5px 0 0",
+                  color: "#888",
+                  fontSize: "12px"
+                }}
+              >
                 Click to select photo
               </p>
             </label>
-            {imagePreview && <img src={imagePreview} alt="preview" style={styles.imagePreview} />}
+
+            {imagePreview && (
+              <img
+                src={imagePreview}
+                alt="preview"
+                style={styles.imagePreview}
+              />
+            )}
           </div>
-          {errors.image && <p style={styles.error}>{errors.image}</p>}
 
-          
+          {errors.image && (
+            <p style={styles.error}>{errors.image}</p>
+          )}
 
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             style={styles.button}
-            onMouseEnter={(e) => e.target.style.backgroundColor = styles.buttonHover.backgroundColor}
-            onMouseLeave={(e) => e.target.style.backgroundColor = styles.button.backgroundColor}
+            onMouseEnter={(e) =>
+              (e.target.style.backgroundColor =
+                styles.buttonHover.backgroundColor)
+            }
+            onMouseLeave={(e) =>
+              (e.target.style.backgroundColor =
+                styles.button.backgroundColor)
+            }
           >
             ✓ Confirm Drop-Off
           </button>
 
           {selectedCenter && (
             <div style={styles.collectorInfo}>
-              <strong style={{ fontSize: "16px", color: "#0080AA" }}>📍 Selected Center</strong><br />
-              <div style={{ marginTop: "10px", lineHeight: "1.8" }}>
-                <strong>{selectedCenter.companyName}</strong><br />
+              <strong
+                style={{
+                  fontSize: "16px",
+                  color: "#0080AA"
+                }}
+              >
+                📍 Selected Center
+              </strong>
+              <br />
+
+              <div
+                style={{
+                  marginTop: "10px",
+                  lineHeight: "1.8"
+                }}
+              >
+                <strong>
+                  {selectedCenter.companyName}
+                </strong>
+                <br />
+
                 <span style={{ fontSize: "13px" }}>
-                  📍 {selectedCenter.address}<br />
-                  📞 {selectedCenter.phone}<br />
+                  📍 {selectedCenter.address}
+                  <br />
+                  📞 {selectedCenter.phone}
+                  <br />
                   🕒 {selectedCenter.hours}
                 </span>
               </div>
@@ -632,17 +896,35 @@ const handleDateChange = (e) => {
         </form>
 
         <div style={styles.mapContainer}>
-          <MapContainer center={[23.5859, 58.4059]} zoom={11} style={{ height: "100%", width: "100%" }}>
+          <MapContainer
+            center={[23.5859, 58.4059]}
+            zoom={11}
+            style={{
+              height: "100%",
+              width: "100%"
+            }}
+          >
             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
             {filteredCollectors.map((collector) => (
               <Marker
                 key={collector._id}
-                position={[collector.location.lat, collector.location.lng]}
-                eventHandlers={{ click: () => handleMarkerClick(collector) }}
+                position={[
+                  collector.location.lat,
+                  collector.location.lng
+                ]}
+                eventHandlers={{
+                  click: () =>
+                    handleMarkerClick(collector)
+                }}
               >
-                <Tooltip>{collector.companyName}</Tooltip>
-                <Popup>{collector.companyName}</Popup>
+                <Tooltip>
+                  {collector.companyName}
+                </Tooltip>
+
+                <Popup>
+                  {collector.companyName}
+                </Popup>
               </Marker>
             ))}
           </MapContainer>
