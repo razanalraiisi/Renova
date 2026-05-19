@@ -47,12 +47,10 @@ const pickupSchema = new mongoose.Schema({
   type: Date,
   default: null
 },
-  /*rating: {
+  rating: {
   type: Number,
-  min: 1,
-  max: 5,
   default: null
-},*/
+},
   createdAt: {
     type: Date,
     default: Date.now

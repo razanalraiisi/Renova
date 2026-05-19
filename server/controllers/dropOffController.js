@@ -2,6 +2,35 @@
 import DropOffRequest from "../models/DropOffRequestModel.js";
 import User from "../models/UserModel.js";
 //import { rateDropoff } from "../controllers/deviceController.js";
+export const rateDropoff = async (req, res) => {
+  try {
+    const { rating } = req.body;
+
+    const dropoff = await DropOffRequest.findById(req.params.id);
+
+    if (!dropoff) {
+      return res.status(404).json({
+        message: "Request not found"
+      });
+    }
+
+    dropoff.rating = rating;
+
+    await dropoff.save();
+
+    res.status(200).json({
+      message: "Rating submitted successfully",
+      dropoff
+    });
+
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Server error"
+    });
+  }
+};
 export const createDropOffRequest = async (req, res) => {
   try {
     const {
@@ -263,35 +292,3 @@ export const rescheduleDropOffRequest = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-/*export const rateDropoff = async (req, res) => {
-  try {
-    const { rating, collectorId } = req.body;
-
-    const dropoff = await DropOff.findById(req.params.id);
-
-    if (!dropoff) {
-      return res.status(404).json({
-        message: "Request not found"
-      });
-    }
-
-    dropoff.rating = rating;
-
-    await dropoff.save();
-
-    res.status(200).json({
-      message: "Rating submitted successfully",
-      dropoff
-    });
-
-  } catch (error) {
-    console.log(error);
-
-    res.status(500).json({
-      message: "Server error"
-    });
-  }
-};
-export {
-  rateDropoff
-};*/

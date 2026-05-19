@@ -9,7 +9,8 @@ import {
   completeDropOffRequest,
   cancelDropOffRequest,
   getAllDropOffRequests,
-  getCollectorDropOffHistory
+  getCollectorDropOffHistory,
+  rateDropoff
 } from "../controllers/dropOffController.js";
 import { protect } from "../middleware/authMiddleware.js";
 import { rescheduleDropOffRequest } from "../controllers/dropOffController.js";
@@ -39,5 +40,5 @@ router.put("/accept/:id", protect, acceptDropOffRequest);
 router.put("/reject/:id", protect, rejectDropOffRequest);
 router.put("/complete/:id", protect, completeDropOffRequest);
 router.put("/reschedule/:id", protect, rescheduleDropOffRequest);
-//router.put("/rate/:id", protect, rateDropoff);
+router.put("/rate/:id", protect, rateDropoff);
 export default router;

@@ -1,7 +1,7 @@
 import PickupRequest from "../models/PickupRequestModel.js";
 import DropOffRequest from "../models/DropOffRequestModel.js";
 import User from "../models/UserModel.js";
-
+import Report from "../models/ReportModel.js";
 const MONTH_LABELS = [
   "Jan",
   "Feb",
@@ -290,20 +290,18 @@ export const getReportInsights = async (req, res) => {
 };
 export const createReport = async (req, res) => {
   try {
-    const {
-      requestId,
-      collectorName,
-      reason
-    } = req.body;
+    const { requestId, collectorName, reason } = req.body;
 
-    const report = {
+    const report = await Report.create({
       requestId,
       collectorName,
       reason,
+      userId: req.user?._id, // optional but recommended if auth middleware exists
+      status: "Pending",
       createdAt: new Date(),
-    };
+    });
 
-    console.log("NEW REPORT:", report);
+    console.log("NEW REPORT SAVED:", report);
 
     res.status(201).json({
       message: "Report submitted successfully",
@@ -312,7 +310,6 @@ export const createReport = async (req, res) => {
 
   } catch (err) {
     console.error(err);
-
     res.status(500).json({
       message: "Server error",
     });

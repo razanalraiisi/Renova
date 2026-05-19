@@ -407,7 +407,10 @@ const UserDash = () => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify(reportData),
+          body: JSON.stringify({
+  ...reportData,
+  userId: user._id
+}),
         }
       );
  

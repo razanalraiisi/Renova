@@ -3,8 +3,38 @@ import PickupRequest from "../models/PickupRequestModel.js";
 import User from "../models/UserModel.js";
 //import { ratePickup } from "../controllers/pickupController.js";
 /**
+ 
  * Create a new pickup request
  */
+export const ratePickup = async (req, res) => {
+  try {
+    const { rating } = req.body;
+
+    const pickup = await PickupRequest.findById(req.params.id);
+
+    if (!pickup) {
+      return res.status(404).json({
+        message: "Request not found"
+      });
+    }
+
+    pickup.rating = rating;
+
+    await pickup.save();
+
+    res.status(200).json({
+      message: "Rating submitted successfully",
+      pickup
+    });
+
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Server error"
+    });
+  }
+};
 export const createPickupRequest = async (req, res) => {
   try {
     const {
@@ -251,36 +281,3 @@ export const reschedulePickupRequest = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-/*export const ratePickup = async (req, res) => {
-  try {
-    const { rating, collectorId } = req.body;
-
-    const pickup = await Pickup.findById(req.params.id);
-
-    if (!pickup) {
-      return res.status(404).json({
-        message: "Request not found"
-      });
-    }
-
-    // Save rating to request
-    pickup.rating = rating;
-
-    await pickup.save();
-
-    res.status(200).json({
-      message: "Rating submitted successfully",
-      pickup
-    });
-
-  } catch (error) {
-    console.log(error);
-
-    res.status(500).json({
-      message: "Server error"
-    });
-  }
-};
-export {
-  ratePickup
-};*/

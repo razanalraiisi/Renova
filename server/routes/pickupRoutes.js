@@ -9,7 +9,8 @@ import {
   rejectPickupRequest,
   cancelPickupRequest,
   completePickupRequest,
-  getCollectorHistory
+  getCollectorHistory,
+  ratePickup
 } from "../controllers/pickupController.js";
 import { protect } from "../middleware/authMiddleware.js";
 import { reschedulePickupRequest } from "../controllers/pickupController.js";
@@ -39,5 +40,5 @@ router.put("/accept/:id", protect, acceptPickupRequest);
 router.put("/reject/:id", protect, rejectPickupRequest);
 router.put("/complete/:id", protect, completePickupRequest);
 router.put("/reschedule/:id", protect, reschedulePickupRequest);
-//router.put("/rate/:id", protect, ratePickup);
+router.put("/rate/:id", protect, ratePickup);
 export default router;
