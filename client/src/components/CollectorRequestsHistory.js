@@ -138,7 +138,9 @@ const RequestHistory = () => {
 
     return matchesSearch && matchesCategory;
   });
-
+ const getScheduledDate = (r) => {
+  return r.scheduledDate || r.dateTime || null;
+};
   const updateStatus = async (id, newStatus) => {
     try {
       const token =
@@ -233,7 +235,9 @@ const RequestHistory = () => {
       r.condition,
       r.status,
       r.requestType,
-      r.dateTime ? new Date(r.dateTime).toLocaleString() : "Not scheduled",
+      getScheduledDate(r)
+  ? new Date(getScheduledDate(r)).toLocaleString()
+  : "Not scheduled",
       r.name,
       r.email,
       r.phone,
@@ -841,10 +845,10 @@ const RequestHistory = () => {
                               </Typography>
 
                               <Typography fontSize={14}>
-                                Scheduled Date & Time:
-                                {r.dateTime
-                                  ? new Date(r.dateTime).toLocaleString()
-                                  : "Not scheduled"}
+                               Scheduled Date:{" "}
+{getScheduledDate(r)
+  ? new Date(getScheduledDate(r)).toLocaleString()
+  : "Not scheduled"}
                               </Typography>
 
                             </Box>

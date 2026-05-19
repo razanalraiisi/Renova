@@ -247,10 +247,9 @@ export const rescheduleDropOffRequest = async (req, res) => {
       return res.status(400).json({ message: "New date is required" });
     }
 
-    // We update the createdAt field so the frontend "Request Date" changes
     const request = await DropOffRequest.findByIdAndUpdate(
       id,
-      { createdAt: new Date(newDate) },
+      { scheduledDate: new Date(newDate) },
       { new: true }
     );
 
@@ -259,6 +258,7 @@ export const rescheduleDropOffRequest = async (req, res) => {
     }
 
     res.json({ message: "Rescheduled successfully", request });
+
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

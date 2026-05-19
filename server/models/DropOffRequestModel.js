@@ -62,6 +62,10 @@ const dropOffSchema = new mongoose.Schema({
     ref: "User",
     required: true
   },
+  scheduledDate: {
+  type: Date,
+  default: null
+},
   /*rating: {
   type: Number,
   min: 1,

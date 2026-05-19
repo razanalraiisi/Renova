@@ -237,7 +237,7 @@ export const reschedulePickupRequest = async (req, res) => {
 
     const request = await PickupRequest.findByIdAndUpdate(
       id,
-      { createdAt: new Date(newDate) },
+      { scheduledDate: new Date(newDate) },
       { new: true }
     );
 
@@ -246,6 +246,7 @@ export const reschedulePickupRequest = async (req, res) => {
     }
 
     res.json({ message: "Rescheduled successfully", request });
+
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
