@@ -220,6 +220,17 @@ export const getPendingCollectors = async (req, res) => {
   }
 };
 
+function formatNotificationTimestamp(date) {
+  if (!date) return "";
+  return new Date(date).toLocaleString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
 // Helper: format createdAt as "X min ago" / "Y hr ago" / "Z days ago"
 function timeAgo(date) {
   if (!date) return "";
@@ -234,7 +245,7 @@ function timeAgo(date) {
   if (diffHrs < 24) return `${diffHrs} hr ago`;
   if (diffDays === 1) return "1 day ago";
   if (diffDays < 7) return `${diffDays} days ago`;
-  return d.toLocaleDateString();
+  return formatNotificationTimestamp(date);
 }
 
 // Admin notifications: new collector registration requests (pending only)
@@ -253,6 +264,7 @@ export const getAdminNotifications = async (req, res) => {
       title: "Collector Registration Request",
       message: `Company: ${c.companyName || "Unnamed"}`,
       timeAgo: timeAgo(c.createdAt),
+      timestamp: formatNotificationTimestamp(c.createdAt),
       linkTo: "/admin/collectors-requests",
     }));
     res.json(notifications);

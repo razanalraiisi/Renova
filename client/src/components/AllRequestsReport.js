@@ -78,6 +78,10 @@ function sourceMatches(recordSource, filterSource) {
   return String(recordSource || "") === String(filterSource).trim();
 }
 
+function rowMatchesStatusFilterExtended(recordStatus, filterValue) {
+  return rowMatchesStatusFilter(recordStatus, filterValue);
+}
+
 export default function AllRequestsReport() {
   const navigate = useNavigate();
   const [records, setRecords] = useState([]);
@@ -136,7 +140,7 @@ export default function AllRequestsReport() {
       rows = rows.filter((r) => String(r.name || "").trim() === user);
     }
     if (status) {
-      rows = rows.filter((r) => rowMatchesStatusFilter(r.status, status));
+      rows = rows.filter((r) => rowMatchesStatusFilterExtended(r.status, status));
     }
     if (category) {
       rows = rows.filter((r) => categoryMatches(r.category, category));
@@ -205,6 +209,27 @@ export default function AllRequestsReport() {
     URL.revokeObjectURL(url);
   }, [filteredRows]);
 
+  const handleChartFilter = useCallback((patch) => {
+    if (!patch || typeof patch !== "object") return;
+    setFilterCriteria((prev) => {
+      const next = { ...prev };
+      const keys = Object.keys(patch);
+      const allMatch = keys.every((k) =>
+        String(prev[k] ?? "").toLowerCase() === String(patch[k] ?? "").toLowerCase()
+      );
+      if (allMatch && keys.length > 0) {
+        keys.forEach((k) => {
+          next[k] = "";
+        });
+      } else {
+        keys.forEach((k) => {
+          if (patch[k] != null && patch[k] !== "") next[k] = patch[k];
+        });
+      }
+      return next;
+    });
+  }, []);
+
   const handleDownloadPdf = useCallback(async () => {
     const ok = await downloadAdminRequestsReportPdf({
       title: "All requests",
@@ -233,7 +258,13 @@ export default function AllRequestsReport() {
       onFilterApply={setFilterCriteria}
       onFilterReset={() => setFilterCriteria({ ...EMPTY_FILTERS })}
       summarySlot={<RenovaReportSummaryCards cards={summaryCards} />}
-      chartsSlot={<RenovaAdminRequestCharts rows={filteredRows} />}
+      chartsSlot={
+        <RenovaAdminRequestCharts
+          rows={records}
+          activeFilters={filterCriteria}
+          onChartFilter={handleChartFilter}
+        />
+      }
     >
       {loading && <div className="muted">Loading requests…</div>}
       {error && (

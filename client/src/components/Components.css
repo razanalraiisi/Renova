@@ -961,6 +961,13 @@
   font-size: 18px;
 }
 
+.about-us-back-row {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 1;
+}
+
 .legal-container {
   padding: 80px 20px;
   min-height: 100vh;

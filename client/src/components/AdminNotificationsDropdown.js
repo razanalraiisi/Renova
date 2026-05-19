@@ -79,7 +79,14 @@ const AdminNotificationsDropdown = () => {
                 <div key={n.id} className="notif-item">
                   <div className="notif-item-top">
                     <div className="notif-item-title">{n.title}</div>
-                    <div className="notif-time">{n.timeAgo}</div>
+                    <div className="notif-time">
+                      {n.timeAgo && n.timeAgo !== n.timestamp && (
+                        <span className="notif-time-relative">{n.timeAgo}</span>
+                      )}
+                      <span className="notif-time-stamp">
+                        {n.timestamp || n.timeAgo}
+                      </span>
+                    </div>
                   </div>
 
                   <div className="notif-message">{n.message}</div>
