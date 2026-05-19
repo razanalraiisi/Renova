@@ -15,7 +15,8 @@ export const createDropOffRequest = async (req, res) => {
       address,
       category,
       customCategory,
-      isBroadcastToAllCollectors
+      isBroadcastToAllCollectors,
+      collectorId 
     } = req.body;
 
     const image = req.file ? req.file.filename : null;
@@ -38,7 +39,8 @@ export const createDropOffRequest = async (req, res) => {
       image,
       userId,
       customCategory: customCategory || null,
-      isBroadcastToAllCollectors: isBroadcastToAllCollectors === 'true' || isBroadcastToAllCollectors === true,
+      collectorId: collectorId || null,
+      isBroadcastToAllCollectors: false,
     });
 
     await request.save();
@@ -145,19 +147,26 @@ export const getAllDropOffRequests = async (req, res) => {
       return res.status(404).json({ message: "Collector not found" });
     }
 
-    // Build query: get broadcast requests OR matching category requests
     const requests = await DropOffRequest.find({
-      status: "Pending",
-      $or: [
-        // Broadcast requests visible to all collectors
-        { isBroadcastToAllCollectors: true },
-        // Category-matched requests (only if not broadcast)
-        {
-          isBroadcastToAllCollectors: { $ne: true },
-          deviceCategory: { $in: collector.acceptedCategories }
-        }
-      ]
-    }).sort({ createdAt: -1 });
+  status: "Pending",
+  $or: [
+    // 🔥 PRIORITY 1: ONLY direct assigned requests
+    { collectorId: collectorId },
+
+    // 🔥 PRIORITY 2: ONLY broadcast requests (no collector assigned)
+    {
+      collectorId: null,
+      isBroadcastToAllCollectors: true
+    },
+
+    // 🔥 PRIORITY 3: category matching ONLY if no collector assigned
+    {
+      collectorId: null,
+      isBroadcastToAllCollectors: { $ne: true },
+      deviceCategory: { $in: collector.acceptedCategories }
+    }
+  ]
+});
 
     res.json(requests);
   } catch (error) {
@@ -263,35 +272,3 @@ export const rescheduleDropOffRequest = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-/*export const rateDropoff = async (req, res) => {
-  try {
-    const { rating, collectorId } = req.body;
-
-    const dropoff = await DropOff.findById(req.params.id);
-
-    if (!dropoff) {
-      return res.status(404).json({
-        message: "Request not found"
-      });
-    }
-
-    dropoff.rating = rating;
-
-    await dropoff.save();
-
-    res.status(200).json({
-      message: "Rating submitted successfully",
-      dropoff
-    });
-
-  } catch (error) {
-    console.log(error);
-
-    res.status(500).json({
-      message: "Server error"
-    });
-  }
-};
-export {
-  rateDropoff
-};*/
