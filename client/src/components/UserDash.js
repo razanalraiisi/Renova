@@ -142,7 +142,7 @@ const UserDash = () => {
       const dropOffRequests = Array.isArray(dropOffData) 
         ? dropOffData 
         : (dropOffData && Array.isArray(dropOffData.requests) ? dropOffData.requests : []);
- 
+        console.log(dropOffRequests);
       // 3. Combine safely
       const allRequests = [...pickupRequests, ...dropOffRequests].sort(
         (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
@@ -786,22 +786,21 @@ const UserDash = () => {
                         {new Date(req.createdAt).toLocaleDateString()}
                       </div>
                       {req.scheduledDate && (
-  <div style={{ fontSize: 13, color: "#0080AA", fontWeight: "bold" }}>
-    Scheduled:{" "}
-    {new Date(req.scheduledDate).toLocaleString("en-GB", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit"
-    })}
-  </div>
+  <>
+    <div style={{ fontSize: 13, color: "#0080AA", fontWeight: "bold" }}>
+      Scheduled:{" "}
+      {new Date(req.scheduledDate).toLocaleString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      })}
+    </div>
+
+  </>
 )}
-                      {(req.status === "Accepted" || req.status === "Completed") && req.collectorName && (
-                        <div style={{ fontSize: 13, color: "#28a745" }}>
-                          Collector: {req.collectorName}
-                        </div>
-                      )}
+
  
                       <div
                         style={{

@@ -64,10 +64,33 @@ export const getUserDropOffRequests = async (req, res) => {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    const requests = await DropOffRequest.find({ userId }).sort({ createdAt: -1 });
+    const requests = await DropOffRequest.find({ userId })
+      .sort({ createdAt: -1 });
 
-    res.json(Array.isArray(requests) ? requests : []);
+    // manually fetch collector names
+    const formattedRequests = await Promise.all(
+      requests.map(async (req) => {
+
+        let collectorName = null;
+
+        if (req.collectorId) {
+          const collector = await User.findById(req.collectorId);
+
+          collectorName = collector?.uname || null;
+        }
+
+        return {
+          ...req._doc,
+          collectorName
+        };
+      })
+    );
+
+    res.json(formattedRequests);
+
   } catch (error) {
+    console.log(error);
+
     res.status(500).json({ message: error.message });
   }
 };
@@ -76,6 +99,7 @@ export const acceptDropOffRequest = async (req, res) => {
     const { id } = req.params;
     const collectorId = req.user?._id;
 
+    console.log("Collector ID:", collectorId);
     const request = await DropOffRequest.findByIdAndUpdate(
       id,
       { 
