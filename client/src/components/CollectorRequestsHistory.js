@@ -32,7 +32,7 @@ const RequestHistory = () => {
   const [message, setMessage] = useState({ text: '', type: '' });
   const [collector, setCollector] = useState(null);
 
-  // CATEGORY FILTER STATES
+  
   const [anchorEl, setAnchorEl] = useState(null);
   const [activeCategory, setActiveCategory] = useState("All");
 
@@ -94,7 +94,7 @@ const RequestHistory = () => {
 
       const pickupData = await pickupRes.json();
 
-      // Fetch drop-off history
+     
       const dropOffRes = await fetch(
         `http://localhost:5000/api/dropoffs/history/${collectorData._id}`,
         {
@@ -107,7 +107,7 @@ const RequestHistory = () => {
 
       const dropOffData = await dropOffRes.json();
 
-      // Combine and sort by createdAt descending
+      
       const allRequests = [
         ...(Array.isArray(pickupData) ? pickupData : []),
         ...(Array.isArray(dropOffData) ? dropOffData : [])
@@ -154,7 +154,7 @@ const RequestHistory = () => {
         return;
       }
 
-      // Find the request to determine its type
+     
       const request = requests.find(r => r._id === id);
 
       if (!request) {
@@ -209,69 +209,10 @@ const RequestHistory = () => {
     }
   };
 
-  /* DOWNLOAD FUNCTION (NEW) */
-  const downloadCSV = () => {
+  
+  
 
-    if (filteredRequests.length === 0) return;
-
-    const headers = [
-      "Request ID",
-      "Device",
-      "Category",
-      "Condition",
-      "Status",
-      "Request Type",
-      "Scheduled Date & Time",
-      "Name",
-      "Email",
-      "Phone",
-      "Request Date"
-    ];
-
-    const rows = filteredRequests.map(r => [
-      r._id,
-      r.device,
-      r.deviceCategory,
-      r.condition,
-      r.status,
-      r.requestType,
-      getScheduledDate(r)
-  ? new Date(getScheduledDate(r)).toLocaleString()
-  : "Not scheduled",
-      r.name,
-      r.email,
-      r.phone,
-      new Date(r.createdAt).toLocaleString()
-    ]);
-
-    const collectorName = collector?.companyName || "Unknown Collector";
-
-    let csvContent =
-      "data:text/csv;charset=utf-8," +
-      `Collector: ${collectorName}\n\n` +
-      [headers, ...rows]
-        .map(e => e.join(","))
-        .join("\n");
-
-    const encodedUri = encodeURI(csvContent);
-
-    const link = document.createElement("a");
-
-    link.setAttribute("href", encodedUri);
-
-    link.setAttribute(
-      "download",
-      "collector_request_history.csv"
-    );
-
-    document.body.appendChild(link);
-
-    link.click();
-
-    document.body.removeChild(link);
-  };
-
-  /* DOWNLOAD PDF FUNCTION (NEW) */
+  
   const downloadPDF = async () => {
 
     if (filteredRequests.length === 0) {
@@ -279,7 +220,7 @@ const RequestHistory = () => {
       return;
     }
 
-    // Calculate statistics
+    
     const totalRequests = filteredRequests.length;
 
     const acceptedRequests =
@@ -302,7 +243,7 @@ const RequestHistory = () => {
         r => r.requestType === "DropOff"
       ).length;
 
-    // Create PDF
+  
     const doc = new jsPDF();
 
     const pageWidth = doc.internal.pageSize.getWidth();
@@ -310,11 +251,11 @@ const RequestHistory = () => {
 
     let yPosition = 15;
 
-    // Add header background color
+    
     doc.setFillColor(0, 128, 170);
     doc.rect(0, 0, pageWidth, 35, 'F');
 
-    // Add logo
+   
     try {
       const img = new Image();
 
@@ -331,14 +272,14 @@ const RequestHistory = () => {
       console.log("Logo not found, skipping");
     }
 
-    // Title
+    
     doc.setFont("Helvetica", "bold");
     doc.setFontSize(16);
     doc.setTextColor(255, 255, 255);
 
     doc.text("Collector Request Report", 28, 15);
 
-    // Collector Name
+    
     doc.setFont("Helvetica", "normal");
     doc.setFontSize(10);
 
@@ -347,19 +288,19 @@ const RequestHistory = () => {
 
     doc.text(`Collector: ${collectorName}`, 28, 22);
 
-    // Date
+    
     doc.setFontSize(9);
 
     const currentDate = new Date().toLocaleString();
 
     doc.text(`Generated on: ${currentDate}`, 28, 28);
 
-    // Reset text color
+    
     doc.setTextColor(0, 0, 0);
 
     yPosition = 42;
 
-    // Summary Statistics
+    
     doc.setFont("Helvetica", "bold");
     doc.setFontSize(12);
     doc.setTextColor(0, 128, 170);
@@ -392,7 +333,7 @@ const RequestHistory = () => {
 
     yPosition += 8;
 
-    // Request Type Breakdown
+   
     doc.setFont("Helvetica", "bold");
     doc.setFontSize(11);
     doc.setTextColor(0, 128, 170);
@@ -421,7 +362,7 @@ const RequestHistory = () => {
 
     yPosition += 10;
 
-    // Create Status Distribution Chart
+    
     try {
 
       const canvas = document.createElement('canvas');
@@ -544,16 +485,16 @@ const RequestHistory = () => {
         ]
       });
 
-      // Wait for chart render
+      
       await new Promise(resolve =>
         setTimeout(resolve, 500)
       );
 
-      // Convert chart to image
+      
       const chartImage =
         canvas.toDataURL('image/png');
 
-      // Add chart to PDF
+      
       if (yPosition > 200) {
         doc.addPage();
         yPosition = 15;
@@ -578,23 +519,22 @@ const RequestHistory = () => {
 
       yPosition += 70;
 
-      // Destroy chart
+    
       statusChart.destroy();
 
-      // Remove canvas
       document.body.removeChild(canvas);
 
     } catch (error) {
       console.error("Error creating chart:", error);
     }
 
-    // Add new page if needed
+    
     if (yPosition > 200) {
       doc.addPage();
       yPosition = 15;
     }
 
-    // Table Data
+   
     const tableData = filteredRequests.map(r => [
       r.device,
       r.deviceCategory,
@@ -609,7 +549,7 @@ const RequestHistory = () => {
       new Date(r.createdAt).toLocaleDateString(),
     ]);
 
-    // Table
+    
     autoTable(doc, {
       head: [[
         'Device',
@@ -658,7 +598,7 @@ const RequestHistory = () => {
       },
     });
 
-    // Save PDF
+    
     doc.save('collector_request_report.pdf');
   };
 

@@ -25,7 +25,7 @@ const PickupRequest = () => {
   const [errors, setErrors] = useState({});
   const [userName, setUserName] = useState("");
 
-  // ✅ ADDED: image error state
+ 
   const [imageError, setImageError] = useState("");
 
   const [customCategory, setCustomCategory] = useState("");
@@ -77,7 +77,7 @@ const PickupRequest = () => {
     setForm({ ...form, phone: value });
   };
 
-  // ✅ ADDED: image validation handler
+  
   const handleImageChange = (e) => {
     const file = e.target.files[0];
 
@@ -145,7 +145,7 @@ const PickupRequest = () => {
     e.preventDefault();
     if (!validate()) return;
 
-    // ✅ ADDED safety check
+    
     if (imageError) {
       alert("Please fix the image error before submitting");
       return;
@@ -230,7 +230,7 @@ const PickupRequest = () => {
       <form style={styles.container} onSubmit={handleSubmit}>
         {form.name && (
           <p style={{ marginBottom: "10px", color: "#0080AA", fontWeight: "bold" }}>
-            Hi {form.name}! 😊 Let’s arrange your pickup quickly and easily!
+            Hi {form.name}!  Let’s arrange your pickup quickly and easily!
           </p>
         )}
 
@@ -285,7 +285,7 @@ const PickupRequest = () => {
         />
         {errors.dateTime && <p style={styles.error}>{errors.dateTime}</p>}
 
-        {/* ✅ UPDATED INPUT */}
+        
         <input
           type="file"
           accept="image/*"

@@ -28,19 +28,19 @@ const NewRecycleRequest = () => {
 
         const token = localStorage.getItem("token") || sessionStorage.getItem("token");
 
-        // Fetch pickup requests
+        
         const pickupRes = await fetch(`http://localhost:5000/api/pickups/all/${collector._id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         const pickupData = await pickupRes.json();
 
-        // Fetch drop-off requests
+        
         const dropOffRes = await fetch(`http://localhost:5000/api/dropoffs/all/${collector._id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         const dropOffData = await dropOffRes.json();
 
-        // Combine and sort by createdAt descending
+       
         const allRequests = [...(Array.isArray(pickupData) ? pickupData : []), ...(Array.isArray(dropOffData) ? dropOffData : [])]
           .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
